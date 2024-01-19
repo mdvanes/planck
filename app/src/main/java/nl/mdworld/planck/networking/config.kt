@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck.networking
 
 
 import android.util.Log

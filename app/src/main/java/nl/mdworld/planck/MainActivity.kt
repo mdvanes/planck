@@ -36,22 +36,32 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import nl.mdworld.planck.networking.DomoticzStatusApi
+import nl.mdworld.planck.networking.DomoticzStatusEntity
+import nl.mdworld.planck.networking.SubsonicApi
+import nl.mdworld.planck.networking.SubsonicPlaylistsEntity
+import nl.mdworld.planck.networking.SubsonicPlaylistsResponse
+import nl.mdworld.planck.networking.ktorHttpClient
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // TODO what is the proper way to call an API on app start?
         // NOTE: this is hacky
         GlobalScope.launch {
             try {
-
-                val response: DomoticzStatusEntity = DomoticzStatusApi().getDomoticzStatusKtor()
+                // TODO replace by call to Subsonic over HTTPS
+                //val response: DomoticzStatusEntity = DomoticzStatusApi().getDomoticzStatusKtor()
+                val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor()
                 //if (response.id) {
                 //    println(response.id)
                 //}
-                println(response.id)
+                println(response.sr.playlists.playlist[0].name)
             } catch (e: Exception) {
                 println("Failed to call API:" + e)
+            } finally {
+                ktorHttpClient.close()
             }
         }
 
