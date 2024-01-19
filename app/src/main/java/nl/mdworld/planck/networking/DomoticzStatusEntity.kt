@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck.networking
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,3 +16,5 @@ data class DomoticzStatusEntity(
     //@SerialName("totalWordsMastered")
     //val totalWordsMastered: Int,
 )
+
+

@@ -4,6 +4,8 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,33 +17,28 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import nl.mdworld.planck.ui.theme.PlanckTheme
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import nl.mdworld.planck.networking.DomoticzStatusApi
-import nl.mdworld.planck.networking.DomoticzStatusEntity
 import nl.mdworld.planck.networking.SubsonicApi
-import nl.mdworld.planck.networking.SubsonicPlaylistsEntity
 import nl.mdworld.planck.networking.SubsonicPlaylistsResponse
 import nl.mdworld.planck.networking.ktorHttpClient
+import nl.mdworld.planck.ui.theme.PlanckTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,15 +48,13 @@ class MainActivity : ComponentActivity() {
         // NOTE: this is hacky
         GlobalScope.launch {
             try {
-                // TODO replace by call to Subsonic over HTTPS
-                //val response: DomoticzStatusEntity = DomoticzStatusApi().getDomoticzStatusKtor()
                 val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor()
-                //if (response.id) {
-                //    println(response.id)
-                //}
-                println(response.sr.playlists.playlist[0].name)
+                val playlistStrings: List<String> = response.sr.playlists.playlist.map {
+                    "${it.id} - ${it.name} (${it.coverArt})"
+                }
+                println(playlistStrings.joinToString(","))
             } catch (e: Exception) {
-                println("Failed to call API:" + e)
+                println("Failed to call API:$e")
             } finally {
                 ktorHttpClient.close()
             }
