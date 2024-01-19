@@ -34,10 +34,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // NOTE: this is hacky
+        GlobalScope.launch {
+            try {
+
+                val response: DomoticzStatusEntity = DomoticzStatusApi().getDomoticzStatusKtor()
+                //if (response.id) {
+                //    println(response.id)
+                //}
+                println(response.id)
+            } catch (e: Exception) {
+                println("Failed to call API:" + e)
+            }
+        }
+
         setContent {
             PlanckTheme {
                 // A surface container using the 'background' color from the theme
@@ -87,7 +104,14 @@ fun MessageCard(msg: Message) {
             )
             // Add a vertical space between the author and message texts
             Spacer(modifier = Modifier.height(4.dp))
-            Surface(shape = MaterialTheme.shapes.medium, shadowElevation = 1.dp, color = surfaceColor, modifier = Modifier.animateContentSize().padding(1.dp)) {
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                shadowElevation = 1.dp,
+                color = surfaceColor,
+                modifier = Modifier
+                    .animateContentSize()
+                    .padding(1.dp)
+            ) {
                 Text(
                     text = msg.body,
                     modifier = Modifier.padding(all = 4.dp),
