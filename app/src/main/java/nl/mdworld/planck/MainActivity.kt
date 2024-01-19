@@ -44,6 +44,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val messages = mutableListOf<Message>(Message(
+            "Lexi",
+            "Test...Test...Test..."
+        ))
+
         // TODO what is the proper way to call an API on app start?
         // NOTE: this is hacky
         GlobalScope.launch {
@@ -53,6 +58,9 @@ class MainActivity : ComponentActivity() {
                     "${it.id} - ${it.name} (${it.coverArt})"
                 }
                 println(playlistStrings.joinToString(","))
+                val messageList: List<Message> = response.sr.playlists.playlist.map { Message(it.coverArt, it.name) }
+                messages.clear()
+                messages.addAll(messageList)
             } catch (e: Exception) {
                 println("Failed to call API:$e")
             } finally {
@@ -67,7 +75,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Conversation(SampleData.conversationSample)
+                    Conversation(messages)
                 }
             }
         }
