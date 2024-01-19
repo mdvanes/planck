@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Planck</string>
+    <string name="subsonic_player_name">PlanckApp</string>
+    <string name="subsonic_songdir">2619</string>
 </resources>
