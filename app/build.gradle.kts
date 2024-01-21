@@ -50,11 +50,6 @@ android {
     }
 }
 
-// TODO remove
-//repositories {
-//    mavenCentral()
-//}
-
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("androidx.core:core-ktx:1.12.0")
@@ -68,7 +63,6 @@ dependencies {
     implementation("io.ktor:ktor-client-android:1.5.0")
     implementation("io.ktor:ktor-client-serialization:1.5.0")
     implementation("io.ktor:ktor-client-logging-jvm:1.5.0")
-    //implementation("com.squareup.picasso:picasso:2.71828")
     implementation("io.coil-kt:coil-compose:2.5.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
