@@ -4,8 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -47,12 +50,20 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PlanckTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    PlaylistCardList(playlists)
+                Scaffold(
+                    bottomBar = {
+                        PlanckBottomAppBar()
+                    }
+                ) { innerPadding ->
+                    // TODO how to remove the unused innerPadding param?
+                    println(innerPadding)
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        PlaylistCardList(playlists)
+                    }
                 }
             }
         }
