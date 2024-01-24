@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
             )
         )
 
-        // TODO what is the proper way to call an API on app start?
+        // TODO what is the proper way to call an API on app start? Maybe this: https://github.com/KatieBarnett/Experiments/blob/main/jc-refresh/src/main/java/dev/katiebarnett/experiments/jcrefresh/MainViewModel.kt
         // NOTE: this is hacky
         GlobalScope.launch {
             try {

@@ -6,10 +6,14 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,7 +39,10 @@ import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import nl.mdworld.planck.networking.SubsonicApi
+import nl.mdworld.planck.networking.SubsonicPlaylistsResponse
 import nl.mdworld.planck.networking.SubsonicTemp
+import nl.mdworld.planck.networking.ktorHttpClient
 import nl.mdworld.planck.ui.theme.PlanckTheme
 
 data class Playlist(val coverArt: String, val name: String)
@@ -69,25 +76,18 @@ fun PlaylistCard(playlist: Playlist) {
         //        .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
         //)
         AsyncImage(
-            //src={`${
-            //    process.env
-            //        .NX_BASE_URL
-            //}/api/jukebox/coverart/${id}?type=${type}&hash=${encodeURIComponent(
-            //    name
-            //)}`
-            //model = "https://picsum.photos/200",
             model = "${SubsonicTemp.JUKEBOX_BASE_URL}/getCoverArt${apiConfig}&id=${playlist.coverArt}",
             contentDescription = null,
             modifier = Modifier
-                // Set image size to 40 dp
-                .size(40.dp)
+                // Set image size to some dp
+                .size(80.dp)
                 // Clip image to be shaped as a circle
                 .clip(CircleShape)
                 .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
         )
 
         // Add a horizontal space between the image and the column
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
         // We keep track if the message is expanded or not in this variable
         var isExpanded by remember { mutableStateOf(false) }
@@ -96,29 +96,31 @@ fun PlaylistCard(playlist: Playlist) {
             label = "surfaceColor",
         )
 
-        Column(modifier = Modifier.clickable { /*  */ }) {
+        Column(modifier = Modifier.height(80.dp).clickable {
+            println("Clicked on playlist ${playlist.name}")
+        }, verticalArrangement = Arrangement.SpaceAround) {
             Text(
                 text = playlist.name,
                 color = MaterialTheme.colorScheme.secondary,
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.titleLarge
             )
             // Add a vertical space between the author and message texts
-            Spacer(modifier = Modifier.height(4.dp))
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                shadowElevation = 1.dp,
-                color = surfaceColor,
-                modifier = Modifier
-                    .animateContentSize()
-                    .padding(1.dp)
-            ) {
-                Text(
-                    text = playlist.name,
-                    modifier = Modifier.padding(all = 4.dp),
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
+            //Spacer(modifier = Modifier.height(4.dp))
+            //Surface(
+            //    shape = MaterialTheme.shapes.medium,
+            //    shadowElevation = 1.dp,
+            //    color = surfaceColor,
+            //    modifier = Modifier
+            //        .animateContentSize()
+            //        .padding(1.dp)
+            //) {
+            //    Text(
+            //        text = playlist.name,
+            //        modifier = Modifier.padding(all = 4.dp),
+            //        maxLines = if (isExpanded) Int.MAX_VALUE else 1,
+            //        style = MaterialTheme.typography.titleSmall
+            //    )
+            //}
         }
     }
 }
@@ -142,13 +144,44 @@ fun PreviewPlaylistCard() {
 @Composable
 fun PlaylistCardList(playlists: List<Playlist>, modifier: Modifier = Modifier) {
 
-    Box(modifier = modifier) {
+    Box(modifier = modifier.padding(0.dp, 0.dp, 0.dp, 80.dp)) {
+
+        val playlists2 = mutableListOf<Playlist>(
+            Playlist(
+                "Empty",
+                "No Playlist"
+            )
+        )
+
         // https://dev.to/andreym/how-to-do-a-material-3-pull-refresh-15b0
         val isRefreshing by remember {
             mutableStateOf(false)
         }
         val state = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = {
             println("Triggered by PullRefresh")
+
+            try {
+                //val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor()
+                //val playlistStrings: List<String> = response.sr.playlists.playlist.map {
+                //    "${it.id} - ${it.name} (${it.coverArt})"
+                //}
+                //println(playlistStrings.joinToString(","))
+                //val newPlaylists: List<Playlist> =
+                //    response.sr.playlists.playlist.map { Playlist(it.coverArt, it.name) }
+                //playlists2.clear()
+                // TODO even this temporary setter does not work!
+                val newPlaylists = mutableListOf<Playlist>(
+                    Playlist(
+                        "Empty1",
+                        "No Playlist1"
+                    )
+                )
+                playlists2.addAll(newPlaylists)
+            } catch (e: Exception) {
+                println("Failed to call API:$e")
+            } finally {
+                ktorHttpClient.close()
+            }
         })
 
         LazyColumn(modifier = Modifier.pullRefresh(state)) {
