@@ -6,6 +6,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,11 +26,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
+import eu.bambooapps.material3.pullrefresh.pullRefresh
+import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
 import nl.mdworld.planck.networking.SubsonicTemp
 import nl.mdworld.planck.ui.theme.PlanckTheme
 
@@ -90,7 +96,7 @@ fun PlaylistCard(playlist: Playlist) {
             label = "surfaceColor",
         )
 
-        Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
+        Column(modifier = Modifier.clickable { /*  */ }) {
             Text(
                 text = playlist.name,
                 color = MaterialTheme.colorScheme.secondary,
@@ -132,12 +138,28 @@ fun PreviewPlaylistCard() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistCardList(playlists: List<Playlist>) {
-    LazyColumn {
-        items(playlists) { playlist ->
-            PlaylistCard(playlist)
+fun PlaylistCardList(playlists: List<Playlist>, modifier: Modifier = Modifier) {
+
+    Box(modifier = modifier) {
+        // https://dev.to/andreym/how-to-do-a-material-3-pull-refresh-15b0
+        val isRefreshing by remember {
+            mutableStateOf(false)
         }
+        val state = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = {
+            println("Triggered by PullRefresh")
+        })
+
+        LazyColumn(modifier = Modifier.pullRefresh(state)) {
+            items(playlists) { playlist ->
+                PlaylistCard(playlist)
+            }
+        }
+        PullRefreshIndicator(refreshing = isRefreshing, state = state,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+        )
     }
 }
 
