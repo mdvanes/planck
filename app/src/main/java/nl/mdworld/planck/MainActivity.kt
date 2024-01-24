@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import nl.mdworld.planck.networking.SubsonicApi
@@ -20,6 +21,8 @@ import nl.mdworld.planck.ui.theme.PlanckTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //val navController = rememberNavController()
 
         val playlists = mutableListOf<Playlist>(
             Playlist(

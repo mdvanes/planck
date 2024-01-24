@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization") version "1.9.21"
+    //id("androidx.navigation.safeargs")
 }
 
 android {
@@ -12,8 +13,8 @@ android {
         applicationId = "nl.mdworld.planck"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,15 +52,33 @@ android {
 }
 
 dependencies {
+
+    val navVersion = "2.7.6"
+
+    // Java language implementation
+    //implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    //implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
+    // Kotlin
+    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
+    // Feature module Support
+    implementation("androidx.navigation:navigation-dynamic-features-fragment:$navVersion")
+    // Testing Navigation
+    androidTestImplementation("androidx.navigation:navigation-testing:$navVersion")
+    // Jetpack Compose Integration
+    implementation("androidx.navigation:navigation-compose:$navVersion")
+    //classpath("androidx.navigation:navigation-safe-args-gradle-plugin:$navVersion")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation(platform("androidx.compose:compose-bom:2023.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("eu.bambooapps:compose-material3-pullrefresh:1.0.0")
     implementation("io.ktor:ktor-client-android:1.5.0")
     implementation("io.ktor:ktor-client-serialization:1.5.0")
     implementation("io.ktor:ktor-client-logging-jvm:1.5.0")
