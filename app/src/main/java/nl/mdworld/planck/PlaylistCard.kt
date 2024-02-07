@@ -34,7 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
@@ -80,7 +82,7 @@ fun PlaylistCard(playlist: Playlist) {
             contentDescription = null,
             modifier = Modifier
                 // Set image size to some dp
-                .size(80.dp)
+                .size(160.dp)
                 // Clip image to be shaped as a circle
                 .clip(CircleShape)
                 .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
@@ -96,13 +98,14 @@ fun PlaylistCard(playlist: Playlist) {
             label = "surfaceColor",
         )
 
-        Column(modifier = Modifier.height(80.dp).clickable {
+        Column(modifier = Modifier.height(160.dp).clickable {
             println("Clicked on playlist ${playlist.name}")
         }, verticalArrangement = Arrangement.SpaceAround) {
             Text(
                 text = playlist.name,
                 color = MaterialTheme.colorScheme.secondary,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 60.sp
             )
             // Add a vertical space between the author and message texts
             //Spacer(modifier = Modifier.height(4.dp))
