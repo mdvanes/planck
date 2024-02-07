@@ -145,16 +145,16 @@ fun PreviewPlaylistCard() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistCardList(playlists: List<Playlist>, modifier: Modifier = Modifier) {
+fun PlaylistCardList(playlists: MutableList<Playlist>, modifier: Modifier = Modifier) {
 
     Box(modifier = modifier.padding(0.dp, 0.dp, 0.dp, 80.dp)) {
 
-        val playlists2 = mutableListOf<Playlist>(
-            Playlist(
-                "Empty",
-                "No Playlist"
-            )
-        )
+        //val playlists2 = mutableListOf<Playlist>(
+        //    Playlist(
+        //        "Empty",
+        //        "No Playlist"
+        //    )
+        //)
 
         // https://dev.to/andreym/how-to-do-a-material-3-pull-refresh-15b0
         val isRefreshing by remember {
@@ -179,7 +179,10 @@ fun PlaylistCardList(playlists: List<Playlist>, modifier: Modifier = Modifier) {
                         "No Playlist1"
                     )
                 )
-                playlists2.addAll(newPlaylists)
+                //playlists2.addAll(newPlaylists)
+                println(newPlaylists)
+                playlists.clear()
+                playlists.addAll(newPlaylists)
             } catch (e: Exception) {
                 println("Failed to call API:$e")
             } finally {
