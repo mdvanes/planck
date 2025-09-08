@@ -50,6 +50,7 @@ dependencies {
 
     val navVersion = "2.7.6"
     val composeBom = platform("androidx.compose:compose-bom:2024.04.00")
+    val ktor_version = "3.2.3"
 
     // Java language implementation
     //implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
@@ -69,15 +70,17 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("eu.bambooapps:compose-material3-pullrefresh:1.0.0")
-    implementation("io.ktor:ktor-client-android:1.5.0")
-    implementation("io.ktor:ktor-client-serialization:1.5.0")
-    implementation("io.ktor:ktor-client-logging-jvm:1.5.0")
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("androidx.car.app:app:1.4.0")
+    implementation("eu.bambooapps:compose-material3-pullrefresh:1.1.1")
+    implementation("io.ktor:ktor-client-core:${ktor_version}")
+    implementation("io.ktor:ktor-client-cio:${ktor_version}")
+    implementation("io.ktor:ktor-client-android:${ktor_version}")
+    implementation("io.ktor:ktor-client-content-negotiation:${ktor_version}")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:${ktor_version}")
+    implementation("io.ktor:ktor-client-logging:${ktor_version}")
+    implementation("androidx.car.app:app:1.7.0")
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
