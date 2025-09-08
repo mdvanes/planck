@@ -28,3 +28,8 @@ fun setSelectedPlaylist(context: Context, playlistName: String) {
     val prefs = context.getSharedPreferences("planck_prefs", Context.MODE_PRIVATE)
     prefs.edit().putString("selected_playlist", playlistName).apply()
 }
+    // Refresh the cluster display to show the new playlist
+fun getSelectedPlaylist(context: Context): String {
+    val prefs = context.getSharedPreferences("planck_prefs", Context.MODE_PRIVATE)
+    return prefs.getString("selected_playlist", "No Playlist Selected") ?: "No Playlist Selected"
+}
