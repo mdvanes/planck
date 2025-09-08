@@ -23,3 +23,8 @@ class PlanckAppState (private val context: Context) {
     //    return playlists
     //}
 }
+
+fun setSelectedPlaylist(context: Context, playlistName: String) {
+    val prefs = context.getSharedPreferences("planck_prefs", Context.MODE_PRIVATE)
+    prefs.edit().putString("selected_playlist", playlistName).apply()
+}

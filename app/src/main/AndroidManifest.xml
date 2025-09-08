@@ -35,6 +35,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".ClusterCarAppService"
+            android:exported="true"
+            android:permission="androidx.car.app.ACCESS_SURFACE">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.car.app.minCarApiLevel"
+                android:value="3" />
+            <meta-data
+                android:name="androidx.car.app.hosts"
+                android:value="*" />
+        </service>
     </application>
 
 </manifest>

@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -53,6 +54,7 @@ data class Playlist(val coverArt: String, val name: String)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun PlaylistCard(playlist: Playlist) {
+    val context = LocalContext.current
     val playerName = R.string.subsonic_player_name
     val apiConfig =
         "?u=${SubsonicTemp.JUKEBOX_USERNAME}&t=${SubsonicTemp.JUKEBOX_API_TOKEN}&s=${SubsonicTemp.JUKEBOX_SALT}&v=1.16.0&c=${playerName}&f=json"
@@ -100,6 +102,7 @@ fun PlaylistCard(playlist: Playlist) {
 
         Column(modifier = Modifier.height(160.dp).clickable {
             println("Clicked on playlist ${playlist.name}")
+            setSelectedPlaylist(context, playlist.name)
         }, verticalArrangement = Arrangement.SpaceAround) {
             Text(
                 text = playlist.name,
