@@ -68,7 +68,14 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
     //}
 
     // Add padding around our message
-    Row(modifier = Modifier.padding(all = 8.dp)) {
+    Row(modifier = Modifier
+        .padding(all = 8.dp)
+        .clickable {
+            println("Clicked on playlist ${playlist.name}")
+            setSelectedPlaylist(context, playlist.name)
+            appState?.navigateToSongs(playlist.id, playlist.name)
+        }
+    ) {
         //Image(
         //    painter = painterResource(R.drawable.ic_launcher_background),
         //    contentDescription = "Contact profile picture",
@@ -100,11 +107,7 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
             label = "surfaceColor",
         )
 
-        Column(modifier = Modifier.height(160.dp).clickable {
-            println("Clicked on playlist ${playlist.name}")
-            setSelectedPlaylist(context, playlist.name)
-            appState?.navigateToSongs(playlist.id, playlist.name)
-        }, verticalArrangement = Arrangement.SpaceAround) {
+        Column(modifier = Modifier.height(160.dp), verticalArrangement = Arrangement.SpaceAround) {
             Text(
                 text = playlist.name,
                 color = MaterialTheme.colorScheme.secondary,
