@@ -22,9 +22,9 @@ enum class AppScreen {
 class PlanckAppState (private val context: Context) {
     val playlists = mutableStateListOf(
         Playlist(
-            "empty",
-            "Empty",
-            "No Playlist"
+            id = "empty",
+            coverArt = "Empty",
+            name = "No Playlist"
         )
     )
 

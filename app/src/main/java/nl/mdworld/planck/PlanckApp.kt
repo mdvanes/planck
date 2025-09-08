@@ -7,9 +7,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck.networking.SubsonicApi
 import nl.mdworld.planck.networking.SubsonicPlaylistsResponse
-import nl.mdworld.planck.networking.ktorHttpClient
 
 // Example: https://github.com/android/compose-samples/blob/main/Jetcaster/app/src/main/java/com/example/jetcaster/ui/JetcasterAppState.kt
 
@@ -31,14 +31,13 @@ fun PlanckApp(
             appState.playlists.addAll(newPlaylists)
         } catch (e: Exception) {
             println("PlanckApp: Failed to call API:$e")
-        } finally {
-            ktorHttpClient.close()
         }
     }
 
     // Load songs when navigating to song view
-    LaunchedEffect(appState.selectedPlaylistId) {
+    LaunchedEffect(appState.selectedPlaylistId, appState.currentScreen) {
         if (appState.selectedPlaylistId != null && appState.currentScreen == AppScreen.SONGS) {
+            appState.songs.clear()
             try {
                 val response = SubsonicApi().getPlaylistKtor(appState.selectedPlaylistId!!)
                 val songs = response.sr.playlist.songs?.map { song ->
@@ -51,8 +50,9 @@ fun PlanckApp(
                         coverArt = song.coverArt
                     )
                 } ?: emptyList()
-                appState.songs.clear()
                 appState.songs.addAll(songs)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 println("Failed to load playlist songs: $e")
             }
