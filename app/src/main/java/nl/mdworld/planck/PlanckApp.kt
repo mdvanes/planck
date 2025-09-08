@@ -79,7 +79,7 @@ fun PlanckApp(
                     PlaylistCardList(appState.playlists, appState)
                 }
                 AppScreen.SONGS -> {
-                    SongCardList(appState.songs.toList())
+                    SongCardList(songs = appState.songs.toList())
                 }
             }
         }

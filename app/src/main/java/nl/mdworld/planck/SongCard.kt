@@ -6,21 +6,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,6 +96,103 @@ fun SongCard(song: Song) {
     }
 }
 
+@Composable
+fun PlaylistHeaderCard(playlistTitle: String, coverArt: String?) {
+    val context = LocalContext.current
+    val playerName = context.getString(R.string.subsonic_player_name)
+    val apiConfig =
+        "?u=${SubsonicTemp.JUKEBOX_USERNAME}&t=${SubsonicTemp.JUKEBOX_API_TOKEN}&s=${SubsonicTemp.JUKEBOX_SALT}&v=1.16.0&c=${playerName}&f=json"
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        AsyncImage(
+            model = if (coverArt != null)
+                "${SubsonicTemp.JUKEBOX_BASE_URL}/getCoverArt${apiConfig}&id=${coverArt}"
+            else null,
+            contentDescription = null,
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(
+            modifier = Modifier.align(Alignment.CenterVertically)
+        ) {
+            Text(
+                text = playlistTitle,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun SongListItem(song: Song, index: Int) {
+    val durationText = if (song.duration != null) {
+        val minutes = song.duration / 60
+        val seconds = song.duration % 60
+        "${minutes}:${seconds.toString().padStart(2, '0')}"
+    } else {
+        ""
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "${index + 1}",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 16.sp,
+            modifier = Modifier.width(32.dp)
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = song.title,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium
+            )
+
+            if (song.artist != null) {
+                Text(
+                    text = song.artist,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        if (durationText.isNotEmpty()) {
+            Text(
+                text = durationText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
 @Preview(name = "Light Mode")
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
@@ -115,9 +215,30 @@ fun PreviewSongCard() {
     }
 }
 
+@Preview(name = "Song List Preview")
+@Composable
+fun PreviewSongCardList() {
+    PlanckTheme {
+        Surface {
+            SongCardList(
+                songs = listOf(
+                    Song("1", "Example Song 1", "Artist 1", "Album 1", 180, "cover1"),
+                    Song("2", "Example Song 2", "Artist 2", "Album 2", 240, "cover2"),
+                    Song("3", "Example Song 3", "Artist 3", "Album 3", 210, "cover3")
+                ),
+                playlistTitle = "My Playlist"
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongCardList(songs: List<Song>, modifier: Modifier = Modifier) {
+fun SongCardList(
+    modifier: Modifier = Modifier,
+    songs: List<Song>,
+    playlistTitle: String = "Playlist"
+) {
     val pullRefreshState = rememberPullRefreshState(
         refreshing = false,
         onRefresh = { /* TODO: Implement refresh */ }
@@ -127,14 +248,23 @@ fun SongCardList(songs: List<Song>, modifier: Modifier = Modifier) {
         modifier = modifier.pullRefresh(pullRefreshState)
     ) {
         LazyColumn {
-            items(songs) { song ->
-                SongCard(song = song)
+            // First item: Playlist header with cover art
+            item {
+                PlaylistHeaderCard(
+                    playlistTitle = playlistTitle,
+                    coverArt = songs.firstOrNull()?.coverArt
+                )
+            }
+
+            // Remaining items: Song list items with index, title, artist, and duration
+            itemsIndexed(songs) { index, song ->
+                SongListItem(song = song, index = index)
             }
         }
         PullRefreshIndicator(
             refreshing = false,
             state = pullRefreshState,
-            modifier = Modifier.align(androidx.compose.ui.Alignment.TopCenter)
+            modifier = Modifier.align(Alignment.TopCenter)
         )
     }
 }
