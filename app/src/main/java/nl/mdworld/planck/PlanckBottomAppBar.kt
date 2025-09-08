@@ -5,6 +5,7 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
@@ -19,11 +20,19 @@ import androidx.compose.runtime.Composable
 
 
 @Composable
-fun PlanckBottomAppBar() {
+fun PlanckBottomAppBar(
+    currentScreen: AppScreen = AppScreen.PLAYLISTS,
+    onNavigateBack: () -> Unit = {}
+) {
     val mediaPlayer = MediaPlayer()
 
     BottomAppBar(
         actions = {
+            if (currentScreen == AppScreen.SONGS) {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back to playlists")
+                }
+            }
             IconButton(onClick = { /* do something */ }) {
                 Icon(Icons.Filled.Check, contentDescription = "Localized description")
             }

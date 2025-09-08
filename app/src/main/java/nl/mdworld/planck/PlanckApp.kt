@@ -26,7 +26,7 @@ fun PlanckApp(
             }
             println(playlistStrings.joinToString(","))
             val newPlaylists: List<Playlist> =
-                response.sr.playlists.playlist.map { Playlist(it.coverArt, it.name) }
+                response.sr.playlists.playlist.map { Playlist(it.id, it.coverArt, it.name) }
             appState.playlists.clear()
             appState.playlists.addAll(newPlaylists)
         } catch (e: Exception) {
@@ -36,9 +36,35 @@ fun PlanckApp(
         }
     }
 
+    // Load songs when navigating to song view
+    LaunchedEffect(appState.selectedPlaylistId) {
+        if (appState.selectedPlaylistId != null && appState.currentScreen == AppScreen.SONGS) {
+            try {
+                val response = SubsonicApi().getPlaylistKtor(appState.selectedPlaylistId!!)
+                val songs = response.sr.playlist.songs?.map { song ->
+                    Song(
+                        id = song.id,
+                        title = song.title,
+                        artist = song.artist,
+                        album = song.album,
+                        duration = song.duration,
+                        coverArt = song.coverArt
+                    )
+                } ?: emptyList()
+                appState.songs.clear()
+                appState.songs.addAll(songs)
+            } catch (e: Exception) {
+                println("Failed to load playlist songs: $e")
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
-            PlanckBottomAppBar()
+            PlanckBottomAppBar(
+                currentScreen = appState.currentScreen,
+                onNavigateBack = { appState.navigateToPlaylists() }
+            )
         }
     ) { innerPadding ->
         // TODO how to remove the unused innerPadding param?
@@ -48,7 +74,14 @@ fun PlanckApp(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            PlaylistCardList(appState.playlists)
+            when (appState.currentScreen) {
+                AppScreen.PLAYLISTS -> {
+                    PlaylistCardList(appState.playlists, appState)
+                }
+                AppScreen.SONGS -> {
+                    SongCardList(appState.songs.toList())
+                }
+            }
         }
     }
 }

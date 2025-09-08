@@ -48,12 +48,12 @@ import nl.mdworld.planck.networking.SubsonicTemp
 import nl.mdworld.planck.networking.ktorHttpClient
 import nl.mdworld.planck.ui.theme.PlanckTheme
 
-data class Playlist(val coverArt: String, val name: String)
+data class Playlist(val id: String, val coverArt: String, val name: String)
 
 // TODO fix this SuppressLint rule
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun PlaylistCard(playlist: Playlist) {
+fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
     val context = LocalContext.current
     val playerName = R.string.subsonic_player_name
     val apiConfig =
@@ -103,6 +103,7 @@ fun PlaylistCard(playlist: Playlist) {
         Column(modifier = Modifier.height(160.dp).clickable {
             println("Clicked on playlist ${playlist.name}")
             setSelectedPlaylist(context, playlist.name)
+            appState?.navigateToSongs(playlist.id, playlist.name)
         }, verticalArrangement = Arrangement.SpaceAround) {
             Text(
                 text = playlist.name,
@@ -140,7 +141,7 @@ fun PreviewPlaylistCard() {
     PlanckTheme {
         Surface {
             PlaylistCard(
-                playlist = Playlist("cover-art-url", "Playlist 1")
+                playlist = Playlist("1", "cover-art-url", "Playlist 1")
             )
         }
     }
@@ -148,7 +149,7 @@ fun PreviewPlaylistCard() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistCardList(playlists: MutableList<Playlist>, modifier: Modifier = Modifier) {
+fun PlaylistCardList(playlists: MutableList<Playlist>, appState: PlanckAppState? = null, modifier: Modifier = Modifier) {
 
     Box(modifier = modifier.padding(0.dp, 0.dp, 0.dp, 80.dp)) {
 
@@ -178,6 +179,7 @@ fun PlaylistCardList(playlists: MutableList<Playlist>, modifier: Modifier = Modi
                 // TODO even this temporary setter does not work!
                 val newPlaylists = mutableListOf<Playlist>(
                     Playlist(
+                        "empty1",
                         "Empty1",
                         "No Playlist1"
                     )
@@ -195,7 +197,7 @@ fun PlaylistCardList(playlists: MutableList<Playlist>, modifier: Modifier = Modi
 
         LazyColumn(modifier = Modifier.pullRefresh(state)) {
             items(playlists) { playlist ->
-                PlaylistCard(playlist)
+                PlaylistCard(playlist, appState)
             }
         }
         PullRefreshIndicator(refreshing = isRefreshing, state = state,

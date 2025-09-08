@@ -16,7 +16,7 @@ class SubsonicApi {
 
     suspend fun getPlaylistKtor(
         id: String
-    ): SubsonicPlaylistResponse {
+    ): SubsonicPlaylistDetailResponse {
         val playerName = R.string.subsonic_player_name
         val apiConfig =
             "?u=${SubsonicTemp.JUKEBOX_USERNAME}&t=${SubsonicTemp.JUKEBOX_API_TOKEN}&s=${SubsonicTemp.JUKEBOX_SALT}&v=1.16.0&c=${playerName}&f=json"
