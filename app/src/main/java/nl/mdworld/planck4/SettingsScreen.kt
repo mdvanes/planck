@@ -46,26 +46,7 @@ fun SettingsScreen(
 
         HorizontalDivider()
 
-        // Audio Settings Section
-        SettingsSection(
-            title = "Audio Settings"
-        ) {
-            var audioQuality by remember { mutableStateOf("High") }
 
-            SettingsDropdown(
-                label = "Audio Quality",
-                value = audioQuality,
-                options = listOf("Low", "Medium", "High", "Lossless"),
-                onValueChange = { audioQuality = it }
-            )
-
-            var enableEqualizer by remember { mutableStateOf(false) }
-            SettingsSwitch(
-                label = "Enable Equalizer",
-                checked = enableEqualizer,
-                onCheckedChange = { enableEqualizer = it }
-            )
-        }
 
         // Network Settings Section
         SettingsSection(
@@ -97,24 +78,7 @@ fun SettingsScreen(
             )
         }
 
-        // Appearance Settings Section
-        SettingsSection(
-            title = "Appearance"
-        ) {
-            var darkMode by remember { mutableStateOf(false) }
-            SettingsSwitch(
-                label = "Dark Mode",
-                checked = darkMode,
-                onCheckedChange = { darkMode = it }
-            )
 
-            var showAlbumArt by remember { mutableStateOf(true) }
-            SettingsSwitch(
-                label = "Show Album Art",
-                checked = showAlbumArt,
-                onCheckedChange = { showAlbumArt = it }
-            )
-        }
 
         // About Section
         SettingsSection(
