@@ -93,6 +93,7 @@ fun SettingsScreen(
                 placeholder = { Text("your_username") }
             )
 
+            var passwordVisibility1 by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = salt,
                 onValueChange = {
@@ -100,7 +101,19 @@ fun SettingsScreen(
                 },
                 label = { Text("Salt") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("random_salt_value") }
+                placeholder = { Text("random_salt_value") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Password
+                ),
+                visualTransformation = if (passwordVisibility1) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    TextButton(onClick = { passwordVisibility1 = !passwordVisibility1 }) {
+                        Text(
+                            text = if (passwordVisibility1) "Hide" else "Show",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             )
 
             var passwordVisibility by remember { mutableStateOf(false) }
