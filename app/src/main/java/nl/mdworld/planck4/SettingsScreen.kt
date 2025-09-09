@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import nl.mdworld.planck4.BuildConfig
@@ -18,6 +19,17 @@ import nl.mdworld.planck4.BuildConfig
 fun SettingsScreen(
     onNavigateBack: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+
+    // Load current server URL from settings
+    var serverUrl by remember { mutableStateOf(SettingsManager.getServerUrl(context)) }
+    var hasUnsavedChanges by remember { mutableStateOf(false) }
+
+    // Track changes to enable save button
+    LaunchedEffect(serverUrl) {
+        hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -46,20 +58,19 @@ fun SettingsScreen(
 
         HorizontalDivider()
 
-
-
         // Network Settings Section
         SettingsSection(
             title = "Network Settings"
         ) {
-            var serverUrl by remember { mutableStateOf("") }
-
             OutlinedTextField(
                 value = serverUrl,
-                onValueChange = { serverUrl = it },
+                onValueChange = {
+                    serverUrl = it
+                    hasUnsavedChanges = true
+                },
                 label = { Text("Server URL") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("https://your-server.com") }
+                placeholder = { Text("https://your-server.com/rest/") }
             )
 
             var username by remember { mutableStateOf("") }
@@ -76,9 +87,19 @@ fun SettingsScreen(
                 checked = cacheEnabled,
                 onCheckedChange = { cacheEnabled = it }
             )
+
+            // Save button
+            Button(
+                onClick = {
+                    SettingsManager.saveServerUrl(context, serverUrl)
+                    hasUnsavedChanges = false
+                },
+                enabled = hasUnsavedChanges,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Save Settings")
+            }
         }
-
-
 
         // About Section
         SettingsSection(

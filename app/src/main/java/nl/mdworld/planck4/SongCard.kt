@@ -54,7 +54,7 @@ fun SongCard(song: Song) {
     Row(modifier = Modifier.padding(all = 8.dp)) {
         AsyncImage(
             model = if (song.coverArt != null)
-                "${SubsonicTemp.JUKEBOX_BASE_URL}/getCoverArt${apiConfig}&id=${song.coverArt}"
+                "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${song.coverArt}"
             else null,
             contentDescription = null,
             modifier = Modifier
@@ -111,7 +111,7 @@ fun PlaylistHeaderCard(playlistTitle: String, coverArt: String?) {
     ) {
         AsyncImage(
             model = if (coverArt != null)
-                "${SubsonicTemp.JUKEBOX_BASE_URL}/getCoverArt${apiConfig}&id=${coverArt}"
+                "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${coverArt}"
             else null,
             contentDescription = null,
             modifier = Modifier

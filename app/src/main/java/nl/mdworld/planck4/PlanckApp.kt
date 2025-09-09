@@ -7,21 +7,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck4.networking.SubsonicApi
 import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
-import nl.mdworld.planck4.SettingsScreen
-
-// Example: https://github.com/android/compose-samples/blob/main/Jetcaster/app/src/main/java/com/example/jetcaster/ui/JetcasterAppState.kt
 
 @Composable
 fun PlanckApp(
     appState: PlanckAppState = rememberPlanckAppState()
 ) {
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         try {
-            val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor()
+            val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor(context)
             val playlistStrings: List<String> = response.sr.playlists.playlist.map {
                 "${it.id} - ${it.name} (${it.coverArt})"
             }
@@ -40,7 +39,7 @@ fun PlanckApp(
         if (appState.selectedPlaylistId != null && appState.currentScreen == AppScreen.SONGS) {
             appState.songs.clear()
             try {
-                val response = SubsonicApi().getPlaylistKtor(appState.selectedPlaylistId!!)
+                val response = SubsonicApi().getPlaylistKtor(context, appState.selectedPlaylistId!!)
                 val songs = response.sr.playlist.songs?.map { song ->
                     Song(
                         id = song.id,
@@ -51,6 +50,7 @@ fun PlanckApp(
                         coverArt = song.coverArt
                     )
                 } ?: emptyList()
+
                 appState.songs.addAll(songs)
             } catch (e: CancellationException) {
                 throw e

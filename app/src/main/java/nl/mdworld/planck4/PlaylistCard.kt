@@ -87,7 +87,7 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
         //        .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
         //)
         AsyncImage(
-            model = "${SubsonicTemp.JUKEBOX_BASE_URL}/getCoverArt${apiConfig}&id=${playlist.coverArt}",
+            model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${playlist.coverArt}",
             contentDescription = null,
             modifier = Modifier
                 // Set image size to some dp
