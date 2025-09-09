@@ -32,7 +32,6 @@ import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
-import nl.mdworld.planck4.networking.SubsonicTemp
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 data class Song(

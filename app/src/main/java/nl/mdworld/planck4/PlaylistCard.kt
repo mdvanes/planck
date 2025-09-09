@@ -44,7 +44,6 @@ import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
 import nl.mdworld.planck4.networking.SubsonicApi
 import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
-import nl.mdworld.planck4.networking.SubsonicTemp
 import nl.mdworld.planck4.networking.ktorHttpClient
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
