@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
@@ -37,7 +37,10 @@ fun PlanckBottomAppBar(
         actions = {
             if (currentScreen == AppScreen.SONGS) {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to playlists")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back to playlists"
+                    )
                 }
             }
 
@@ -68,15 +71,6 @@ fun PlanckBottomAppBar(
                 }
             }
 
-            IconButton(onClick = { /* do something */ }) {
-                Icon(Icons.Filled.Check, contentDescription = "Localized description")
-            }
-            IconButton(onClick = { /* do something */ }) {
-                Icon(
-                    Icons.Filled.Edit,
-                    contentDescription = "Localized description",
-                )
-            }
 
             // Play/Pause button - use app state if available, otherwise fallback to example
             IconButton(onClick = {
@@ -107,7 +101,7 @@ fun PlanckBottomAppBar(
                 }
             }) {
                 Icon(
-                    imageVector = if (appState?.isPlaying == true) Icons.Filled.Close else Icons.Filled.PlayArrow,
+                    imageVector = if (appState?.isPlaying == true) Icons.Filled.Warning else Icons.Filled.PlayArrow,
                     contentDescription = if (appState?.isPlaying == true) "Pause" else "Play"
                 )
             }
