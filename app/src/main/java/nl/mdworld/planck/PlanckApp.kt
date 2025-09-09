@@ -63,7 +63,8 @@ fun PlanckApp(
         bottomBar = {
             PlanckBottomAppBar(
                 currentScreen = appState.currentScreen,
-                onNavigateBack = { appState.navigateToPlaylists() }
+                onNavigateBack = { appState.navigateToPlaylists() },
+                activeSong = appState.activeSong
             )
         }
     ) { innerPadding ->
@@ -81,7 +82,8 @@ fun PlanckApp(
                 AppScreen.SONGS -> {
                     SongCardList(
                         songs = appState.songs.toList(),
-                        playlistTitle = appState.selectedPlaylistName ?: "Playlist"
+                        playlistTitle = appState.selectedPlaylistName ?: "Playlist",
+                        onSongClick = { song -> appState.setActiveSong(song) }
                     )
                 }
             }

@@ -2,6 +2,7 @@ package nl.mdworld.planck
 
 import android.content.res.Configuration
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -136,7 +137,7 @@ fun PlaylistHeaderCard(playlistTitle: String, coverArt: String?) {
 }
 
 @Composable
-fun SongListItem(song: Song, index: Int) {
+fun SongListItem(song: Song, index: Int, onClick: (Song) -> Unit = {}) {
     val durationText = if (song.duration != null) {
         val minutes = song.duration / 60
         val seconds = song.duration % 60
@@ -148,7 +149,8 @@ fun SongListItem(song: Song, index: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onClick(song) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -237,7 +239,8 @@ fun PreviewSongCardList() {
 fun SongCardList(
     modifier: Modifier = Modifier,
     songs: List<Song>,
-    playlistTitle: String = "Playlist"
+    playlistTitle: String = "Playlist",
+    onSongClick: (Song) -> Unit = {}
 ) {
     val pullRefreshState = rememberPullRefreshState(
         refreshing = false,
@@ -258,7 +261,7 @@ fun SongCardList(
 
             // Remaining items: Song list items with index, title, artist, and duration
             itemsIndexed(songs) { index, song ->
-                SongListItem(song = song, index = index)
+                SongListItem(song = song, index = index, onClick = onSongClick)
             }
         }
         PullRefreshIndicator(

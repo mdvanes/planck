@@ -1,8 +1,10 @@
 package nl.mdworld.planck
 
 import android.media.AudioAttributes
-import android.media.AudioManager
 import android.media.MediaPlayer
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -16,13 +18,18 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun PlanckBottomAppBar(
     currentScreen: AppScreen = AppScreen.PLAYLISTS,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    activeSong: Song? = null
 ) {
     val mediaPlayer = MediaPlayer()
 
@@ -33,6 +40,39 @@ fun PlanckBottomAppBar(
                     Icon(Icons.Filled.ArrowBack, contentDescription = "Back to playlists")
                 }
             }
+
+            // Display active song title if available
+            if (activeSong != null) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Now Playing:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = activeSong.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (activeSong.artist != null) {
+                        Text(
+                            text = activeSong.artist,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
             IconButton(onClick = { /* do something */ }) {
                 Icon(Icons.Filled.Check, contentDescription = "Localized description")
             }
