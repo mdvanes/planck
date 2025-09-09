@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CancellationException
-import nl.mdworld.planck.networking.SubsonicApi
-import nl.mdworld.planck.networking.SubsonicPlaylistsResponse
+import nl.mdworld.planck4.networking.SubsonicApi
+import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
 
 // Example: https://github.com/android/compose-samples/blob/main/Jetcaster/app/src/main/java/com/example/jetcaster/ui/JetcasterAppState.kt
 

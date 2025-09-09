@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 import androidx.car.app.Screen
 import androidx.car.app.Session
@@ -30,4 +30,3 @@ class ClusterScreen(carContext: CarContext) : Screen(carContext) {
             .setHeader(Header.Builder().setTitle("Current Playlist").build())
             .build()
 }}
-

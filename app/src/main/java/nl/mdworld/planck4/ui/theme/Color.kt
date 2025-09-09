@@ -1,4 +1,4 @@
-package nl.mdworld.planck.ui.theme
+package nl.mdworld.planck4.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "nl.mdworld.planck"
+    namespace = "nl.mdworld.planck4"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "nl.mdworld.planck"
+        applicationId = "nl.mdworld.planck4"
         minSdk = 24
         targetSdk = 35
         versionCode = 4

@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,10 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import nl.mdworld.planck.networking.SubsonicApi
-import nl.mdworld.planck.networking.SubsonicPlaylistsResponse
-import nl.mdworld.planck.networking.ktorHttpClient
-import nl.mdworld.planck.ui.theme.PlanckTheme
+import nl.mdworld.planck4.networking.SubsonicApi
+import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
+import nl.mdworld.planck4.networking.ktorHttpClient
+import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

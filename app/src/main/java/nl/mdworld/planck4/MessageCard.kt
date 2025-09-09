@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
@@ -29,7 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import nl.mdworld.planck.ui.theme.PlanckTheme
+import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 data class Message(val author: String, val body: String)
 

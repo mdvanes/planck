@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer

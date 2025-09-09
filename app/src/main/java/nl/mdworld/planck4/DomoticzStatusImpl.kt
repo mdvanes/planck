@@ -1,4 +1,4 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 class DomoticzStatusImpl {
     //override suspend fun getUserKtor(userId: String): Either<Failure, UserModel> =

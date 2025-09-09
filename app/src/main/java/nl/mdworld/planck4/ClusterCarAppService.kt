@@ -1,8 +1,9 @@
-package nl.mdworld.planck
+package nl.mdworld.planck4
 
 import androidx.car.app.CarAppService
 import androidx.car.app.Session
 import androidx.car.app.validation.HostValidator
+import nl.mdworld.planck4.ClusterSession
 
 class ClusterCarAppService : CarAppService() {
     override fun createHostValidator(): HostValidator =
@@ -10,4 +11,3 @@ class ClusterCarAppService : CarAppService() {
 
     override fun onCreateSession(): Session = ClusterSession()
 }
-

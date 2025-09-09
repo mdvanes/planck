@@ -1,8 +1,8 @@
-package nl.mdworld.planck.networking
+package nl.mdworld.planck4.networking
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import nl.mdworld.planck.R
+import nl.mdworld.planck4.R
 
 
 class SubsonicApi {

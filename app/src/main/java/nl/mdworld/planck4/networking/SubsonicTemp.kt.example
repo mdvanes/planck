@@ -1,4 +1,4 @@
-package nl.mdworld.planck.networking
+package nl.mdworld.planck4.networking
 
 object SubsonicTemp {
     const val JUKEBOX_BASE_URL= "https://some.url/rest/"
