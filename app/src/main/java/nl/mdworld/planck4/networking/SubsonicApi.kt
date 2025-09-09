@@ -9,18 +9,21 @@ import nl.mdworld.planck4.SettingsManager
 
 class SubsonicApi {
 
-    suspend fun getPlaylistsKtor(context: Context): SubsonicPlaylistsResponse {
-
+    private fun areCredentialsValid(context: Context): Boolean {
         val apiToken = SettingsManager.getApiToken(context)
         val salt = SettingsManager.getSalt(context)
         val username = SettingsManager.getUsername(context)
-        if (apiToken == SettingsManager.DEFAULT_API_TOKEN || salt == SettingsManager.DEFAULT_SALT || salt.isEmpty() || username.isEmpty()) {
+        return !(apiToken == SettingsManager.DEFAULT_API_TOKEN || salt == SettingsManager.DEFAULT_SALT || salt.isEmpty() || username.isEmpty())
+    }
+
+    suspend fun getPlaylistsKtor(context: Context): SubsonicPlaylistsResponse {
+        if (!areCredentialsValid(context)) {
             return createDummyPlaylistsResponse()
         }
 
         val playerName = R.string.subsonic_player_name
         val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${apiToken}&s=${
+            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
                 SettingsManager.getSalt(
                     context
                 )
@@ -33,10 +36,7 @@ class SubsonicApi {
         context: Context,
         id: String
     ): SubsonicPlaylistDetailResponse {
-        val apiToken = SettingsManager.getApiToken(context)
-        val salt = SettingsManager.getSalt(context)
-        val username = SettingsManager.getUsername(context)
-        if (apiToken == SettingsManager.DEFAULT_API_TOKEN || salt == SettingsManager.DEFAULT_SALT || salt.isEmpty() || username.isEmpty()) {
+        if (!areCredentialsValid(context)) {
             return createDummyPlaylistResponse()
         }
 
@@ -126,5 +126,3 @@ class SubsonicApi {
     }
 
 }
-
-
