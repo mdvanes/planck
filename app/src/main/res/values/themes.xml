@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme using standard Material theme -->
+    <style name="Base.Theme.Planck" parent="Theme.MaterialComponents.DayNight">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/purple_500</item>
+    </style>
 
-    <style name="Theme.Planck" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Splash Screen Theme with black background -->
+    <style name="Theme.Planck.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/black</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimationDuration">300</item>
+        <item name="postSplashScreenTheme">@style/Base.Theme.Planck</item>
+    </style>
+
+    <style name="Theme.Planck" parent="Base.Theme.Planck" />
 </resources>
