@@ -16,7 +16,8 @@ fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(c
 
 enum class AppScreen {
     PLAYLISTS,
-    SONGS
+    SONGS,
+    SETTINGS
 }
 
 class PlanckAppState (private val context: Context) {
@@ -52,6 +53,10 @@ class PlanckAppState (private val context: Context) {
         currentScreen = AppScreen.PLAYLISTS
         selectedPlaylistId = null
         selectedPlaylistName = null
+    }
+
+    fun navigateToSettings() {
+        currentScreen = AppScreen.SETTINGS
     }
 }
 

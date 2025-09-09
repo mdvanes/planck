@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -30,7 +29,8 @@ import androidx.compose.ui.unit.dp
 fun PlanckBottomAppBar(
     currentScreen: AppScreen = AppScreen.PLAYLISTS,
     onNavigateBack: () -> Unit = {},
-    activeSong: Song? = null
+    activeSong: Song? = null,
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val mediaPlayer = MediaPlayer()
 
@@ -158,11 +158,11 @@ fun PlanckBottomAppBar(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* do something */ },
+                onClick = onNavigateToSettings,
                 containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
             ) {
-                Icon(Icons.Filled.Add, "Localized description")
+                Icon(Icons.Filled.Settings, "Settings")
             }
         }
     )

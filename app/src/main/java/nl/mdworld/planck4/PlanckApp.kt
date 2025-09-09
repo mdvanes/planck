@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck4.networking.SubsonicApi
 import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
+import nl.mdworld.planck4.SettingsScreen
 
 // Example: https://github.com/android/compose-samples/blob/main/Jetcaster/app/src/main/java/com/example/jetcaster/ui/JetcasterAppState.kt
 
@@ -64,7 +65,8 @@ fun PlanckApp(
             PlanckBottomAppBar(
                 currentScreen = appState.currentScreen,
                 onNavigateBack = { appState.navigateToPlaylists() },
-                activeSong = appState.activeSong
+                activeSong = appState.activeSong,
+                onNavigateToSettings = { appState.navigateToSettings() }
             )
         }
     ) { innerPadding ->
@@ -84,6 +86,11 @@ fun PlanckApp(
                         songs = appState.songs.toList(),
                         playlistTitle = appState.selectedPlaylistName ?: "Playlist",
                         onSongClick = { song -> appState.activeSong = song }
+                    )
+                }
+                AppScreen.SETTINGS -> {
+                    SettingsScreen(
+                        onNavigateBack = { appState.navigateToPlaylists() }
                     )
                 }
             }
