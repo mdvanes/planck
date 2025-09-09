@@ -19,6 +19,7 @@ In the "Device Manager", create a new virtual device with the following settings
 
 ## Publishing to Google Play Store
 
+- in build.gradle.kts, bump the versionCode and versionName
 - Go to Build > Generate Singed App Bundle(s) / APK(s) > Generate Bundles
 - Go to https://play.google.com/console/
 - Create a new internal test release for AAOS
