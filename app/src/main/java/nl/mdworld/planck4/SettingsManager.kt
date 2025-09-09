@@ -12,7 +12,7 @@ object SettingsManager {
     private const val DEFAULT_SERVER_URL = "https://example.com/rest/"
     private const val DEFAULT_USERNAME = "demo_user"
     private const val DEFAULT_SALT = "demo_salt_123"
-    private const val DEFAULT_API_TOKEN = "demo_token_456789"
+    const val DEFAULT_API_TOKEN = "demo_token_456789"
 
     fun saveServerUrl(context: Context, url: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
