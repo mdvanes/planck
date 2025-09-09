@@ -30,10 +30,9 @@ fun PlanckBottomAppBar(
     currentScreen: AppScreen = AppScreen.PLAYLISTS,
     onNavigateBack: () -> Unit = {},
     activeSong: Song? = null,
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    appState: PlanckAppState? = null
 ) {
-    val mediaPlayer = MediaPlayer()
-
     BottomAppBar(
         actions = {
             if (currentScreen == AppScreen.SONGS) {
@@ -78,76 +77,50 @@ fun PlanckBottomAppBar(
                     contentDescription = "Localized description",
                 )
             }
+
+            // Play/Pause button - use app state if available, otherwise fallback to example
             IconButton(onClick = {
-                // Source: https://www.geeksforgeeks.org/how-to-play-audio-from-url-in-android-using-jetpack-compose/
-                // on below line we are creating a variable for our audio url
-                val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+                if (appState != null && activeSong != null) {
+                    if (appState.isPlaying) {
+                        appState.pausePlayback()
+                    } else {
+                        appState.resumePlayback()
+                    }
+                } else {
+                    // Fallback to the original example implementation
+                    val mediaPlayer = MediaPlayer()
+                    val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
 
-                // on below line we are setting audio stream type as
-                // stream music on below line.
-                mediaPlayer.setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
+                    mediaPlayer.setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+                    )
 
-                // on below line we are running a try and catch block
-                // for our media player.
-                try {
-                    // on below line we are setting audio source
-                    // as audio url on below line.
-                    mediaPlayer.setDataSource(audioUrl)
-
-                    // on below line we are preparing
-                    // our media player.
-                    mediaPlayer.prepare()
-
-                    // on below line we are starting
-                    // our media player.
-                    mediaPlayer.start()
-
-                } catch (e: Exception) {
-
-                    // on below line we are
-                    // handling our exception.
-                    e.printStackTrace()
+                    try {
+                        mediaPlayer.setDataSource(audioUrl)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
-
-                // on below line we are displaying a toast message as audio player.
-                // TODO Toast.makeText(ctx, "Audio started playing..", Toast.LENGTH_SHORT).show()
             }) {
                 Icon(
-                    Icons.Filled.PlayArrow,
-                    contentDescription = "Play Example",
+                    imageVector = if (appState?.isPlaying == true) Icons.Filled.Close else Icons.Filled.PlayArrow,
+                    contentDescription = if (appState?.isPlaying == true) "Pause" else "Play"
                 )
             }
+
+            // Stop button
             IconButton(onClick = {
-                // on below line we are checking
-                // if media player is playing.
-                if (mediaPlayer.isPlaying) {
-                    // if media player is playing
-                    // we are stopping it on below line.
-                    mediaPlayer.stop()
-
-                    // on below line we are resetting
-                    // our media player.
-                    mediaPlayer.reset()
-
-                    // on below line we are calling release
-                    // to release our media player.
-                    mediaPlayer.release()
-
-                    // on below line we are displaying a toast message to pause audio
-                    // TODO Toast.makeText(ctx, "Audio has been  paused..", Toast.LENGTH_SHORT).show()
-                } else {
-                    // if audio player is not displaying we are displaying
-                    // below toast message
-                    // TODO Toast.makeText(ctx, "Audio not played..", Toast.LENGTH_SHORT).show()
+                if (appState != null) {
+                    appState.stopPlayback()
                 }
             }) {
                 Icon(
-                    Icons.Filled.Close,
-                    contentDescription = "Pause Example",
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Stop"
                 )
             }
         },

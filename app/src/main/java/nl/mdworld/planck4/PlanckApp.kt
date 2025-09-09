@@ -66,7 +66,8 @@ fun PlanckApp(
                 currentScreen = appState.currentScreen,
                 onNavigateBack = { appState.navigateToPlaylists() },
                 activeSong = appState.activeSong,
-                onNavigateToSettings = { appState.navigateToSettings() }
+                onNavigateToSettings = { appState.navigateToSettings() },
+                appState = appState
             )
         }
     ) { innerPadding ->
@@ -85,7 +86,7 @@ fun PlanckApp(
                     SongCardList(
                         songs = appState.songs.toList(),
                         playlistTitle = appState.selectedPlaylistName ?: "Playlist",
-                        onSongClick = { song -> appState.activeSong = song }
+                        onSongClick = { song -> appState.playStream(song) }
                     )
                 }
                 AppScreen.SETTINGS -> {
