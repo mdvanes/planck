@@ -2,6 +2,7 @@ package nl.mdworld.planck4
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import nl.mdworld.planck4.BuildConfig
 
@@ -68,7 +72,6 @@ fun SettingsScreen(
         // Network Settings Section
         SettingsSection(
             title = "Network Settings"
-
         ) {
             OutlinedTextField(
                 value = serverUrl,
@@ -100,6 +103,7 @@ fun SettingsScreen(
                 placeholder = { Text("random_salt_value") }
             )
 
+            var passwordVisibility by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = apiToken,
                 onValueChange = {
@@ -107,7 +111,19 @@ fun SettingsScreen(
                 },
                 label = { Text("API Token") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("your_api_token") }
+                placeholder = { Text("your_api_token") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Password
+                ),
+                visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    TextButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                        Text(
+                            text = if (passwordVisibility) "Hide" else "Show",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             )
 
             var cacheEnabled by remember { mutableStateOf(true) }
@@ -156,7 +172,6 @@ fun SettingsScreen(
                 label = "Padding",
                 value = "Padding",
             )
-
         }
     }
 }
