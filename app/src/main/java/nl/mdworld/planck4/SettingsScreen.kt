@@ -21,13 +21,19 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
 
-    // Load current server URL from settings
+    // Load current values from settings
     var serverUrl by remember { mutableStateOf(SettingsManager.getServerUrl(context)) }
+    var username by remember { mutableStateOf(SettingsManager.getUsername(context)) }
+    var salt by remember { mutableStateOf(SettingsManager.getSalt(context)) }
+    var apiToken by remember { mutableStateOf(SettingsManager.getApiToken(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
     // Track changes to enable save button
-    LaunchedEffect(serverUrl) {
-        hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context)
+    LaunchedEffect(serverUrl, username, salt, apiToken) {
+        hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context) ||
+                username != SettingsManager.getUsername(context) ||
+                salt != SettingsManager.getSalt(context) ||
+                apiToken != SettingsManager.getApiToken(context)
     }
 
     Column(
@@ -66,19 +72,40 @@ fun SettingsScreen(
                 value = serverUrl,
                 onValueChange = {
                     serverUrl = it
-                    hasUnsavedChanges = true
                 },
                 label = { Text("Server URL") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("https://your-server.com/rest/") }
             )
 
-            var username by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = username,
-                onValueChange = { username = it },
+                onValueChange = {
+                    username = it
+                },
                 label = { Text("Username") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("your_username") }
+            )
+
+            OutlinedTextField(
+                value = salt,
+                onValueChange = {
+                    salt = it
+                },
+                label = { Text("Salt") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("random_salt_value") }
+            )
+
+            OutlinedTextField(
+                value = apiToken,
+                onValueChange = {
+                    apiToken = it
+                },
+                label = { Text("API Token") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("your_api_token") }
             )
 
             var cacheEnabled by remember { mutableStateOf(true) }
@@ -92,6 +119,9 @@ fun SettingsScreen(
             Button(
                 onClick = {
                     SettingsManager.saveServerUrl(context, serverUrl)
+                    SettingsManager.saveUsername(context, username)
+                    SettingsManager.saveSalt(context, salt)
+                    SettingsManager.saveApiToken(context, apiToken)
                     hasUnsavedChanges = false
                 },
                 enabled = hasUnsavedChanges,

@@ -49,7 +49,7 @@ fun SongCard(song: Song) {
     val context = LocalContext.current
     val playerName = context.getString(R.string.subsonic_player_name)
     val apiConfig =
-        "?u=${SubsonicTemp.JUKEBOX_USERNAME}&t=${SubsonicTemp.JUKEBOX_API_TOKEN}&s=${SubsonicTemp.JUKEBOX_SALT}&v=1.16.0&c=${playerName}&f=json"
+        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
 
     Row(modifier = Modifier.padding(all = 8.dp)) {
         AsyncImage(
@@ -102,7 +102,7 @@ fun PlaylistHeaderCard(playlistTitle: String, coverArt: String?) {
     val context = LocalContext.current
     val playerName = context.getString(R.string.subsonic_player_name)
     val apiConfig =
-        "?u=${SubsonicTemp.JUKEBOX_USERNAME}&t=${SubsonicTemp.JUKEBOX_API_TOKEN}&s=${SubsonicTemp.JUKEBOX_SALT}&v=1.16.0&c=${playerName}&f=json"
+        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
 
     Row(
         modifier = Modifier

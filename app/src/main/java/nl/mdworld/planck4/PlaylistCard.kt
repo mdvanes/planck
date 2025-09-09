@@ -57,7 +57,7 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
     val context = LocalContext.current
     val playerName = R.string.subsonic_player_name
     val apiConfig =
-        "?u=${SubsonicTemp.JUKEBOX_USERNAME}&t=${SubsonicTemp.JUKEBOX_API_TOKEN}&s=${SubsonicTemp.JUKEBOX_SALT}&v=1.16.0&c=${playerName}&f=json"
+        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
 
     //val coroutineScope = rememberCoroutineScope()
     //val (coverArtId, setCoverArtId) = remember { mutableStateOf<String?>(null) }
