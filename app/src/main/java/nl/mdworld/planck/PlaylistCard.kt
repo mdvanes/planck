@@ -91,10 +91,10 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
             contentDescription = null,
             modifier = Modifier
                 // Set image size to some dp
-                .size(160.dp)
+                .size(100.dp)
                 // Clip image to be shaped as a circle
                 .clip(CircleShape)
-                .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                //.border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
         )
 
         // Add a horizontal space between the image and the column
@@ -107,12 +107,12 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
             label = "surfaceColor",
         )
 
-        Column(modifier = Modifier.height(160.dp), verticalArrangement = Arrangement.SpaceAround) {
+        Column( modifier = Modifier.align(Alignment.CenterVertically)) {
             Text(
                 text = playlist.name,
                 color = MaterialTheme.colorScheme.secondary,
                 style = MaterialTheme.typography.titleLarge,
-                fontSize = 60.sp
+                fontSize = 28.sp
             )
             // Add a vertical space between the author and message texts
             //Spacer(modifier = Modifier.height(4.dp))

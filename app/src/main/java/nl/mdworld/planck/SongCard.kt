@@ -115,7 +115,7 @@ fun PlaylistHeaderCard(playlistTitle: String, coverArt: String?) {
             else null,
             contentDescription = null,
             modifier = Modifier
-                .size(120.dp)
+                .size(100.dp)
                 .clip(CircleShape)
                 .border(1.5.dp, MaterialTheme.colorScheme.primary, CircleShape)
         )
