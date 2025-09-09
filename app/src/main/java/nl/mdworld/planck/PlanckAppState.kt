@@ -40,7 +40,6 @@ class PlanckAppState (private val context: Context) {
         private set
 
     var activeSong by mutableStateOf<Song?>(null)
-        private set
 
     fun navigateToSongs(playlistId: String, playlistName: String) {
         selectedPlaylistId = playlistId
@@ -53,10 +52,6 @@ class PlanckAppState (private val context: Context) {
         currentScreen = AppScreen.PLAYLISTS
         selectedPlaylistId = null
         selectedPlaylistName = null
-    }
-
-    fun setActiveSong(song: Song) {
-        activeSong = song
     }
 }
 

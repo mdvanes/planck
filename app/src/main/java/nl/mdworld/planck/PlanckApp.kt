@@ -83,7 +83,7 @@ fun PlanckApp(
                     SongCardList(
                         songs = appState.songs.toList(),
                         playlistTitle = appState.selectedPlaylistName ?: "Playlist",
-                        onSongClick = { song -> appState.setActiveSong(song) }
+                        onSongClick = { song -> appState.activeSong = song }
                     )
                 }
             }
