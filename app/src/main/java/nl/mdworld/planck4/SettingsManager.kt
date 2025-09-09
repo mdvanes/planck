@@ -10,8 +10,8 @@ object SettingsManager {
     private const val KEY_API_TOKEN = "api_token"
 
     private const val DEFAULT_SERVER_URL = "https://example.com/rest/"
-    private const val DEFAULT_USERNAME = "demo_user"
-    private const val DEFAULT_SALT = "demo_salt_123"
+    const val DEFAULT_USERNAME = "demo_user"
+    const val DEFAULT_SALT = "demo_salt_123"
     const val DEFAULT_API_TOKEN = "demo_token_456789"
 
     fun saveServerUrl(context: Context, url: String) {

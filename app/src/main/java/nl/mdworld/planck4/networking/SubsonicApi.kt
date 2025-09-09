@@ -10,27 +10,46 @@ import nl.mdworld.planck4.SettingsManager
 class SubsonicApi {
 
     suspend fun getPlaylistsKtor(context: Context): SubsonicPlaylistsResponse {
-        // Hidden feature: if API token is default, return dummy playlists
+
         val apiToken = SettingsManager.getApiToken(context)
-        if (apiToken == SettingsManager.DEFAULT_API_TOKEN) {
+        val salt = SettingsManager.getSalt(context)
+        val username = SettingsManager.getUsername(context)
+        if (apiToken == SettingsManager.DEFAULT_API_TOKEN || salt == SettingsManager.DEFAULT_SALT || salt.isEmpty() || username.isEmpty()) {
             return createDummyPlaylistsResponse()
         }
 
         val playerName = R.string.subsonic_player_name
         val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${apiToken}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylists${apiConfig}").body()
+            "?u=${SettingsManager.getUsername(context)}&t=${apiToken}&s=${
+                SettingsManager.getSalt(
+                    context
+                )
+            }&v=1.16.0&c=${playerName}&f=json"
+        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylists${apiConfig}")
+            .body()
     }
 
     suspend fun getPlaylistKtor(
         context: Context,
         id: String
     ): SubsonicPlaylistDetailResponse {
+        val apiToken = SettingsManager.getApiToken(context)
+        val salt = SettingsManager.getSalt(context)
+        val username = SettingsManager.getUsername(context)
+        if (apiToken == SettingsManager.DEFAULT_API_TOKEN || salt == SettingsManager.DEFAULT_SALT || salt.isEmpty() || username.isEmpty()) {
+            return createDummyPlaylistResponse()
+        }
+
         val playerName = R.string.subsonic_player_name
         val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
+            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
+                SettingsManager.getSalt(
+                    context
+                )
+            }&v=1.16.0&c=${playerName}&f=json"
 
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylist${apiConfig}&id=${id}").body()
+        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylist${apiConfig}&id=${id}")
+            .body()
     }
 
     private fun createDummyPlaylistsResponse(): SubsonicPlaylistsResponse {
@@ -71,5 +90,41 @@ class SubsonicApi {
         )
     }
 
+    private fun createDummyPlaylistResponse(): SubsonicPlaylistDetailResponse {
+        val dummySongs = arrayListOf(
+            SubsonicSong(
+                id = "fake-1",
+                coverArt = "dummy-cover-1",
+                title = "Dummy Song One",
+                artist = "John Doe",
+                duration = 245,
+                track = 2
+            ),
+            SubsonicSong(
+                id = "fake-2",
+                coverArt = "dummy-cover-2",
+                title = "Imaginary Track Two",
+                artist = "Jane Smith",
+                duration = 425,
+                track = 1,
+            ),
+
+            )
+
+        return SubsonicPlaylistDetailResponse(
+            sr = SubsonicPlaylistDetailResponse2(
+                playlist = SubsonicPlaylistDetail(
+                    id = "fake-1",
+                    name = "🎵 Fake Hits of the 80s",
+                    coverArt = "dummy-cover-1",
+                    songCount = dummySongs.size,
+                    duration = 3600,
+                    songs = dummySongs
+                )
+            )
+        )
+    }
+
 }
+
 
