@@ -51,11 +51,6 @@ fun PlanckBottomAppBar(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Now Playing:",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
                         text = activeSong.title,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
