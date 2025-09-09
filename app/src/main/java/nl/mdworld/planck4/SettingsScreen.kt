@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import nl.mdworld.planck4.BuildConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,13 +122,24 @@ fun SettingsScreen(
         ) {
             SettingsItem(
                 label = "Version",
-                value = "1.0.0"
+                value = BuildConfig.VERSION_NAME
             )
 
             SettingsItem(
                 label = "Build",
-                value = "Debug"
+                value = if (BuildConfig.DEBUG) "Debug" else "Release"
             )
+
+            SettingsItem(
+                label = "Padding",
+                value = "Padding",
+            )
+
+            SettingsItem(
+                label = "Padding",
+                value = "Padding",
+            )
+
         }
     }
 }
