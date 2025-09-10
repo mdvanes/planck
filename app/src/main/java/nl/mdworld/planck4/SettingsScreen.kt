@@ -55,14 +55,16 @@ fun SettingsScreen(
     var username by remember { mutableStateOf(SettingsManager.getUsername(context)) }
     var salt by remember { mutableStateOf(SettingsManager.getSalt(context)) }
     var apiToken by remember { mutableStateOf(SettingsManager.getApiToken(context)) }
+    var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
     // Track changes to enable save button
-    LaunchedEffect(serverUrl, username, salt, apiToken) {
+    LaunchedEffect(serverUrl, username, salt, apiToken, radioUrl) {
         hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context) ||
                 username != SettingsManager.getUsername(context) ||
                 salt != SettingsManager.getSalt(context) ||
-                apiToken != SettingsManager.getApiToken(context)
+                apiToken != SettingsManager.getApiToken(context) ||
+                radioUrl != SettingsManager.getRadioUrl(context)
     }
 
     Column(
@@ -93,9 +95,9 @@ fun SettingsScreen(
 
         HorizontalDivider()
 
-        // Network Settings Section
+        // Subsonic Settings Section
         SettingsSection(
-            title = "Network Settings"
+            title = "Subsonic Settings"
         ) {
             OutlinedTextField(
                 value = serverUrl,
@@ -163,6 +165,16 @@ fun SettingsScreen(
                 }
             )
 
+            OutlinedTextField(
+                value = radioUrl,
+                onValueChange = {
+                    radioUrl = it
+                },
+                label = { Text("Radio URL") },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("https://your-radio.com/stream/") }
+            )
+
             var cacheEnabled by remember { mutableStateOf(true) }
             SettingsSwitch(
                 label = "Enable Caching",
@@ -177,6 +189,7 @@ fun SettingsScreen(
                     SettingsManager.saveUsername(context, username)
                     SettingsManager.saveSalt(context, salt)
                     SettingsManager.saveApiToken(context, apiToken)
+                    SettingsManager.saveRadioUrl(context, radioUrl)
                     hasUnsavedChanges = false
                 },
                 enabled = hasUnsavedChanges,

@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -39,6 +40,8 @@ fun PlanckBottomAppBar(
     onNavigateToSettings: () -> Unit = {},
     appState: PlanckAppState? = null
 ) {
+    val context = LocalContext.current
+
     Column {
         // Progress bar at the top
         if (activeSong != null && appState != null) {
@@ -105,7 +108,7 @@ fun PlanckBottomAppBar(
                     } else {
                         // Fallback to the original example implementation
                         val mediaPlayer = MediaPlayer()
-                        val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+                        val audioUrl = SettingsManager.getRadioUrl(context)
 
                         mediaPlayer.setAudioAttributes(
                             AudioAttributes.Builder()
@@ -169,7 +172,7 @@ fun PlanckBottomAppBar(
                     } else {
                         // Fallback to the original example implementation
                         val mediaPlayer = MediaPlayer()
-                        val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+                        val audioUrl = SettingsManager.getRadioUrl(context)
 
                         mediaPlayer.setAudioAttributes(
                             AudioAttributes.Builder()
