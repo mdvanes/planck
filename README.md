@@ -22,4 +22,4 @@ In the "Device Manager", create a new virtual device with the following settings
 - in build.gradle.kts, bump the versionCode and versionName
 - Go to Build > Generate Singed App Bundle(s) / APK(s) > Generate Bundles
 - Go to https://play.google.com/console/
-- Create a new internal test release for AAOS
+- Create a new Closed test release for the Android Automotive track. Internal tests releases will *not* be shown in the car.
