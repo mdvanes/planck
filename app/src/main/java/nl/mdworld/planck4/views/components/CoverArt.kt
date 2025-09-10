@@ -1,5 +1,6 @@
 package nl.mdworld.planck4.views.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -34,12 +35,14 @@ fun CoverArt(
                 modifier = Modifier
                     .size(size)
                     .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondary)
             )
         } else {
             Surface(
                 modifier = Modifier
                     .size(size)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.secondary),
                 color = MaterialTheme.colorScheme.surface
             ) {}
         }

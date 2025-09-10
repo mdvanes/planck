@@ -1,5 +1,6 @@
 package nl.mdworld.planck4.views.library
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +48,7 @@ fun ArtistCard(artist: Artist, appState: PlanckAppState? = null) {
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.secondary)
         )
 
         Spacer(modifier = Modifier.width(16.dp))
