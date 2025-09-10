@@ -31,9 +31,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+
+@Composable
+private fun NavigationButton(
+    icon: ImageVector,
+    contentDescription: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    IconButton(onClick = onClick) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = if (isSelected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
+        )
+    }
+}
 
 @Composable
 fun PlanckBottomAppBar(
@@ -223,53 +244,28 @@ fun PlanckBottomAppBar(
                 }
 
                 // Main navigation buttons - Playlists, Library, Settings
-                IconButton(
-                    onClick = {
-                        appState?.navigateToPlaylists()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.LibraryMusic,
-                        contentDescription = "Playlists",
-                        tint = if (currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
+                NavigationButton(
+                    icon = Icons.Filled.LibraryMusic,
+                    contentDescription = "Playlists",
+                    isSelected = currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS,
+                    onClick = { appState?.navigateToPlaylists() }
+                )
 
-                IconButton(
-                    onClick = {
-                        appState?.navigateToArtists()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Folder,
-                        contentDescription = "Library",
-                        tint = if (currentScreen == AppScreen.ARTISTS ||
+                NavigationButton(
+                    icon = Icons.Filled.Folder,
+                    contentDescription = "Library",
+                    isSelected = currentScreen == AppScreen.ARTISTS ||
                             currentScreen == AppScreen.ALBUMS ||
-                            currentScreen == AppScreen.ALBUM_SONGS) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
+                            currentScreen == AppScreen.ALBUM_SONGS,
+                    onClick = { appState?.navigateToArtists() }
+                )
 
-                IconButton(
+                NavigationButton(
+                    icon = Icons.Filled.Settings,
+                    contentDescription = "Settings",
+                    isSelected = currentScreen == AppScreen.SETTINGS,
                     onClick = onNavigateToSettings
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Settings",
-                        tint = if (currentScreen == AppScreen.SETTINGS) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
+                )
             },
             //floatingActionButton = {
             //    FloatingActionButton(
