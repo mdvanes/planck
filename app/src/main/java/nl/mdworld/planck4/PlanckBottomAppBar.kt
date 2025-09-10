@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
@@ -60,11 +62,33 @@ fun PlanckBottomAppBar(
 
         BottomAppBar(
             actions = {
-                if (currentScreen == AppScreen.SONGS) {
-                    IconButton(onClick = onNavigateBack) {
+                // Back button - handles different navigation flows
+                if (currentScreen == AppScreen.SONGS ||
+                    currentScreen == AppScreen.ALBUMS ||
+                    currentScreen == AppScreen.ALBUM_SONGS) {
+                    IconButton(onClick = {
+                        when (currentScreen) {
+                            AppScreen.SONGS -> onNavigateBack() // Back to playlists
+                            AppScreen.ALBUMS -> appState?.navigateToArtists() // Back to artists
+                            AppScreen.ALBUM_SONGS -> {
+                                // Back to albums of the current artist
+                                if (appState?.selectedArtistId != null && appState.selectedArtistName != null) {
+                                    appState.navigateToAlbums(appState.selectedArtistId!!, appState.selectedArtistName!!)
+                                } else {
+                                    appState?.navigateToArtists()
+                                }
+                            }
+                            else -> onNavigateBack()
+                        }
+                    }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back to playlists"
+                            contentDescription = when (currentScreen) {
+                                AppScreen.SONGS -> "Back to playlists"
+                                AppScreen.ALBUMS -> "Back to artists"
+                                AppScreen.ALBUM_SONGS -> "Back to albums"
+                                else -> "Back"
+                            }
                         )
                     }
                 }
@@ -94,10 +118,45 @@ fun PlanckBottomAppBar(
                     }
                 }
 
-                // Spacer to push buttons to the right
+                // Spacer to push navigation buttons to the right
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Play/Pause button - use app state if available, otherwise fallback to example
+                // Main navigation buttons - Playlists and Albums
+                IconButton(
+                    onClick = {
+                        appState?.navigateToPlaylists()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.LibraryMusic,
+                        contentDescription = "Playlists",
+                        tint = if (currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        appState?.navigateToArtists()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Album,
+                        contentDescription = "Albums",
+                        tint = if (currentScreen == AppScreen.ARTISTS ||
+                                  currentScreen == AppScreen.ALBUMS ||
+                                  currentScreen == AppScreen.ALBUM_SONGS) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
+
+                // Media control buttons
                 IconButton(onClick = {
                     if (appState != null && activeSong != null) {
                         if (appState.isPlaying) {
