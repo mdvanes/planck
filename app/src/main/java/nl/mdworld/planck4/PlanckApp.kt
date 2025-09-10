@@ -1,6 +1,9 @@
 package nl.mdworld.planck4
 
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -8,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck4.networking.SubsonicApi
 import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
@@ -71,11 +75,15 @@ fun PlanckApp(
             )
         }
     ) { innerPadding ->
-        // TODO how to remove the unused innerPadding param?
-        println(innerPadding)
-        // A surface container using the 'background' color from the theme
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = innerPadding.calculateTopPadding(),
+                    start = innerPadding.calculateStartPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    end = innerPadding.calculateEndPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    bottom = 0.dp // Remove excessive bottom padding
+                ),
             color = MaterialTheme.colorScheme.background
         ) {
             when (appState.currentScreen) {
