@@ -94,6 +94,10 @@ class PlanckAppState (private val context: Context) {
             activeSong = song
             currentSongIndex = songs.indexOfFirst { it.id == song.id }.takeIf { it >= 0 } ?: 0
 
+            // Reset progress for new song
+            currentPosition = 0
+            duration = 0
+
             // Create new MediaPlayer instance
             mediaPlayer = MediaPlayer().apply {
                 setAudioAttributes(
@@ -114,6 +118,7 @@ class PlanckAppState (private val context: Context) {
                     start()
                     this@PlanckAppState.isPlaying = true
                     this@PlanckAppState.duration = duration
+                    this@PlanckAppState.currentPosition = 0
                     startProgressUpdates()
                 }
 
