@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -137,26 +138,35 @@ fun PlanckBottomAppBar(
 
                 // Radio player
                 IconButton(onClick = {
-                    val mediaPlayer = MediaPlayer()
-                    val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+                    if (appState != null) {
+                        if (appState.isRadioPlaying) {
+                            appState.stopRadio()
+                        } else {
+                            appState.startRadio()
+                        }
+                    } else {
+                        // Fallback to the original example implementation
+                        val mediaPlayer = MediaPlayer()
+                        val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
 
-                    mediaPlayer.setAudioAttributes(
-                        AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-                    )
+                        mediaPlayer.setAudioAttributes(
+                            AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .build()
+                        )
 
-                    try {
-                        mediaPlayer.setDataSource(audioUrl)
-                        mediaPlayer.prepare()
-                        mediaPlayer.start()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                        try {
+                            mediaPlayer.setDataSource(audioUrl)
+                            mediaPlayer.prepare()
+                            mediaPlayer.start()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 }) {
                     Icon(
-                        imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.Radio,
-                        contentDescription = if (appState?.isPlaying == true) "Pause" else "Radio"
+                        imageVector = if (appState?.isRadioPlaying == true) Icons.Filled.StopCircle else Icons.Filled.Radio,
+                        contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio"
                     )
                 }
             },

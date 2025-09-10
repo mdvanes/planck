@@ -49,6 +49,11 @@ class PlanckAppState (private val context: Context) {
     private var mediaPlayer: MediaPlayer? = null
     var isPlaying by mutableStateOf(false)
 
+    // Radio state management
+    private var radioPlayer: MediaPlayer? = null
+    var isRadioPlaying by mutableStateOf(false)
+        private set
+
     // Progress tracking
     var currentPosition by mutableStateOf(0)
         private set
@@ -160,6 +165,58 @@ class PlanckAppState (private val context: Context) {
         }
     }
 
+    // Radio control methods
+    fun startRadio() {
+        try {
+            // Stop any current radio playback
+            stopRadio()
+
+            // Stop regular music playback to avoid conflicts
+            stopPlayback()
+
+            radioPlayer = MediaPlayer().apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+
+                val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+                setDataSource(audioUrl)
+                prepareAsync()
+
+                setOnPreparedListener {
+                    start()
+                    this@PlanckAppState.isRadioPlaying = true
+                }
+
+                setOnErrorListener { _, _, _ ->
+                    this@PlanckAppState.isRadioPlaying = false
+                    false
+                }
+
+                setOnCompletionListener {
+                    this@PlanckAppState.isRadioPlaying = false
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            isRadioPlaying = false
+        }
+    }
+
+    fun stopRadio() {
+        radioPlayer?.let { player ->
+            if (player.isPlaying) {
+                player.stop()
+            }
+            player.reset()
+            player.release()
+        }
+        radioPlayer = null
+        isRadioPlaying = false
+    }
+
     private fun startProgressUpdates() {
         stopProgressUpdates() // Stop any existing updates
         progressUpdateJob = progressUpdateScope.launch {
@@ -186,6 +243,7 @@ class PlanckAppState (private val context: Context) {
     // Clean up resources when the state is destroyed
     fun cleanup() {
         stopPlayback()
+        stopRadio()
         progressUpdateScope.cancel()
     }
 }
