@@ -177,7 +177,11 @@ fun PlanckApp(
         ) {
             when (appState.currentScreen) {
                 AppScreen.PLAYLISTS -> {
-                    PlaylistCardList(appState.playlists, appState)
+                    PlaylistCardList(
+                        modifier = Modifier,
+                        playlists = appState.playlists,
+                        appState = appState
+                    )
                 }
                 AppScreen.SONGS -> {
                     SongCardList(
