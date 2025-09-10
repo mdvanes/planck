@@ -10,6 +10,7 @@
 <!--    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>-->
 
     <uses-feature android:name="android.hardware.type.automotive" android:required="true"/>
+    <uses-feature android:name="android.software.car.templates_host" android:required="true"/>
     <uses-feature android:name="android.hardware.wifi" android:required="false"/>
     <uses-feature android:name="android.hardware.screen.portrait" android:required="false"/>
     <uses-feature android:name="android.hardware.screen.landscape" android:required="false"/>
@@ -34,6 +35,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".CarAppActivity"
+            android:exported="true"
+            android:permission="androidx.car.app.ACCESS_SURFACE">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.MEDIA" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.car.app.minCarApiLevel"
+                android:value="3" />
+            <meta-data
+                android:name="androidx.car.app.hosts"
+                android:value="*" />
+        </service>
         <service
             android:name=".ClusterCarAppService"
             android:exported="true"
