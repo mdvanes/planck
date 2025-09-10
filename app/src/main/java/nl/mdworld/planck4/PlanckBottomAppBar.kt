@@ -8,9 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
@@ -129,6 +130,31 @@ fun PlanckBottomAppBar(
                     Icon(
                         imageVector = Icons.Filled.Stop,
                         contentDescription = "Stop"
+                    )
+                }
+
+                // Radio player
+                IconButton(onClick = {
+                    val mediaPlayer = MediaPlayer()
+                    val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+
+                    mediaPlayer.setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+                    )
+
+                    try {
+                        mediaPlayer.setDataSource(audioUrl)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }) {
+                    Icon(
+                        imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.Radio,
+                        contentDescription = if (appState?.isPlaying == true) "Pause" else "Radio"
                     )
                 }
             },
