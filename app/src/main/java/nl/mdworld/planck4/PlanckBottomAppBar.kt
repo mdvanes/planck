@@ -121,40 +121,7 @@ fun PlanckBottomAppBar(
                 // Spacer to push navigation buttons to the right
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Main navigation buttons - Playlists and Albums
-                IconButton(
-                    onClick = {
-                        appState?.navigateToPlaylists()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.LibraryMusic,
-                        contentDescription = "Playlists",
-                        tint = if (currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
 
-                IconButton(
-                    onClick = {
-                        appState?.navigateToArtists()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Album,
-                        contentDescription = "Albums",
-                        tint = if (currentScreen == AppScreen.ARTISTS ||
-                                  currentScreen == AppScreen.ALBUMS ||
-                                  currentScreen == AppScreen.ALBUM_SONGS) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
 
                 // Media control buttons
                 IconButton(onClick = {
@@ -253,16 +220,65 @@ fun PlanckBottomAppBar(
                         contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio"
                     )
                 }
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onNavigateToSettings,
-                    containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+
+                // Main navigation buttons - Playlists and Albums
+                IconButton(
+                    onClick = {
+                        appState?.navigateToPlaylists()
+                    }
                 ) {
-                    Icon(Icons.Filled.Settings, "Settings")
+                    Icon(
+                        imageVector = Icons.Filled.LibraryMusic,
+                        contentDescription = "Playlists",
+                        tint = if (currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
                 }
-            }
+
+                IconButton(
+                    onClick = {
+                        appState?.navigateToArtists()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Album,
+                        contentDescription = "Albums",
+                        tint = if (currentScreen == AppScreen.ARTISTS ||
+                            currentScreen == AppScreen.ALBUMS ||
+                            currentScreen == AppScreen.ALBUM_SONGS) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
+
+                IconButton(
+                    onClick = onNavigateToSettings
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings",
+                        tint = if (currentScreen == AppScreen.SETTINGS) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
+            },
+            //floatingActionButton = {
+            //    FloatingActionButton(
+            //        onClick = onNavigateToSettings,
+            //        containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+            //        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+            //    ) {
+            //        Icon(Icons.Filled.Settings, "Settings")
+            //    }
+            //}
         )
     }
 }
