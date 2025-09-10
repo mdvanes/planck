@@ -16,7 +16,7 @@ import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
 
 @Composable
-fun AlbumCoverArt(
+fun CoverArt(
     coverArtId: String?,
     size: Dp = 100.dp,
     modifier: Modifier = Modifier

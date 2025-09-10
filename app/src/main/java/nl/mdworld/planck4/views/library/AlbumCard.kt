@@ -15,7 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.mdworld.planck4.PlanckAppState
-import nl.mdworld.planck4.views.components.AlbumCoverArt
+import nl.mdworld.planck4.views.components.CoverArt
 
 @Composable
 fun AlbumCard(album: Album, appState: PlanckAppState? = null) {
@@ -27,7 +27,7 @@ fun AlbumCard(album: Album, appState: PlanckAppState? = null) {
                 appState?.navigateToAlbumSongs(album.id, album.name)
             }
     ) {
-        AlbumCoverArt(coverArtId = album.coverArt)
+        CoverArt(coverArtId = album.coverArt)
 
         Spacer(modifier = Modifier.width(16.dp))
 
