@@ -1,10 +1,11 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.song
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +39,8 @@ import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import nl.mdworld.planck4.R
+import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 data class Song(
@@ -290,7 +293,7 @@ fun SongCardList(
         onRefresh = { /* TODO: Implement refresh */ }
     )
 
-    androidx.compose.foundation.layout.Box(
+    Box(
         modifier = modifier.pullRefresh(pullRefreshState)
     ) {
         LazyColumn {

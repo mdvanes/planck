@@ -1,5 +1,7 @@
 package nl.mdworld.planck4
 
+import nl.mdworld.planck4.views.playlists.Playlist
+
 /**
  * SampleData for Jetpack Compose Tutorial 
  */

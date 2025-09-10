@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,6 +42,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import nl.mdworld.planck4.BuildConfig
+import nl.mdworld.planck4.SettingsManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

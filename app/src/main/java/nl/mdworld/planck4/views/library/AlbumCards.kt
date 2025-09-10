@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.library
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -42,6 +42,9 @@ import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import nl.mdworld.planck4.PlanckAppState
+import nl.mdworld.planck4.R
+import nl.mdworld.planck4.SettingsManager
 
 @Composable
 fun ArtistCard(artist: Artist, appState: PlanckAppState? = null) {

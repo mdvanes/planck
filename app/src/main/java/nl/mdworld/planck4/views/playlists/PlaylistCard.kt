@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.playlists
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
@@ -34,7 +34,12 @@ import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import nl.mdworld.planck4.PlanckAppState
+import nl.mdworld.planck4.R
+import nl.mdworld.planck4.SampleData
+import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.networking.ktorHttpClient
+import nl.mdworld.planck4.setSelectedPlaylist
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 data class Playlist(val id: String, val coverArt: String, val name: String)

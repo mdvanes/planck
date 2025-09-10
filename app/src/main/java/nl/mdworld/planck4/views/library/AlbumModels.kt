@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.library
 
 data class Artist(
     val id: String,
