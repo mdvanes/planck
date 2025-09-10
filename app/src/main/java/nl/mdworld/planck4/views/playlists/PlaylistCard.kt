@@ -1,6 +1,5 @@
 package nl.mdworld.planck4.views.playlists
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -28,7 +27,6 @@ import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.setSelectedPlaylist
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
-@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
     val context = LocalContext.current
