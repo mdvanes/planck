@@ -105,7 +105,7 @@ class PlanckAppState (private val context: Context) {
         currentScreen = AppScreen.SETTINGS
     }
 
-    // Album navigation methods
+    // Library navigation methods
     fun navigateToArtists() {
         currentScreen = AppScreen.ARTISTS
         // Clear any previous album selection

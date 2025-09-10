@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.StopCircle
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -221,7 +222,7 @@ fun PlanckBottomAppBar(
                     )
                 }
 
-                // Main navigation buttons - Playlists and Albums
+                // Main navigation buttons - Playlists, Library, Settings
                 IconButton(
                     onClick = {
                         appState?.navigateToPlaylists()
@@ -244,8 +245,8 @@ fun PlanckBottomAppBar(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Album,
-                        contentDescription = "Albums",
+                        imageVector = Icons.Filled.Folder,
+                        contentDescription = "Library",
                         tint = if (currentScreen == AppScreen.ARTISTS ||
                             currentScreen == AppScreen.ALBUMS ||
                             currentScreen == AppScreen.ALBUM_SONGS) {
