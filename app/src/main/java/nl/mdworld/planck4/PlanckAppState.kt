@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.*
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -47,6 +48,16 @@ class PlanckAppState (private val context: Context) {
     // MediaPlayer for audio streaming
     private var mediaPlayer: MediaPlayer? = null
     var isPlaying by mutableStateOf(false)
+
+    // Progress tracking
+    var currentPosition by mutableStateOf(0)
+        private set
+    var duration by mutableStateOf(0)
+        private set
+
+    // Coroutine for progress updates
+    private var progressUpdateJob: Job? = null
+    private val progressUpdateScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     fun navigateToSongs(playlistId: String, playlistName: String) {
         selectedPlaylistId = playlistId
@@ -92,24 +103,30 @@ class PlanckAppState (private val context: Context) {
                 setOnPreparedListener {
                     start()
                     this@PlanckAppState.isPlaying = true
+                    this@PlanckAppState.duration = duration
+                    startProgressUpdates()
                 }
 
                 setOnErrorListener { _, _, _ ->
                     this@PlanckAppState.isPlaying = false
+                    stopProgressUpdates()
                     false
                 }
 
                 setOnCompletionListener {
                     this@PlanckAppState.isPlaying = false
+                    stopProgressUpdates()
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
             isPlaying = false
+            stopProgressUpdates()
         }
     }
 
     fun stopPlayback() {
+        stopProgressUpdates()
         mediaPlayer?.let { player ->
             if (player.isPlaying) {
                 player.stop()
@@ -119,6 +136,8 @@ class PlanckAppState (private val context: Context) {
         }
         mediaPlayer = null
         isPlaying = false
+        currentPosition = 0
+        duration = 0
     }
 
     fun pausePlayback() {
@@ -126,6 +145,7 @@ class PlanckAppState (private val context: Context) {
             if (player.isPlaying) {
                 player.pause()
                 isPlaying = false
+                stopProgressUpdates()
             }
         }
     }
@@ -135,13 +155,38 @@ class PlanckAppState (private val context: Context) {
             if (!player.isPlaying) {
                 player.start()
                 isPlaying = true
+                startProgressUpdates()
             }
         }
+    }
+
+    private fun startProgressUpdates() {
+        stopProgressUpdates() // Stop any existing updates
+        progressUpdateJob = progressUpdateScope.launch {
+            while (isPlaying && mediaPlayer != null) {
+                try {
+                    mediaPlayer?.let { player ->
+                        if (player.isPlaying) {
+                            currentPosition = player.currentPosition
+                        }
+                    }
+                    delay(100) // Update every 100ms for smooth progress
+                } catch (e: Exception) {
+                    break
+                }
+            }
+        }
+    }
+
+    private fun stopProgressUpdates() {
+        progressUpdateJob?.cancel()
+        progressUpdateJob = null
     }
 
     // Clean up resources when the state is destroyed
     fun cleanup() {
         stopPlayback()
+        progressUpdateScope.cancel()
     }
 }
 
