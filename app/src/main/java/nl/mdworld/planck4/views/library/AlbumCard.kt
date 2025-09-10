@@ -1,6 +1,7 @@
 package nl.mdworld.planck4.views.library
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -37,17 +39,24 @@ fun AlbumCard(album: Album, appState: PlanckAppState? = null) {
             appState?.navigateToAlbumSongs(album.id, album.name)
         }
     ) {
-        AsyncImage(
-            model = if (album.coverArt != null) {
-                "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${album.coverArt}"
+        Box(modifier = Modifier.size(100.dp)) {
+            if (album.coverArt != null) {
+                AsyncImage(
+                    model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${album.coverArt}",
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                )
             } else {
-                null
-            },
-            contentDescription = null,
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-        )
+                Surface(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape),
+                    color = MaterialTheme.colorScheme.surface
+                ) {}
+            }
+        }
 
         Spacer(modifier = Modifier.width(16.dp))
 
