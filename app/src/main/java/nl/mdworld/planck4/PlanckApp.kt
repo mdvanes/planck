@@ -86,6 +86,7 @@ fun PlanckApp(
                     SongCardList(
                         songs = appState.songs.toList(),
                         playlistTitle = appState.selectedPlaylistName ?: "Playlist",
+                        currentlyPlayingSong = appState.activeSong,
                         onSongClick = { song -> appState.playStream(song) }
                     )
                 }

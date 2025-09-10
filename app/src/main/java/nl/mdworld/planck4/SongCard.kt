@@ -1,6 +1,7 @@
 package nl.mdworld.planck4
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +16,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -136,7 +142,12 @@ fun PlaylistHeaderCard(playlistTitle: String, coverArt: String?) {
 }
 
 @Composable
-fun SongListItem(song: Song, index: Int, onClick: (Song) -> Unit = {}) {
+fun SongListItem(
+    song: Song,
+    index: Int,
+    isCurrentlyPlaying: Boolean = false,
+    onClick: (Song) -> Unit = {}
+) {
     val durationText = if (song.duration != null) {
         val minutes = song.duration / 60
         val seconds = song.duration % 60
@@ -145,20 +156,52 @@ fun SongListItem(song: Song, index: Int, onClick: (Song) -> Unit = {}) {
         ""
     }
 
+    val backgroundColor = if (isCurrentlyPlaying) {
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+    } else {
+        Color.Transparent
+    }
+
+    val textColor = if (isCurrentlyPlaying) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    val artistTextColor = if (isCurrentlyPlaying) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(
+                color = backgroundColor,
+                shape = RoundedCornerShape(8.dp)
+            )
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onClick(song) },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "${index + 1}",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
-            fontSize = 16.sp,
-            modifier = Modifier.width(32.dp)
-        )
+        if (isCurrentlyPlaying) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Currently Playing",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        } else {
+            Text(
+                text = "${index + 1}",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 16.sp,
+                modifier = Modifier.width(32.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 
@@ -167,16 +210,16 @@ fun SongListItem(song: Song, index: Int, onClick: (Song) -> Unit = {}) {
         ) {
             Text(
                 text = song.title,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = textColor,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.Medium
             )
 
             if (song.artist != null) {
                 Text(
                     text = song.artist,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = artistTextColor,
                     style = MaterialTheme.typography.bodyMedium,
                     fontSize = 14.sp
                 )
@@ -186,7 +229,7 @@ fun SongListItem(song: Song, index: Int, onClick: (Song) -> Unit = {}) {
         if (durationText.isNotEmpty()) {
             Text(
                 text = durationText,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
                 fontSize = 14.sp
             )
@@ -239,6 +282,7 @@ fun SongCardList(
     modifier: Modifier = Modifier,
     songs: List<Song>,
     playlistTitle: String = "Playlist",
+    currentlyPlayingSong: Song? = null,
     onSongClick: (Song) -> Unit = {}
 ) {
     val pullRefreshState = rememberPullRefreshState(
@@ -260,7 +304,12 @@ fun SongCardList(
 
             // Remaining items: Song list items with index, title, artist, and duration
             itemsIndexed(songs) { index, song ->
-                SongListItem(song = song, index = index, onClick = onSongClick)
+                SongListItem(
+                    song = song,
+                    index = index,
+                    isCurrentlyPlaying = currentlyPlayingSong?.id == song.id,
+                    onClick = onSongClick
+                )
             }
         }
         PullRefreshIndicator(
