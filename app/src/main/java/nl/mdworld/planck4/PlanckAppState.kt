@@ -45,6 +45,10 @@ class PlanckAppState (private val context: Context) {
 
     var activeSong by mutableStateOf<Song?>(null)
 
+    // Current song index in the playlist for auto-progression
+    var currentSongIndex by mutableStateOf(0)
+        private set
+
     // MediaPlayer for audio streaming
     private var mediaPlayer: MediaPlayer? = null
     var isPlaying by mutableStateOf(false)
@@ -86,8 +90,9 @@ class PlanckAppState (private val context: Context) {
             // Stop current playback if any
             stopPlayback()
 
-            // Set the active song
+            // Set the active song and find its index in the current playlist
             activeSong = song
+            currentSongIndex = songs.indexOfFirst { it.id == song.id }.takeIf { it >= 0 } ?: 0
 
             // Create new MediaPlayer instance
             mediaPlayer = MediaPlayer().apply {
@@ -121,6 +126,8 @@ class PlanckAppState (private val context: Context) {
                 setOnCompletionListener {
                     this@PlanckAppState.isPlaying = false
                     stopProgressUpdates()
+                    // Automatically play next song in playlist
+                    playNextSong()
                 }
             }
         } catch (e: Exception) {
@@ -163,6 +170,41 @@ class PlanckAppState (private val context: Context) {
                 startProgressUpdates()
             }
         }
+    }
+
+    // Play the next song in the playlist
+    private fun playNextSong() {
+        if (songs.isNotEmpty()) {
+            if (currentSongIndex < songs.size - 1) {
+                // Move to the next song in the list
+                currentSongIndex++
+            } else {
+                // Loop back to the first song when reaching the end
+                currentSongIndex = 0
+            }
+            val nextSong = songs[currentSongIndex]
+            playStream(nextSong)
+        }
+    }
+
+    // Play the previous song in the playlist
+    fun playPreviousSong() {
+        if (songs.isNotEmpty()) {
+            if (currentSongIndex > 0) {
+                // Move to the previous song in the list
+                currentSongIndex--
+            } else {
+                // Loop to the last song when at the beginning
+                currentSongIndex = songs.size - 1
+            }
+            val previousSong = songs[currentSongIndex]
+            playStream(previousSong)
+        }
+    }
+
+    // Manually trigger next song (for skip button)
+    fun skipToNext() {
+        playNextSong()
     }
 
     // Radio control methods
