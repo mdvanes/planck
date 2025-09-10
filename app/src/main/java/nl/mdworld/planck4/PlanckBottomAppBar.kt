@@ -8,10 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -117,19 +117,17 @@ fun PlanckBottomAppBar(
                     }
                 }) {
                     Icon(
-                        imageVector = if (appState?.isPlaying == true) Icons.Filled.Warning else Icons.Filled.PlayArrow,
+                        imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = if (appState?.isPlaying == true) "Pause" else "Play"
                     )
                 }
 
                 // Stop button
                 IconButton(onClick = {
-                    if (appState != null) {
-                        appState.stopPlayback()
-                    }
+                    appState?.stopPlayback()
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.Close,
+                        imageVector = Icons.Filled.Stop,
                         contentDescription = "Stop"
                     )
                 }
