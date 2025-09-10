@@ -173,7 +173,7 @@ class PlanckAppState (private val context: Context) {
     }
 
     // Play the next song in the playlist
-    private fun playNextSong() {
+    fun playNextSong() {
         if (songs.isNotEmpty()) {
             if (currentSongIndex < songs.size - 1) {
                 // Move to the next song in the list

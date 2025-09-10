@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.BottomAppBar
@@ -133,6 +135,26 @@ fun PlanckBottomAppBar(
                     Icon(
                         imageVector = Icons.Filled.Stop,
                         contentDescription = "Stop"
+                    )
+                }
+
+                // Previous song button
+                IconButton(onClick = {
+                    appState?.playPreviousSong()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.SkipPrevious,
+                        contentDescription = "Previous Song"
+                    )
+                }
+
+                // Next song button
+                IconButton(onClick = {
+                    appState?.playNextSong()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.SkipNext,
+                        contentDescription = "Next Song"
                     )
                 }
 
