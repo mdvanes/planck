@@ -201,7 +201,7 @@ fun SongListItem(
                 text = "${index + 1}",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = 16.sp,
+                fontSize = 28.sp,
                 modifier = Modifier.width(32.dp)
             )
         }
@@ -215,7 +215,7 @@ fun SongListItem(
                 text = song.title,
                 color = textColor,
                 style = MaterialTheme.typography.titleMedium,
-                fontSize = 16.sp,
+                fontSize = 24.sp,
                 fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.Medium
             )
 
@@ -224,7 +224,7 @@ fun SongListItem(
                     text = song.artist,
                     color = artistTextColor,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 14.sp
+                    fontSize = 16.sp
                 )
             }
         }
@@ -234,7 +234,7 @@ fun SongListItem(
                 text = durationText,
                 color = if (isCurrentlyPlaying) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.sp
+                fontSize = 18.sp
             )
         }
     }
