@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -65,9 +66,7 @@ fun PlanckBottomAppBar(
                 // Display active song title if available
                 if (activeSong != null) {
                     Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
+                        modifier = Modifier.padding(horizontal = 8.dp),
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
@@ -88,6 +87,9 @@ fun PlanckBottomAppBar(
                         }
                     }
                 }
+
+                // Spacer to push buttons to the right
+                Spacer(modifier = Modifier.weight(1f))
 
                 // Play/Pause button - use app state if available, otherwise fallback to example
                 IconButton(onClick = {
