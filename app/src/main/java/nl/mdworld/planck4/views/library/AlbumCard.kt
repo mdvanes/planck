@@ -1,62 +1,33 @@
 package nl.mdworld.planck4.views.library
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
-import nl.mdworld.planck4.R
-import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.views.components.AlbumCoverArt
 
 @Composable
 fun AlbumCard(album: Album, appState: PlanckAppState? = null) {
-    val context = LocalContext.current
-    val playerName = R.string.subsonic_player_name
-    val apiConfig =
-        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
-
-    Row(modifier = Modifier
-        .padding(all = 8.dp)
-        .clickable {
-            println("Clicked on album ${album.name}")
-            appState?.navigateToAlbumSongs(album.id, album.name)
-        }
-    ) {
-        Box(modifier = Modifier.size(100.dp)) {
-            if (album.coverArt != null) {
-                AsyncImage(
-                    model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${album.coverArt}",
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                )
-            } else {
-                Surface(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape),
-                    color = MaterialTheme.colorScheme.surface
-                ) {}
+    Row(
+        modifier = Modifier
+            .padding(all = 8.dp)
+            .clickable {
+                println("Clicked on album ${album.name}")
+                appState?.navigateToAlbumSongs(album.id, album.name)
             }
-        }
+    ) {
+        AlbumCoverArt(coverArtId = album.coverArt)
 
         Spacer(modifier = Modifier.width(16.dp))
 
