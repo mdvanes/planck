@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck4.networking.SubsonicApi
 import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
+import nl.mdworld.planck4.networking.SubsonicArtistsResponse
+import nl.mdworld.planck4.networking.SubsonicAlbumsResponse
 
 @Composable
 fun PlanckApp(
@@ -64,6 +66,84 @@ fun PlanckApp(
         }
     }
 
+    // Load artists when navigating to artists view
+    LaunchedEffect(appState.currentScreen) {
+        if (appState.currentScreen == AppScreen.ARTISTS) {
+            appState.artists.clear()
+            try {
+                val response: SubsonicArtistsResponse = SubsonicApi().getArtistsKtor(context)
+                val artists: List<Artist> = response.sr.artists.index.flatMap { index ->
+                    index.artist.map { artistEntity ->
+                        Artist(
+                            id = artistEntity.id,
+                            name = artistEntity.name,
+                            albumCount = artistEntity.albumCount,
+                            coverArt = artistEntity.coverArt
+                        )
+                    }
+                }
+                appState.artists.addAll(artists)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                println("Failed to load artists: $e")
+            }
+        }
+    }
+
+    // Load albums when navigating to albums view
+    LaunchedEffect(appState.selectedArtistId, appState.currentScreen) {
+        if (appState.selectedArtistId != null && appState.currentScreen == AppScreen.ALBUMS) {
+            appState.albums.clear()
+            try {
+                val response: SubsonicAlbumsResponse = SubsonicApi().getArtistKtor(context, appState.selectedArtistId!!)
+                val albums: List<Album> = response.sr.artist.album.map { albumEntity ->
+                    Album(
+                        id = albumEntity.id,
+                        name = albumEntity.name,
+                        artist = albumEntity.artist,
+                        artistId = albumEntity.artistId,
+                        songCount = albumEntity.songCount,
+                        duration = albumEntity.duration,
+                        coverArt = albumEntity.coverArt,
+                        year = albumEntity.year
+                    )
+                }
+                appState.albums.addAll(albums)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                println("Failed to load albums: $e")
+            }
+        }
+    }
+
+    // Load album songs when navigating to album songs view
+    LaunchedEffect(appState.selectedAlbumId, appState.currentScreen) {
+        if (appState.selectedAlbumId != null && appState.currentScreen == AppScreen.ALBUM_SONGS) {
+            appState.songs.clear()
+            try {
+                val response = SubsonicApi().getAlbumKtor(context, appState.selectedAlbumId!!)
+                val songs = response.sr.playlist.songs?.map { song ->
+                    Song(
+                        id = song.id,
+                        title = song.title,
+                        artist = song.artist,
+                        album = song.album,
+                        duration = song.duration,
+                        coverArt = song.coverArt
+                    )
+                } ?: emptyList()
+
+                appState.songs.addAll(songs)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                println("Failed to load album songs: $e")
+            }
+        }
+    }
+
     Scaffold(
         bottomBar = {
             PlanckBottomAppBar(
@@ -94,6 +174,20 @@ fun PlanckApp(
                     SongCardList(
                         songs = appState.songs.toList(),
                         playlistTitle = appState.selectedPlaylistName ?: "Playlist",
+                        currentlyPlayingSong = appState.activeSong,
+                        onSongClick = { song -> appState.playStream(song) }
+                    )
+                }
+                AppScreen.ARTISTS -> {
+                    ArtistCardList(appState.artists, appState)
+                }
+                AppScreen.ALBUMS -> {
+                    AlbumCardList(appState.albums, appState)
+                }
+                AppScreen.ALBUM_SONGS -> {
+                    SongCardList(
+                        songs = appState.songs.toList(),
+                        playlistTitle = appState.selectedAlbumName ?: "Album",
                         currentlyPlayingSong = appState.activeSong,
                         onSongClick = { song -> appState.playStream(song) }
                     )

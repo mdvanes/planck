@@ -20,7 +20,10 @@ fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(c
 enum class AppScreen {
     PLAYLISTS,
     SONGS,
-    SETTINGS
+    SETTINGS,
+    ARTISTS,
+    ALBUMS,
+    ALBUM_SONGS
 }
 
 class PlanckAppState (private val context: Context) {
@@ -34,6 +37,10 @@ class PlanckAppState (private val context: Context) {
 
     val songs = mutableStateListOf<Song>()
 
+    // Album navigation state
+    val artists = mutableStateListOf<Artist>()
+    val albums = mutableStateListOf<Album>()
+
     var currentScreen by mutableStateOf(AppScreen.PLAYLISTS)
         private set
 
@@ -41,6 +48,19 @@ class PlanckAppState (private val context: Context) {
         private set
 
     var selectedPlaylistName by mutableStateOf<String?>(null)
+        private set
+
+    // Album navigation state
+    var selectedArtistId by mutableStateOf<String?>(null)
+        private set
+
+    var selectedArtistName by mutableStateOf<String?>(null)
+        private set
+
+    var selectedAlbumId by mutableStateOf<String?>(null)
+        private set
+
+    var selectedAlbumName by mutableStateOf<String?>(null)
         private set
 
     var activeSong by mutableStateOf<Song?>(null)
@@ -83,6 +103,30 @@ class PlanckAppState (private val context: Context) {
 
     fun navigateToSettings() {
         currentScreen = AppScreen.SETTINGS
+    }
+
+    // Album navigation methods
+    fun navigateToArtists() {
+        currentScreen = AppScreen.ARTISTS
+        // Clear any previous album selection
+        selectedArtistId = null
+        selectedArtistName = null
+        selectedAlbumId = null
+        selectedAlbumName = null
+    }
+
+    fun navigateToAlbums(artistId: String, artistName: String) {
+        selectedArtistId = artistId
+        selectedArtistName = artistName
+        currentScreen = AppScreen.ALBUMS
+        albums.clear()
+    }
+
+    fun navigateToAlbumSongs(albumId: String, albumName: String) {
+        selectedAlbumId = albumId
+        selectedAlbumName = albumName
+        currentScreen = AppScreen.ALBUM_SONGS
+        songs.clear()
     }
 
     fun playStream(song: Song) {

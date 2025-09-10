@@ -6,7 +6,6 @@ import io.ktor.client.request.get
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
 
-
 class SubsonicApi {
 
     private fun areCredentialsValid(context: Context): Boolean {
@@ -49,6 +48,56 @@ class SubsonicApi {
             }&v=1.16.0&c=${playerName}&f=json"
 
         return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylist${apiConfig}&id=${id}")
+            .body()
+    }
+
+    suspend fun getArtistsKtor(context: Context): SubsonicArtistsResponse {
+        if (!areCredentialsValid(context)) {
+            return createDummyArtistsResponse()
+        }
+
+        val playerName = R.string.subsonic_player_name
+        val apiConfig =
+            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
+                SettingsManager.getSalt(
+                    context
+                )
+            }&v=1.16.0&c=${playerName}&f=json"
+        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getArtists${apiConfig}")
+            .body()
+    }
+
+    suspend fun getArtistKtor(context: Context, id: String): SubsonicAlbumsResponse {
+        if (!areCredentialsValid(context)) {
+            return createDummyAlbumsResponse()
+        }
+
+        val playerName = R.string.subsonic_player_name
+        val apiConfig =
+            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
+                SettingsManager.getSalt(
+                    context
+                )
+            }&v=1.16.0&c=${playerName}&f=json"
+
+        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getArtist${apiConfig}&id=${id}")
+            .body()
+    }
+
+    suspend fun getAlbumKtor(context: Context, id: String): SubsonicPlaylistDetailResponse {
+        if (!areCredentialsValid(context)) {
+            return createDummyPlaylistResponse()
+        }
+
+        val playerName = R.string.subsonic_player_name
+        val apiConfig =
+            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
+                SettingsManager.getSalt(
+                    context
+                )
+            }&v=1.16.0&c=${playerName}&f=json"
+
+        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getAlbum${apiConfig}&id=${id}")
             .body()
     }
 
@@ -106,10 +155,9 @@ class SubsonicApi {
                 title = "Imaginary Track Two",
                 artist = "Jane Smith",
                 duration = 425,
-                track = 1,
-            ),
-
+                track = 1
             )
+        )
 
         return SubsonicPlaylistDetailResponse(
             sr = SubsonicPlaylistDetailResponse2(
@@ -125,4 +173,95 @@ class SubsonicApi {
         )
     }
 
+    private fun createDummyArtistsResponse(): SubsonicArtistsResponse {
+        val dummyArtists = arrayListOf(
+            SubsonicArtistsEntity(
+                id = "fake-artist-1",
+                name = "🎸 The Fake Beatles",
+                albumCount = 13,
+                coverArt = "artist-cover-1"
+            ),
+            SubsonicArtistsEntity(
+                id = "fake-artist-2",
+                name = "🎤 Imaginary Adele",
+                albumCount = 4,
+                coverArt = "artist-cover-2"
+            ),
+            SubsonicArtistsEntity(
+                id = "fake-artist-3",
+                name = "🎹 Pretend Pink Floyd",
+                albumCount = 15,
+                coverArt = "artist-cover-3"
+            ),
+            SubsonicArtistsEntity(
+                id = "fake-artist-4",
+                name = "🥁 Mock Metallica",
+                albumCount = 10,
+                coverArt = "artist-cover-4"
+            )
+        )
+
+        return SubsonicArtistsResponse(
+            sr = SubsonicArtistsResponse2(
+                artists = SubsonicArtistsResponseContainer(
+                    index = listOf(
+                        SubsonicArtistIndex(
+                            name = "F",
+                            artist = dummyArtists.filter { it.name.contains("Fake") }
+                        ),
+                        SubsonicArtistIndex(
+                            name = "I-P",
+                            artist = dummyArtists.filter { it.name.contains("Imaginary") || it.name.contains("Pretend") || it.name.contains("Mock") }
+                        )
+                    )
+                )
+            )
+        )
+    }
+
+    private fun createDummyAlbumsResponse(): SubsonicAlbumsResponse {
+        val dummyAlbums = arrayListOf(
+            SubsonicAlbumsEntity(
+                id = "fake-album-1",
+                name = "🎵 Greatest Fake Hits",
+                artist = "The Fake Beatles",
+                artistId = "fake-artist-1",
+                songCount = 12,
+                duration = 2880,
+                coverArt = "album-cover-1",
+                year = 1969
+            ),
+            SubsonicAlbumsEntity(
+                id = "fake-album-2",
+                name = "🌈 Imaginary Rainbow",
+                artist = "The Fake Beatles",
+                artistId = "fake-artist-1",
+                songCount = 14,
+                duration = 3360,
+                coverArt = "album-cover-2",
+                year = 1973
+            ),
+            SubsonicAlbumsEntity(
+                id = "fake-album-3",
+                name = "🚀 Space Oddity (Fake Version)",
+                artist = "The Fake Beatles",
+                artistId = "fake-artist-1",
+                songCount = 11,
+                duration = 2640,
+                coverArt = "album-cover-3",
+                year = 1967
+            )
+        )
+
+        return SubsonicAlbumsResponse(
+            sr = SubsonicAlbumsResponse2(
+                artist = SubsonicArtistDetail(
+                    id = "fake-artist-1",
+                    name = "The Fake Beatles",
+                    albumCount = dummyAlbums.size,
+                    album = dummyAlbums
+                )
+            )
+        )
+    }
 }
