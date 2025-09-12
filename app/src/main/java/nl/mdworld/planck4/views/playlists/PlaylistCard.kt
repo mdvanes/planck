@@ -24,7 +24,7 @@ import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.setSelectedPlaylist
 import nl.mdworld.planck4.ui.theme.PlanckTheme
-import nl.mdworld.planck4.utils.SubsonicUrlBuilder
+import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
 @Composable
 fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {

@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.*
-import nl.mdworld.planck4.utils.SubsonicUrlBuilder
+import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist

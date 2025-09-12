@@ -13,7 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import nl.mdworld.planck4.utils.SubsonicUrlBuilder
+import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
 @Composable
 fun CoverArt(

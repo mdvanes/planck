@@ -4,19 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import nl.mdworld.planck4.networking.SubsonicApi
-import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
-import nl.mdworld.planck4.networking.ktorHttpClient
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 class MainActivity : ComponentActivity() {

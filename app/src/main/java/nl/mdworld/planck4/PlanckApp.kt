@@ -13,10 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
-import nl.mdworld.planck4.networking.SubsonicApi
-import nl.mdworld.planck4.networking.SubsonicPlaylistsResponse
-import nl.mdworld.planck4.networking.SubsonicArtistsResponse
-import nl.mdworld.planck4.networking.SubsonicAlbumsResponse
+import nl.mdworld.planck4.networking.subsonic.SubsonicApi
+import nl.mdworld.planck4.networking.subsonic.SubsonicPlaylistsResponse
+import nl.mdworld.planck4.networking.subsonic.SubsonicArtistsResponse
+import nl.mdworld.planck4.networking.subsonic.SubsonicAlbumsResponse
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.AlbumCardList
 import nl.mdworld.planck4.views.library.Artist

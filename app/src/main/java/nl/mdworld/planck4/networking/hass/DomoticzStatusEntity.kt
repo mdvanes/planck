@@ -1,4 +1,4 @@
-package nl.mdworld.planck4.networking
+package nl.mdworld.planck4.networking.hass
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,7 +1,8 @@
-package nl.mdworld.planck4.networking
+package nl.mdworld.planck4.networking.hass
 
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import nl.mdworld.planck4.networking.ktorHttpClient
 
 class DomoticzStatusApi {
     suspend fun getDomoticzStatusKtor(

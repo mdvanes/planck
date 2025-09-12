@@ -1,8 +1,0 @@
-package nl.mdworld.planck4.networking
-
-object SubsonicTemp {
-    const val JUKEBOX_BASE_URL= "https://some.url/rest/"
-    const val JUKEBOX_USERNAME= "some_username"
-    const val JUKEBOX_SALT="some_salt"
-    const val JUKEBOX_API_TOKEN="some_api_token"
-}

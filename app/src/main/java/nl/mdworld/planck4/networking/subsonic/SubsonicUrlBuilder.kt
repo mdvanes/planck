@@ -1,4 +1,4 @@
-package nl.mdworld.planck4.utils
+package nl.mdworld.planck4.networking.subsonic
 
 import android.content.Context
 import nl.mdworld.planck4.R
