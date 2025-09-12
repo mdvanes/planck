@@ -49,6 +49,10 @@ class PlanckAppState (private val context: Context) {
     var currentScreen by mutableStateOf(AppScreen.PLAYLISTS)
         private set
 
+    // Reload trigger - increment this to force data reloading
+    var reloadTrigger by mutableStateOf(0)
+        private set
+
     var selectedPlaylistId by mutableStateOf<String?>(null)
         private set
 
@@ -339,6 +343,22 @@ class PlanckAppState (private val context: Context) {
         stopPlayback()
         stopRadio()
         progressUpdateScope.cancel()
+    }
+
+    fun triggerReload() {
+        reloadTrigger++
+        // Clear all data to force fresh loading
+        playlists.clear()
+        playlists.add(
+            Playlist(
+                id = "empty",
+                coverArt = "Empty",
+                name = "No Playlist"
+            )
+        )
+        songs.clear()
+        artists.clear()
+        albums.clear()
     }
 }
 

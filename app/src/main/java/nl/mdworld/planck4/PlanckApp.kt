@@ -105,7 +105,8 @@ fun PlanckApp(
         if (appState.selectedArtistId != null && appState.currentScreen == AppScreen.ALBUMS) {
             appState.albums.clear()
             try {
-                val response: SubsonicAlbumsResponse = SubsonicApi().getArtistKtor(context, appState.selectedArtistId!!)
+                val response: SubsonicAlbumsResponse =
+                    SubsonicApi().getArtistKtor(context, appState.selectedArtistId!!)
                 val albums: List<Album> = response.sr.artist.album.map { albumEntity ->
                     Album(
                         id = albumEntity.id,
@@ -183,6 +184,7 @@ fun PlanckApp(
                         appState = appState
                     )
                 }
+
                 AppScreen.SONGS -> {
                     SongCardList(
                         songs = appState.songs.toList(),
@@ -191,12 +193,15 @@ fun PlanckApp(
                         onSongClick = { song -> appState.playStream(song) }
                     )
                 }
+
                 AppScreen.ARTISTS -> {
                     ArtistCardList(appState.artists, appState)
                 }
+
                 AppScreen.ALBUMS -> {
                     AlbumCardList(appState.albums, appState)
                 }
+
                 AppScreen.ALBUM_SONGS -> {
                     SongCardList(
                         songs = appState.songs.toList(),
@@ -205,9 +210,11 @@ fun PlanckApp(
                         onSongClick = { song -> appState.playStream(song) }
                     )
                 }
+
                 AppScreen.SETTINGS -> {
                     SettingsScreen(
-                        onNavigateBack = { appState.navigateToPlaylists() }
+                        onNavigateBack = { appState.navigateToPlaylists() },
+                        appState = appState
                     )
                 }
             }

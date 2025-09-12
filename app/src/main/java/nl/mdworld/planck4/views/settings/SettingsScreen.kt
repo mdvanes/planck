@@ -35,12 +35,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import nl.mdworld.planck4.BuildConfig
+import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.SettingsManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    appState: PlanckAppState? = null
 ) {
     val context = LocalContext.current
 
@@ -95,9 +97,7 @@ fun SettingsScreen(
         ) {
             OutlinedTextField(
                 value = serverUrl,
-                onValueChange = {
-                    serverUrl = it
-                },
+                onValueChange = { serverUrl = it },
                 label = { Text("Server URL") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("https://your-server.com/rest/") }
@@ -105,9 +105,7 @@ fun SettingsScreen(
 
             OutlinedTextField(
                 value = username,
-                onValueChange = {
-                    username = it
-                },
+                onValueChange = { username = it },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("your_username") }
@@ -116,9 +114,7 @@ fun SettingsScreen(
             var passwordVisibility1 by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = salt,
-                onValueChange = {
-                    salt = it
-                },
+                onValueChange = { salt = it },
                 label = { Text("Salt") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("random_salt_value") },
@@ -139,9 +135,7 @@ fun SettingsScreen(
             var passwordVisibility by remember { mutableStateOf(false) }
             OutlinedTextField(
                 value = apiToken,
-                onValueChange = {
-                    apiToken = it
-                },
+                onValueChange = { apiToken = it },
                 label = { Text("API Token") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("your_api_token") },
@@ -161,9 +155,7 @@ fun SettingsScreen(
 
             OutlinedTextField(
                 value = radioUrl,
-                onValueChange = {
-                    radioUrl = it
-                },
+                onValueChange = { radioUrl = it },
                 label = { Text("Radio URL") },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("https://your-radio.com/stream/") }
@@ -176,15 +168,19 @@ fun SettingsScreen(
                 onCheckedChange = { cacheEnabled = it }
             )
 
-            // Save button
+            // Save button with reload functionality
             Button(
                 onClick = {
+                    // Save all settings
                     SettingsManager.saveServerUrl(context, serverUrl)
                     SettingsManager.saveUsername(context, username)
                     SettingsManager.saveSalt(context, salt)
                     SettingsManager.saveApiToken(context, apiToken)
                     SettingsManager.saveRadioUrl(context, radioUrl)
                     hasUnsavedChanges = false
+
+                    // Trigger data reload with new settings
+                    appState?.triggerReload()
                 },
                 enabled = hasUnsavedChanges,
                 modifier = Modifier.fillMaxWidth()
@@ -219,54 +215,3 @@ fun SettingsScreen(
         }
     }
 }
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun SettingsDropdown(
-//    label: String,
-//    value: String,
-//    options: List<String>,
-//    onValueChange: (String) -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    var expanded by remember { mutableStateOf(false) }
-//
-//    Column(modifier = modifier.fillMaxWidth()) {
-//        Text(
-//            text = label,
-//            style = MaterialTheme.typography.bodyLarge,
-//            modifier = Modifier.padding(bottom = 4.dp)
-//        )
-//
-//        ExposedDropdownMenuBox(
-//            expanded = expanded,
-//            onExpandedChange = { expanded = !expanded }
-//        ) {
-//            OutlinedTextField(
-//                value = value,
-//                onValueChange = {},
-//                readOnly = true,
-//                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .menuAnchor()
-//            )
-//
-//            ExposedDropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false }
-//            ) {
-//                options.forEach { option ->
-//                    DropdownMenuItem(
-//                        text = { Text(option) },
-//                        onClick = {
-//                            onValueChange(option)
-//                            expanded = false
-//                        }
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-
