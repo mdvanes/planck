@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +23,7 @@ fun AlbumCard(album: Album, appState: PlanckAppState? = null) {
     Row(
         modifier = Modifier
             .padding(all = 8.dp)
+            .fillMaxWidth()
             .clickable {
                 println("Clicked on album ${album.name}")
                 appState?.navigateToAlbumSongs(album.id, album.name)

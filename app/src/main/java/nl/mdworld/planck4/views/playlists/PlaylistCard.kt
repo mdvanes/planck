@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +32,7 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
     val context = LocalContext.current
 
     Row(modifier = Modifier
+        .fillMaxWidth()
         .padding(all = 8.dp)
         .clickable {
             println("Clicked on playlist ${playlist.name}")

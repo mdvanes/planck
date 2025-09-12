@@ -3,6 +3,7 @@ package nl.mdworld.planck4.views.library
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +23,7 @@ fun ArtistCard(artist: Artist, appState: PlanckAppState? = null) {
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = 64.dp)
             .height(100.dp)
+            .fillMaxWidth()
             .clickable {
                 println("Clicked on artist ${artist.name}")
                 appState?.navigateToAlbums(artist.id, artist.name)
