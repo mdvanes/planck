@@ -24,54 +24,61 @@ class SettingsCarScreen(carContext: CarContext) : Screen(carContext) {
             }
             .build()
 
+        // Get current settings values to display
+        val serverUrl = SettingsManager.getServerUrl(carContext)
+        val username = SettingsManager.getUsername(carContext)
+
+        val itemListBuilder = ItemList.Builder()
+            .addItem(
+                Row.Builder()
+                    .setTitle("Server Settings")
+                    .addText("Current server: ${if (serverUrl.isNotEmpty()) serverUrl else "Not configured"}")
+                    .setOnClickListener {
+                        // In a real implementation, you'd show a text input dialog
+                        // For now, just show current value
+                    }
+                    .build()
+            )
+            .addItem(
+                Row.Builder()
+                    .setTitle("Account Settings")
+                    .addText("Current user: ${if (username.isNotEmpty()) username else "Not configured"}")
+                    .setOnClickListener {
+                        // In a real implementation, you'd show account configuration
+                    }
+                    .build()
+            )
+            .addItem(
+                Row.Builder()
+                    .setTitle("Connection Status")
+                    .addText("Tap to test connection")
+                    .setOnClickListener {
+                        // TODO: Test API connection
+                    }
+                    .build()
+            )
+            .addItem(
+                Row.Builder()
+                    .setTitle("About")
+                    .addText("App version: ${BuildConfig.VERSION_NAME}")
+                    .setOnClickListener {
+                        // Show more app information
+                    }
+                    .build()
+            )
+            .addItem(
+                Row.Builder()
+                    .setTitle("Privacy Policy")
+                    .setOnClickListener {
+                        // Show privacy policy
+                    }
+                    .build()
+            )
+
         val titleSuffix = CarDistractionOptimizer.getTitleSuffix(carContext, parkingOnlyFeature = true)
 
         return ListTemplate.Builder()
-            .setSingleList(
-                ItemList.Builder()
-                    .addItem(
-                        Row.Builder()
-                            .setTitle("Server Settings")
-                            .setOnClickListener {
-                                // Handle server settings
-                                // In parking mode only - can show detailed configuration
-                            }
-                            .build()
-                    )
-                    .addItem(
-                        Row.Builder()
-                            .setTitle("Audio Settings")
-                            .setOnClickListener {
-                                // Handle audio settings
-                            }
-                            .build()
-                    )
-                    .addItem(
-                        Row.Builder()
-                            .setTitle("Display Settings")
-                            .setOnClickListener {
-                                // Handle display settings
-                            }
-                            .build()
-                    )
-                    .addItem(
-                        Row.Builder()
-                            .setTitle("Account Settings")
-                            .setOnClickListener {
-                                // Handle account settings
-                            }
-                            .build()
-                    )
-                    .addItem(
-                        Row.Builder()
-                            .setTitle("About")
-                            .setOnClickListener {
-                                // Show about information
-                            }
-                            .build()
-                    )
-                    .build()
-            )
+            .setSingleList(itemListBuilder.build())
             .setHeader(
                 Header.Builder()
                     .setTitle("Settings$titleSuffix")

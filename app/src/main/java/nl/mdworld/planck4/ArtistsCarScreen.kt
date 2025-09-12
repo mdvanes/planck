@@ -13,16 +13,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
-import nl.mdworld.planck4.views.playlists.Playlist
+import nl.mdworld.planck4.views.library.Artist
 
-class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
-    private val playlists = mutableListOf<Playlist>()
+class ArtistsCarScreen(carContext: CarContext) : Screen(carContext) {
+    private val artists = mutableListOf<Artist>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onGetTemplate(): Template {
-        // Load playlists from the same API your main app uses
-        if (playlists.isEmpty()) {
-            loadPlaylists()
+        // Load artists from the same API your main app uses
+        if (artists.isEmpty()) {
+            loadArtists()
         }
 
         val isDriving = CarDistractionOptimizer.isDriving(carContext)
@@ -37,30 +37,31 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
 
         val itemListBuilder = ItemList.Builder()
 
-        // Show playlists (limit to maxItems when driving for safety)
-        val playlistsToShow = if (isDriving) {
-            playlists.take(maxItems)
+        // Show artists (limit to maxItems when driving for safety)
+        val artistsToShow = if (isDriving) {
+            artists.take(maxItems)
         } else {
-            playlists
+            artists
         }
 
-        playlistsToShow.forEach { playlist ->
+        artistsToShow.forEach { artist ->
             itemListBuilder.addItem(
                 Row.Builder()
-                    .setTitle(playlist.name)
+                    .setTitle(artist.name)
+                    .addText("${artist.albumCount} albums")
                     .setOnClickListener {
-                        // Navigate to songs in this playlist
-                        screenManager.push(SongsCarScreen(carContext, playlist.id, playlist.name))
+                        // Navigate to albums for this artist
+                        screenManager.push(AlbumsCarScreen(carContext, artist.id, artist.name))
                     }
                     .build()
             )
         }
 
-        // If no playlists loaded yet, show loading message
-        if (playlists.isEmpty()) {
+        // If no artists loaded yet, show loading message
+        if (artists.isEmpty()) {
             itemListBuilder.addItem(
                 Row.Builder()
-                    .setTitle("Loading playlists...")
+                    .setTitle("Loading artists...")
                     .build()
             )
         }
@@ -70,8 +71,8 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
                 Action.Builder()
                     .setTitle("Refresh")
                     .setOnClickListener {
-                        playlists.clear()
-                        loadPlaylists()
+                        artists.clear()
+                        loadArtists()
                         invalidate()
                     }
                     .build()
@@ -95,7 +96,7 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
             .setSingleList(itemListBuilder.build())
             .setHeader(
                 Header.Builder()
-                    .setTitle("Playlists$titleSuffix")
+                    .setTitle("Artists$titleSuffix")
                     .setStartHeaderAction(backAction)
                     .build()
             )
@@ -103,21 +104,28 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
             .build()
     }
 
-    private fun loadPlaylists() {
+    private fun loadArtists() {
         scope.launch {
             try {
-                val response = SubsonicApi().getPlaylistsKtor(carContext)
-                val newPlaylists = response.sr.playlists.playlist.map {
-                    Playlist(it.id, it.coverArt, it.name)
+                val response = SubsonicApi().getArtistsKtor(carContext)
+                val newArtists = response.sr.artists.index.flatMap { index ->
+                    index.artist.map { artistEntity ->
+                        Artist(
+                            id = artistEntity.id,
+                            name = artistEntity.name,
+                            albumCount = artistEntity.albumCount,
+                            coverArt = artistEntity.coverArt
+                        )
+                    }
                 }
-                playlists.clear()
-                playlists.addAll(newPlaylists)
+                artists.clear()
+                artists.addAll(newArtists)
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load playlists: $e")
+                println("CarScreen: Failed to load artists: $e")
                 // Add error item
-                playlists.clear()
-                playlists.add(Playlist("error", "", "Failed to load playlists"))
+                artists.clear()
+                artists.add(Artist("error", "Failed to load artists", 0, ""))
                 invalidate()
             }
         }

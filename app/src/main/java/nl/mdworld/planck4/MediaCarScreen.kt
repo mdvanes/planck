@@ -15,7 +15,7 @@ class MediaCarScreen(carContext: CarContext) : Screen(carContext) {
         val itemListBuilder = ItemList.Builder()
             .addItem(
                 Row.Builder()
-                    .setTitle("My Playlists")
+                    .setTitle("Playlists")
                     .setBrowsable(true)
                     .setOnClickListener {
                         screenManager.push(PlaylistsCarScreen(carContext))
@@ -24,10 +24,10 @@ class MediaCarScreen(carContext: CarContext) : Screen(carContext) {
             )
             .addItem(
                 Row.Builder()
-                    .setTitle("Radio")
+                    .setTitle("Artists")
                     .setBrowsable(true)
                     .setOnClickListener {
-                        screenManager.push(RadioCarScreen(carContext))
+                        screenManager.push(ArtistsCarScreen(carContext))
                     }
                     .build()
             )

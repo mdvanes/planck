@@ -13,16 +13,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
-import nl.mdworld.planck4.views.playlists.Playlist
+import nl.mdworld.planck4.views.song.Song
 
-class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
-    private val playlists = mutableListOf<Playlist>()
+class AlbumSongsCarScreen(
+    carContext: CarContext,
+    private val albumId: String,
+    private val albumName: String
+) : Screen(carContext) {
+
+    private val songs = mutableListOf<Song>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onGetTemplate(): Template {
-        // Load playlists from the same API your main app uses
-        if (playlists.isEmpty()) {
-            loadPlaylists()
+        // Load songs from the same API your main app uses
+        if (songs.isEmpty()) {
+            loadSongs()
         }
 
         val isDriving = CarDistractionOptimizer.isDriving(carContext)
@@ -37,30 +42,31 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
 
         val itemListBuilder = ItemList.Builder()
 
-        // Show playlists (limit to maxItems when driving for safety)
-        val playlistsToShow = if (isDriving) {
-            playlists.take(maxItems)
+        // Show songs (limit to maxItems when driving for safety)
+        val songsToShow = if (isDriving) {
+            songs.take(maxItems)
         } else {
-            playlists
+            songs
         }
 
-        playlistsToShow.forEach { playlist ->
+        songsToShow.forEach { song ->
             itemListBuilder.addItem(
                 Row.Builder()
-                    .setTitle(playlist.name)
+                    .setTitle(song.title)
+                    .addText(song.artist ?: "Unknown Artist")
                     .setOnClickListener {
-                        // Navigate to songs in this playlist
-                        screenManager.push(SongsCarScreen(carContext, playlist.id, playlist.name))
+                        // TODO: Implement song playback
+                        // This would integrate with your existing media playback logic
                     }
                     .build()
             )
         }
 
-        // If no playlists loaded yet, show loading message
-        if (playlists.isEmpty()) {
+        // If no songs loaded yet, show loading message
+        if (songs.isEmpty()) {
             itemListBuilder.addItem(
                 Row.Builder()
-                    .setTitle("Loading playlists...")
+                    .setTitle("Loading songs...")
                     .build()
             )
         }
@@ -70,24 +76,12 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
                 Action.Builder()
                     .setTitle("Refresh")
                     .setOnClickListener {
-                        playlists.clear()
-                        loadPlaylists()
+                        songs.clear()
+                        loadSongs()
                         invalidate()
                     }
                     .build()
             )
-
-        // Add search action only when parked
-        if (CarDistractionOptimizer.isFeatureAvailable(carContext, requiresParking = true)) {
-            actionStripBuilder.addAction(
-                Action.Builder()
-                    .setTitle("Search")
-                    .setOnClickListener {
-                        // TODO: Implement search functionality
-                    }
-                    .build()
-            )
-        }
 
         val titleSuffix = CarDistractionOptimizer.getTitleSuffix(carContext, parkingOnlyFeature = false)
 
@@ -95,7 +89,7 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
             .setSingleList(itemListBuilder.build())
             .setHeader(
                 Header.Builder()
-                    .setTitle("Playlists$titleSuffix")
+                    .setTitle("$albumName$titleSuffix")
                     .setStartHeaderAction(backAction)
                     .build()
             )
@@ -103,21 +97,29 @@ class PlaylistsCarScreen(carContext: CarContext) : Screen(carContext) {
             .build()
     }
 
-    private fun loadPlaylists() {
+    private fun loadSongs() {
         scope.launch {
             try {
-                val response = SubsonicApi().getPlaylistsKtor(carContext)
-                val newPlaylists = response.sr.playlists.playlist.map {
-                    Playlist(it.id, it.coverArt, it.name)
-                }
-                playlists.clear()
-                playlists.addAll(newPlaylists)
+                val response = SubsonicApi().getAlbumKtor(carContext, albumId)
+                val newSongs = response.sr.playlist.songs?.map { song ->
+                    Song(
+                        id = song.id,
+                        title = song.title,
+                        artist = song.artist,
+                        album = song.album,
+                        duration = song.duration,
+                        coverArt = song.coverArt
+                    )
+                } ?: emptyList()
+
+                songs.clear()
+                songs.addAll(newSongs)
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load playlists: $e")
+                println("CarScreen: Failed to load album songs: $e")
                 // Add error item
-                playlists.clear()
-                playlists.add(Playlist("error", "", "Failed to load playlists"))
+                songs.clear()
+                songs.add(Song("error", "Failed to load songs", "", "", 0, ""))
                 invalidate()
             }
         }
