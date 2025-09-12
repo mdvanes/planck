@@ -88,7 +88,7 @@ fun PlanckBottomAppBar(
 
                             else -> onNavigateBack()
                         }
-                    }) {
+                    }, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = when (currentScreen) {
@@ -161,7 +161,7 @@ fun PlanckBottomAppBar(
                             e.printStackTrace()
                         }
                     }
-                }) {
+                }, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
                     Icon(
                         imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = if (appState?.isPlaying == true) "Pause" else "Play",
@@ -172,7 +172,7 @@ fun PlanckBottomAppBar(
                 // Stop button
                 IconButton(onClick = {
                     appState?.stopPlayback()
-                }) {
+                }, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
                     Icon(
                         imageVector = Icons.Filled.Stop,
                         contentDescription = "Stop",
@@ -183,7 +183,7 @@ fun PlanckBottomAppBar(
                 // Previous song button
                 IconButton(onClick = {
                     appState?.playPreviousSong()
-                }) {
+                }, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
                     Icon(
                         imageVector = Icons.Filled.SkipPrevious,
                         contentDescription = "Previous Song",
@@ -194,7 +194,7 @@ fun PlanckBottomAppBar(
                 // Next song button
                 IconButton(onClick = {
                     appState?.playNextSong()
-                }) {
+                }, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
                     Icon(
                         imageVector = Icons.Filled.SkipNext,
                         contentDescription = "Next Song",
@@ -229,7 +229,7 @@ fun PlanckBottomAppBar(
                             e.printStackTrace()
                         }
                     }
-                }) {
+                }, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
                     Icon(
                         imageVector = if (appState?.isRadioPlaying == true) Icons.Filled.StopCircle else Icons.Filled.Radio,
                         contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",

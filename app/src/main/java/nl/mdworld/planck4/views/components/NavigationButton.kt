@@ -1,5 +1,6 @@
 package nl.mdworld.planck4.views.components
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -13,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 object BottomAppBar {
+    val IconSpacing = 8.dp
     val IconSize = 32.dp
 }
 
@@ -23,7 +25,7 @@ fun NavigationButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    IconButton(onClick = onClick) {
+    IconButton(onClick = onClick, modifier = Modifier.padding(horizontal = BottomAppBar.IconSpacing)) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
