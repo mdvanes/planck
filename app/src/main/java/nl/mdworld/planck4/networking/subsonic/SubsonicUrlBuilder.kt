@@ -7,13 +7,13 @@ import nl.mdworld.planck4.SettingsManager
 object SubsonicUrlBuilder {
     private const val API_VERSION = "1.16.0"
     private const val FORMAT = "json"
+    private const val PLAYER_NAME = "PlanckApp"
 
     /**
      * Builds the API configuration string with authentication parameters
      */
     fun buildApiConfig(context: Context): String {
-        val playerName = context.getString(R.string.subsonic_player_name)
-        return "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=$API_VERSION&c=$playerName&f=$FORMAT"
+        return "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=$API_VERSION&c=$PLAYER_NAME&f=$FORMAT"
     }
 
     /**
