@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.*
+import nl.mdworld.planck4.utils.SubsonicUrlBuilder
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist
@@ -155,9 +156,7 @@ class PlanckAppState (private val context: Context) {
                 )
 
                 // Build the stream URL
-                val playerName = context.getString(R.string.subsonic_player_name)
-                val apiConfig = "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
-                val streamUrl = "${SettingsManager.getJukeboxBaseUrl(context)}stream${apiConfig}&id=${song.id}"
+                val streamUrl = SubsonicUrlBuilder.buildStreamUrl(context, song.id)
 
                 setDataSource(streamUrl)
                 prepareAsync()

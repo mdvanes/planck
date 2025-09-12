@@ -22,17 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
-import nl.mdworld.planck4.R
-import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.setSelectedPlaylist
 import nl.mdworld.planck4.ui.theme.PlanckTheme
+import nl.mdworld.planck4.utils.SubsonicUrlBuilder
 
 @Composable
 fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
     val context = LocalContext.current
-    val playerName = R.string.subsonic_player_name
-    val apiConfig =
-        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
 
     Row(modifier = Modifier
         .padding(all = 8.dp)
@@ -43,7 +39,7 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
         }
     ) {
         AsyncImage(
-            model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${playlist.coverArt}",
+            model = SubsonicUrlBuilder.buildCoverArtUrl(context, playlist.coverArt),
             contentDescription = null,
             modifier = Modifier
                 .size(100.dp)

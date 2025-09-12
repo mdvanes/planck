@@ -3,8 +3,8 @@ package nl.mdworld.planck4.networking
 import android.content.Context
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.utils.SubsonicUrlBuilder
 
 class SubsonicApi {
 
@@ -20,14 +20,7 @@ class SubsonicApi {
             return createDummyPlaylistsResponse()
         }
 
-        val playerName = R.string.subsonic_player_name
-        val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-                SettingsManager.getSalt(
-                    context
-                )
-            }&v=1.16.0&c=${playerName}&f=json"
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylists${apiConfig}")
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildPlaylistsUrl(context))
             .body()
     }
 
@@ -39,15 +32,7 @@ class SubsonicApi {
             return createDummyPlaylistResponse()
         }
 
-        val playerName = R.string.subsonic_player_name
-        val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-                SettingsManager.getSalt(
-                    context
-                )
-            }&v=1.16.0&c=${playerName}&f=json"
-
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getPlaylist${apiConfig}&id=${id}")
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildPlaylistUrl(context, id))
             .body()
     }
 
@@ -56,14 +41,7 @@ class SubsonicApi {
             return createDummyArtistsResponse()
         }
 
-        val playerName = R.string.subsonic_player_name
-        val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-                SettingsManager.getSalt(
-                    context
-                )
-            }&v=1.16.0&c=${playerName}&f=json"
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getArtists${apiConfig}")
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildArtistsUrl(context))
             .body()
     }
 
@@ -72,15 +50,7 @@ class SubsonicApi {
             return createDummyAlbumsResponse()
         }
 
-        val playerName = R.string.subsonic_player_name
-        val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-                SettingsManager.getSalt(
-                    context
-                )
-            }&v=1.16.0&c=${playerName}&f=json"
-
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getArtist${apiConfig}&id=${id}")
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildArtistUrl(context, id))
             .body()
     }
 
@@ -89,15 +59,7 @@ class SubsonicApi {
             return createDummyPlaylistResponse()
         }
 
-        val playerName = R.string.subsonic_player_name
-        val apiConfig =
-            "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-                SettingsManager.getSalt(
-                    context
-                )
-            }&v=1.16.0&c=${playerName}&f=json"
-
-        return ktorHttpClient.get("${SettingsManager.getJukeboxBaseUrl(context)}getAlbum${apiConfig}&id=${id}")
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildAlbumUrl(context, id))
             .body()
     }
 

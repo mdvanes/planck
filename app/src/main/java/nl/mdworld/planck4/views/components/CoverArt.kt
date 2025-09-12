@@ -13,8 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import nl.mdworld.planck4.R
-import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.utils.SubsonicUrlBuilder
 
 @Composable
 fun CoverArt(
@@ -23,14 +22,11 @@ fun CoverArt(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val playerName = R.string.subsonic_player_name
-    val apiConfig =
-        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=1.16.0&c=${playerName}&f=json"
 
     Box(modifier = modifier.size(size)) {
         if (coverArtId != null) {
             AsyncImage(
-                model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${coverArtId}",
+                model = SubsonicUrlBuilder.buildCoverArtUrl(context, coverArtId),
                 contentDescription = null,
                 modifier = Modifier
                     .size(size)
