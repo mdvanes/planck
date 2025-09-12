@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.settings
 
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
@@ -8,6 +8,9 @@ import androidx.car.app.model.ItemList
 import androidx.car.app.model.ListTemplate
 import androidx.car.app.model.Row
 import androidx.car.app.model.Template
+import nl.mdworld.planck4.BuildConfig
+import nl.mdworld.planck4.CarDistractionOptimizer
+import nl.mdworld.planck4.SettingsManager
 
 class SettingsCarScreen(carContext: CarContext) : Screen(carContext) {
 

@@ -8,6 +8,9 @@ import androidx.car.app.model.ItemList
 import androidx.car.app.model.ListTemplate
 import androidx.car.app.model.Row
 import androidx.car.app.model.Template
+import nl.mdworld.planck4.views.library.ArtistsCarScreen
+import nl.mdworld.planck4.views.playlists.PlaylistsCarScreen
+import nl.mdworld.planck4.views.settings.SettingsCarScreen
 
 class MediaCarScreen(carContext: CarContext) : Screen(carContext) {
 

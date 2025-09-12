@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.library
 
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
@@ -12,13 +12,14 @@ import androidx.car.app.model.Template
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import nl.mdworld.planck4.CarDistractionOptimizer
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.views.song.Song
 
-class SongsCarScreen(
+class AlbumSongsCarScreen(
     carContext: CarContext,
-    private val playlistId: String,
-    private val playlistName: String
+    private val albumId: String,
+    private val albumName: String
 ) : Screen(carContext) {
 
     private val songs = mutableListOf<Song>()
@@ -89,7 +90,7 @@ class SongsCarScreen(
             .setSingleList(itemListBuilder.build())
             .setHeader(
                 Header.Builder()
-                    .setTitle("$playlistName$titleSuffix")
+                    .setTitle("$albumName$titleSuffix")
                     .setStartHeaderAction(backAction)
                     .build()
             )
@@ -100,8 +101,8 @@ class SongsCarScreen(
     private fun loadSongs() {
         scope.launch {
             try {
-                val response = SubsonicApi().getPlaylistKtor(carContext, playlistId)
-                val newSongs = response.sr.playlist.songs?.map { song ->
+                val response = SubsonicApi().getAlbumKtor(carContext, albumId)
+                val newSongs = response.sr.album.songs?.map { song ->
                     Song(
                         id = song.id,
                         title = song.title,
@@ -116,7 +117,7 @@ class SongsCarScreen(
                 songs.addAll(newSongs)
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load songs: $e")
+                println("CarScreen: Failed to load album songs: $e")
                 // Add error item
                 songs.clear()
                 songs.add(Song("error", "Failed to load songs", "", "", 0, ""))

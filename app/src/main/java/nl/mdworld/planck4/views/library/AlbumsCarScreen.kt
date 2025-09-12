@@ -1,4 +1,4 @@
-package nl.mdworld.planck4
+package nl.mdworld.planck4.views.library
 
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
@@ -12,22 +12,22 @@ import androidx.car.app.model.Template
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import nl.mdworld.planck4.CarDistractionOptimizer
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
-import nl.mdworld.planck4.views.song.Song
 
-class AlbumSongsCarScreen(
+class AlbumsCarScreen(
     carContext: CarContext,
-    private val albumId: String,
-    private val albumName: String
+    private val artistId: String,
+    private val artistName: String
 ) : Screen(carContext) {
 
-    private val songs = mutableListOf<Song>()
+    private val albums = mutableListOf<Album>()
     private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onGetTemplate(): Template {
-        // Load songs from the same API your main app uses
-        if (songs.isEmpty()) {
-            loadSongs()
+        // Load albums from the same API your main app uses
+        if (albums.isEmpty()) {
+            loadAlbums()
         }
 
         val isDriving = CarDistractionOptimizer.isDriving(carContext)
@@ -42,31 +42,31 @@ class AlbumSongsCarScreen(
 
         val itemListBuilder = ItemList.Builder()
 
-        // Show songs (limit to maxItems when driving for safety)
-        val songsToShow = if (isDriving) {
-            songs.take(maxItems)
+        // Show albums (limit to maxItems when driving for safety)
+        val albumsToShow = if (isDriving) {
+            albums.take(maxItems)
         } else {
-            songs
+            albums
         }
 
-        songsToShow.forEach { song ->
+        albumsToShow.forEach { album ->
             itemListBuilder.addItem(
                 Row.Builder()
-                    .setTitle(song.title)
-                    .addText(song.artist ?: "Unknown Artist")
+                    .setTitle(album.name)
+                    .addText("${album.songCount} songs • ${album.year ?: "Unknown year"}")
                     .setOnClickListener {
-                        // TODO: Implement song playback
-                        // This would integrate with your existing media playback logic
+                        // Navigate to songs in this album
+                        screenManager.push(AlbumSongsCarScreen(carContext, album.id, album.name))
                     }
                     .build()
             )
         }
 
-        // If no songs loaded yet, show loading message
-        if (songs.isEmpty()) {
+        // If no albums loaded yet, show loading message
+        if (albums.isEmpty()) {
             itemListBuilder.addItem(
                 Row.Builder()
-                    .setTitle("Loading songs...")
+                    .setTitle("Loading albums...")
                     .build()
             )
         }
@@ -76,8 +76,8 @@ class AlbumSongsCarScreen(
                 Action.Builder()
                     .setTitle("Refresh")
                     .setOnClickListener {
-                        songs.clear()
-                        loadSongs()
+                        albums.clear()
+                        loadAlbums()
                         invalidate()
                     }
                     .build()
@@ -89,7 +89,7 @@ class AlbumSongsCarScreen(
             .setSingleList(itemListBuilder.build())
             .setHeader(
                 Header.Builder()
-                    .setTitle("$albumName$titleSuffix")
+                    .setTitle("$artistName Albums$titleSuffix")
                     .setStartHeaderAction(backAction)
                     .build()
             )
@@ -97,29 +97,30 @@ class AlbumSongsCarScreen(
             .build()
     }
 
-    private fun loadSongs() {
+    private fun loadAlbums() {
         scope.launch {
             try {
-                val response = SubsonicApi().getAlbumKtor(carContext, albumId)
-                val newSongs = response.sr.album.songs?.map { song ->
-                    Song(
-                        id = song.id,
-                        title = song.title,
-                        artist = song.artist,
-                        album = song.album,
-                        duration = song.duration,
-                        coverArt = song.coverArt
+                val response = SubsonicApi().getArtistKtor(carContext, artistId)
+                val newAlbums = response.sr.artist.album.map { albumEntity ->
+                    Album(
+                        id = albumEntity.id,
+                        name = albumEntity.name,
+                        artist = albumEntity.artist,
+                        artistId = albumEntity.artistId,
+                        songCount = albumEntity.songCount,
+                        duration = albumEntity.duration,
+                        coverArt = albumEntity.coverArt,
+                        year = albumEntity.year
                     )
-                } ?: emptyList()
-
-                songs.clear()
-                songs.addAll(newSongs)
+                }
+                albums.clear()
+                albums.addAll(newAlbums)
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load album songs: $e")
+                println("CarScreen: Failed to load albums: $e")
                 // Add error item
-                songs.clear()
-                songs.add(Song("error", "Failed to load songs", "", "", 0, ""))
+                albums.clear()
+                albums.add(Album("error", "Failed to load albums", "", "", 0, 0, "", null))
                 invalidate()
             }
         }
