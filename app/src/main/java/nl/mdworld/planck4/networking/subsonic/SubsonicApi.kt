@@ -55,9 +55,9 @@ class SubsonicApi {
             .body()
     }
 
-    suspend fun getAlbumKtor(context: Context, id: String): SubsonicPlaylistDetailResponse {
+    suspend fun getAlbumKtor(context: Context, id: String): SubsonicAlbumDetailResponse {
         if (!areCredentialsValid(context)) {
-            return createDummyPlaylistResponse()
+            return createDummyAlbumResponse()
         }
 
         return ktorHttpClient.get(SubsonicUrlBuilder.buildAlbumUrl(context, id))
@@ -227,4 +227,56 @@ class SubsonicApi {
             )
         )
     }
+
+    private fun createDummyAlbumResponse(): SubsonicAlbumDetailResponse {
+        val dummySongs = arrayListOf(
+            SubsonicSong(
+                id = "fake-song-1",
+                title = "Fake Song One",
+                artist = "The Fake Beatles",
+                album = "Greatest Fake Hits",
+                duration = 240,
+                track = 1,
+                coverArt = "album-cover-1"
+            ),
+            SubsonicSong(
+                id = "fake-song-2",
+                title = "Imaginary Track Two",
+                artist = "The Fake Beatles",
+                album = "Greatest Fake Hits",
+                duration = 300,
+                track = 2,
+                coverArt = "album-cover-1"
+            ),
+            SubsonicSong(
+                id = "fake-song-3",
+                title = "Pretend Melody Three",
+                artist = "The Fake Beatles",
+                album = "Greatest Fake Hits",
+                duration = 180,
+                track = 3,
+                coverArt = "album-cover-1"
+            )
+        )
+
+        return SubsonicAlbumDetailResponse(
+            sr = SubsonicAlbumDetailResponse2(
+                album = SubsonicAlbumDetail(
+                    id = "fake-album-1",
+                    name = "🎵 Greatest Fake Hits",
+                    artist = "The Fake Beatles",
+                    artistId = "fake-artist-1",
+                    coverArt = "album-cover-1",
+                    songCount = dummySongs.size,
+                    duration = 3600,
+                    year = 1969,
+                    songs = dummySongs
+                )
+            )
+        )
+    }
 }
+
+
+
+

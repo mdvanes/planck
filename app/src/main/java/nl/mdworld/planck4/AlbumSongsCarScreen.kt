@@ -101,7 +101,7 @@ class AlbumSongsCarScreen(
         scope.launch {
             try {
                 val response = SubsonicApi().getAlbumKtor(carContext, albumId)
-                val newSongs = response.sr.playlist.songs?.map { song ->
+                val newSongs = response.sr.album.songs?.map { song ->
                     Song(
                         id = song.id,
                         title = song.title,

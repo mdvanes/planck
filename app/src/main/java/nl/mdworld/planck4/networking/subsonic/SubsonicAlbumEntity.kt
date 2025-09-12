@@ -61,3 +61,4 @@ data class SubsonicAlbumsEntity(
     @SerialName("coverArt") val coverArt: String? = null,
     @SerialName("year") val year: Int? = null
 )
+

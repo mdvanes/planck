@@ -133,7 +133,7 @@ fun PlanckApp(
             appState.songs.clear()
             try {
                 val response = SubsonicApi().getAlbumKtor(context, appState.selectedAlbumId!!)
-                val songs = response.sr.playlist.songs?.map { song ->
+                val songs = response.sr.album.songs?.map { song ->
                     Song(
                         id = song.id,
                         title = song.title,

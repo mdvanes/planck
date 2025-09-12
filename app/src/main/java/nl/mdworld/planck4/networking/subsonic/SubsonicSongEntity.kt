@@ -33,3 +33,26 @@ data class SubsonicSong(
     @SerialName("track") val track: Int? = null,
     @SerialName("coverArt") val coverArt: String? = null
 )
+
+@Serializable
+data class SubsonicAlbumDetailResponse(
+    @SerialName("subsonic-response") val sr: SubsonicAlbumDetailResponse2
+)
+
+@Serializable
+data class SubsonicAlbumDetailResponse2(
+    @SerialName("album") val album: SubsonicAlbumDetail
+)
+
+@Serializable
+data class SubsonicAlbumDetail(
+    @SerialName("id") val id: String,
+    @SerialName("name") val name: String,
+    @SerialName("artist") val artist: String? = null,
+    @SerialName("artistId") val artistId: String? = null,
+    @SerialName("coverArt") val coverArt: String? = null,
+    @SerialName("songCount") val songCount: Int = 0,
+    @SerialName("duration") val duration: Int = 0,
+    @SerialName("year") val year: Int? = null,
+    @SerialName("song") val songs: List<SubsonicSong>? = null
+)
