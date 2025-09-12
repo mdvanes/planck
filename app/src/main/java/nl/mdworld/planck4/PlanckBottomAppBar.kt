@@ -1,5 +1,6 @@
 package nl.mdworld.planck4
 
+import android.R.attr.onClick
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,130 @@ fun PlanckBottomAppBar(
 ) {
     val context = LocalContext.current
 
+    val navigateBackButton = @Composable {
+        IconButton(
+            onClick = {
+                when (currentScreen) {
+                    AppScreen.SONGS -> onNavigateBack()
+                    AppScreen.ALBUMS -> appState?.navigateToArtists()
+                    AppScreen.ALBUM_SONGS -> {
+                        if (appState?.selectedArtistId != null && appState.selectedArtistName != null) {
+                            appState.navigateToAlbums(
+                                appState.selectedArtistId!!,
+                                appState.selectedArtistName!!
+                            )
+                        } else {
+                            appState?.navigateToArtists()
+                        }
+                    }
+
+                    else -> onNavigateBack()
+                }
+            },
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 8.dp)
+        ) {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = when (currentScreen) {
+                    AppScreen.SONGS -> "Back to playlists"
+                    AppScreen.ALBUMS -> "Back to artists"
+                    AppScreen.ALBUM_SONGS -> "Back to albums"
+                    else -> "Back"
+                }
+            )
+        }
+    }
+
+    val songTitleRow = @Composable {
+        if (activeSong != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = activeSong.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+
+
+    val playPauseButton = @Composable {
+        IconButton(onClick = {
+            if (appState != null && activeSong != null) {
+                if (appState.isPlaying) {
+                    appState.pausePlayback()
+                } else {
+                    appState.resumePlayback()
+                }
+            } else {
+                val mediaPlayer = MediaPlayer()
+                val audioUrl = SettingsManager.getRadioUrl(context)
+                mediaPlayer.setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+                try {
+                    mediaPlayer.setDataSource(audioUrl)
+                    mediaPlayer.prepare()
+                    mediaPlayer.start()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }, modifier = Modifier.padding(horizontal = 2.dp)) {
+            Icon(
+                imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                contentDescription = if (appState?.isPlaying == true) "Pause" else "Play",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+
+
+    val radioButton = @Composable {
+        IconButton(onClick = {
+            if (appState != null) {
+                if (appState.isRadioPlaying) {
+                    appState.stopRadio()
+                } else {
+                    appState.startRadio()
+                }
+            } else {
+                val mediaPlayer = MediaPlayer()
+                val audioUrl = SettingsManager.getRadioUrl(context)
+                mediaPlayer.setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+                try {
+                    mediaPlayer.setDataSource(audioUrl)
+                    mediaPlayer.prepare()
+                    mediaPlayer.start()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }, modifier = Modifier.padding(horizontal = 2.dp)) {
+            Icon(
+                imageVector = if (appState?.isRadioPlaying == true) Icons.Filled.StopCircle else Icons.Filled.Radio,
+                contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+
     Column {
         // Progress bar at the top
         if (activeSong != null && appState != null) {
@@ -66,7 +191,6 @@ fun PlanckBottomAppBar(
         }
 
 
-
         // Main bottom app bar with controls and artist name
         BottomAppBar(
             modifier = if (activeSong != null) Modifier.height(80.dp) else Modifier,
@@ -78,73 +202,24 @@ fun PlanckBottomAppBar(
                         currentScreen == AppScreen.ALBUMS ||
                         currentScreen == AppScreen.ALBUM_SONGS
                     ) {
-                        IconButton(
-                            onClick = {
-                                when (currentScreen) {
-                                    AppScreen.SONGS -> onNavigateBack()
-                                    AppScreen.ALBUMS -> appState?.navigateToArtists()
-                                    AppScreen.ALBUM_SONGS -> {
-                                        if (appState?.selectedArtistId != null && appState.selectedArtistName != null) {
-                                            appState.navigateToAlbums(
-                                                appState.selectedArtistId!!,
-                                                appState.selectedArtistName!!
-                                            )
-                                        } else {
-                                            appState?.navigateToArtists()
-                                        }
-                                    }
-
-                                    else -> onNavigateBack()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(horizontal = 8.dp)
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = when (currentScreen) {
-                                    AppScreen.SONGS -> "Back to playlists"
-                                    AppScreen.ALBUMS -> "Back to artists"
-                                    AppScreen.ALBUM_SONGS -> "Back to albums"
-                                    else -> "Back"
-                                }
-                            )
-                        }
+                        navigateBackButton()
                     }
 
                     Column {
-                        // Song title row (if active song exists) - placed above the main app bar
-                        if (activeSong != null) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = activeSong.title,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontSize = 20.sp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        }
+                        songTitleRow()
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-
-
-                            // Artist name display area (only show artist, not title)
+                            // Artist name display area
                             if (activeSong?.artist != null) {
                                 Column(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .padding(horizontal = 8.dp),
+                                        .padding(horizontal = 4.dp),
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
@@ -162,36 +237,7 @@ fun PlanckBottomAppBar(
 
                             // Media control buttons
                             Row {
-                                IconButton(onClick = {
-                                    if (appState != null && activeSong != null) {
-                                        if (appState.isPlaying) {
-                                            appState.pausePlayback()
-                                        } else {
-                                            appState.resumePlayback()
-                                        }
-                                    } else {
-                                        val mediaPlayer = MediaPlayer()
-                                        val audioUrl = SettingsManager.getRadioUrl(context)
-                                        mediaPlayer.setAudioAttributes(
-                                            AudioAttributes.Builder()
-                                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                                .build()
-                                        )
-                                        try {
-                                            mediaPlayer.setDataSource(audioUrl)
-                                            mediaPlayer.prepare()
-                                            mediaPlayer.start()
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        }
-                                    }
-                                }, modifier = Modifier.padding(horizontal = 2.dp)) {
-                                    Icon(
-                                        imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                        contentDescription = if (appState?.isPlaying == true) "Pause" else "Play",
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
+                                playPauseButton()
 
                                 IconButton(onClick = {
                                     appState?.stopPlayback()
@@ -223,36 +269,7 @@ fun PlanckBottomAppBar(
                                     )
                                 }
 
-                                IconButton(onClick = {
-                                    if (appState != null) {
-                                        if (appState.isRadioPlaying) {
-                                            appState.stopRadio()
-                                        } else {
-                                            appState.startRadio()
-                                        }
-                                    } else {
-                                        val mediaPlayer = MediaPlayer()
-                                        val audioUrl = SettingsManager.getRadioUrl(context)
-                                        mediaPlayer.setAudioAttributes(
-                                            AudioAttributes.Builder()
-                                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                                .build()
-                                        )
-                                        try {
-                                            mediaPlayer.setDataSource(audioUrl)
-                                            mediaPlayer.prepare()
-                                            mediaPlayer.start()
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                        }
-                                    }
-                                }, modifier = Modifier.padding(horizontal = 2.dp)) {
-                                    Icon(
-                                        imageVector = if (appState?.isRadioPlaying == true) Icons.Filled.StopCircle else Icons.Filled.Radio,
-                                        contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
+                                radioButton()
                             }
 
                             // Main navigation buttons
@@ -282,11 +299,7 @@ fun PlanckBottomAppBar(
                             }
                         }
                     }
-
                 }
-
-
-
             }
         )
     }

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -95,7 +96,9 @@ fun SongListItem(
                 color = textColor,
                 style = MaterialTheme.typography.titleMedium,
                 fontSize = 24.sp,
-                fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.Medium
+                fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             if (song.artist != null) {
@@ -103,7 +106,9 @@ fun SongListItem(
                     text = song.artist,
                     color = artistTextColor,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
