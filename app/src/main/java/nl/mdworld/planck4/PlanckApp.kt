@@ -33,6 +33,7 @@ fun PlanckApp(
 ) {
     val context = LocalContext.current
 
+    // Load playlists on app start
     LaunchedEffect(Unit) {
         try {
             val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor(context)
@@ -75,8 +76,25 @@ fun PlanckApp(
         }
     }
 
-    // Load artists when navigating to artists view
+    // Load artists when navigating to playlists or artists view
     LaunchedEffect(appState.currentScreen) {
+        if (appState.currentScreen == AppScreen.PLAYLISTS) {
+            appState.playlists.clear()
+            try {
+                val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor(context)
+                val playlistStrings: List<String> = response.sr.playlists.playlist.map {
+                    "${it.id} - ${it.name} (${it.coverArt})"
+                }
+                println(playlistStrings.joinToString(","))
+                val newPlaylists: List<Playlist> =
+                    response.sr.playlists.playlist.map { Playlist(it.id, it.coverArt, it.name) }
+                appState.playlists.clear()
+                appState.playlists.addAll(newPlaylists)
+            } catch (e: Exception) {
+                println("PlanckApp: Failed to call API:$e")
+            }
+        }
+
         if (appState.currentScreen == AppScreen.ARTISTS) {
             appState.artists.clear()
             try {
