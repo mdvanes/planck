@@ -45,8 +45,8 @@ object SubsonicDummyResponses {
             SubsonicSong(
                 id = "fake-1",
                 coverArt = "dummy-cover-1",
-                title = "Dummy Song One Very Long Title For Testing Long Titles And Even Longer And So Long It Should Never Push The Buttons Offscreen",
-                artist = "John Doe The Second With A Very Long Name As Well That Should Be Tested",
+                title = "Dummy Song One Very Long Title For Testing Long Titles And Even Longer And So Long It Should Never Push The Buttons Offscreen And Even Longer And So Long It Should Never Push The Buttons Offscreen",
+                artist = "John Doe The Second With A Very Long Name As Well That Should Be Tested And Even Longer And So Long It Should Never Push The Buttons Offscreen",
                 duration = 245,
                 track = 2
             ),
