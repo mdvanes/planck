@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import nl.mdworld.planck4.views.components.BottomAppBar
 import nl.mdworld.planck4.views.components.NavigationButton
 import nl.mdworld.planck4.views.song.Song
 
@@ -135,7 +136,7 @@ fun PlanckBottomAppBar(
             Icon(
                 imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 contentDescription = if (appState?.isPlaying == true) "Pause" else "Play",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(BottomAppBar.IconSize),
             )
         }
     }
@@ -169,7 +170,7 @@ fun PlanckBottomAppBar(
             Icon(
                 imageVector = if (appState?.isRadioPlaying == true) Icons.Filled.StopCircle else Icons.Filled.Radio,
                 contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(BottomAppBar.IconSize),
             )
         }
     }
@@ -245,7 +246,7 @@ fun PlanckBottomAppBar(
                                     Icon(
                                         imageVector = Icons.Filled.Stop,
                                         contentDescription = "Stop",
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(BottomAppBar.IconSize),
                                     )
                                 }
 
@@ -255,7 +256,7 @@ fun PlanckBottomAppBar(
                                     Icon(
                                         imageVector = Icons.Filled.SkipPrevious,
                                         contentDescription = "Previous Song",
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(BottomAppBar.IconSize),
                                     )
                                 }
 
@@ -265,11 +266,11 @@ fun PlanckBottomAppBar(
                                     Icon(
                                         imageVector = Icons.Filled.SkipNext,
                                         contentDescription = "Next Song",
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(BottomAppBar.IconSize),
                                     )
                                 }
 
-                                radioButton()
+
                             }
 
                             // Main navigation buttons
@@ -289,6 +290,8 @@ fun PlanckBottomAppBar(
                                             currentScreen == AppScreen.ALBUM_SONGS,
                                     onClick = { appState?.navigateToArtists() }
                                 )
+
+                                radioButton()
 
                                 NavigationButton(
                                     icon = Icons.Filled.Settings,
