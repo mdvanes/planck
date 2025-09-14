@@ -23,6 +23,7 @@ import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,13 +36,13 @@ fun SongCardList(
     onSongClick: (Song) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val playerName = context.getString(R.string.subsonic_player_name)
-    val apiConfig =
-        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-            SettingsManager.getSalt(
-                context
-            )
-        }&v=1.16.0&c=${playerName}&f=json"
+    //val playerName = context.getString(R.string.subsonic_player_name)
+    //val apiConfig =
+    //    "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
+    //        SettingsManager.getSalt(
+    //            context
+    //        )
+    //    }&v=1.16.0&c=${playerName}&f=json"
 
     val pullRefreshState = rememberPullRefreshState(
         refreshing = false,
@@ -56,7 +57,8 @@ fun SongCardList(
         // Background cover art image
         if (coverArt != null) {
             AsyncImage(
-                model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${coverArt}",
+                //model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${coverArt}",
+                model = SubsonicUrlBuilder.buildCoverArtUrl(context, coverArt),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
