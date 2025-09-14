@@ -1,6 +1,8 @@
 package nl.mdworld.planck4.views.song
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -8,10 +10,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import nl.mdworld.planck4.R
+import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,38 +34,80 @@ fun SongCardList(
     currentlyPlayingSong: Song? = null,
     onSongClick: (Song) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val playerName = context.getString(R.string.subsonic_player_name)
+    val apiConfig =
+        "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
+            SettingsManager.getSalt(
+                context
+            )
+        }&v=1.16.0&c=${playerName}&f=json"
+
     val pullRefreshState = rememberPullRefreshState(
         refreshing = false,
         onRefresh = { /* TODO: Implement refresh */ }
     )
 
-    Box(
-        modifier = modifier.pullRefresh(pullRefreshState)
-    ) {
-        LazyColumn {
-            // First item: Playlist header with cover art
-            item {
-                SongsHeaderCard(
-                    playlistTitle = playlistTitle,
-                    coverArt = songs.firstOrNull()?.coverArt
-                )
-            }
+    val coverArt = songs.firstOrNull()?.coverArt
 
-            // Remaining items: Song list items with index, title, artist, and duration
-            itemsIndexed(songs) { index, song ->
-                SongListItem(
-                    song = song,
-                    index = index,
-                    isCurrentlyPlaying = currentlyPlayingSong?.id == song.id,
-                    onClick = onSongClick
-                )
-            }
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Background cover art image
+        if (coverArt != null) {
+            AsyncImage(
+                model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${coverArt}",
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .blur(20.dp),
+                contentScale = ContentScale.Crop
+            )
+
+            // Semi-transparent overlay to improve readability
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.7f)
+                            )
+                        )
+                    )
+            )
         }
-        PullRefreshIndicator(
-            refreshing = false,
-            state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
+
+        // Content layer
+        Box(
+            modifier = Modifier.pullRefresh(pullRefreshState)
+        ) {
+            LazyColumn {
+                // First item: Playlist header with cover art
+                item {
+                    SongsHeaderCard(
+                        playlistTitle = playlistTitle,
+                        coverArt = coverArt
+                    )
+                }
+
+                // Remaining items: Song list items with index, title, artist, and duration
+                itemsIndexed(songs) { index, song ->
+                    SongListItem(
+                        song = song,
+                        index = index,
+                        isCurrentlyPlaying = currentlyPlayingSong?.id == song.id,
+                        onClick = onSongClick
+                    )
+                }
+            }
+            PullRefreshIndicator(
+                refreshing = false,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
     }
 }
 
