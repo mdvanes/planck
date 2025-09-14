@@ -1,6 +1,5 @@
 package nl.mdworld.planck4.views.song
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,20 +9,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
-import nl.mdworld.planck4.R
-import nl.mdworld.planck4.SettingsManager
-import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,15 +24,6 @@ fun SongCardList(
     currentlyPlayingSong: Song? = null,
     onSongClick: (Song) -> Unit = {}
 ) {
-    val context = LocalContext.current
-    //val playerName = context.getString(R.string.subsonic_player_name)
-    //val apiConfig =
-    //    "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${
-    //        SettingsManager.getSalt(
-    //            context
-    //        )
-    //    }&v=1.16.0&c=${playerName}&f=json"
-
     val pullRefreshState = rememberPullRefreshState(
         refreshing = false,
         onRefresh = { /* TODO: Implement refresh */ }
@@ -55,31 +35,7 @@ fun SongCardList(
         modifier = modifier.fillMaxSize()
     ) {
         // Background cover art image
-        if (coverArt != null) {
-            AsyncImage(
-                //model = "${SettingsManager.getJukeboxBaseUrl(context)}/getCoverArt${apiConfig}&id=${coverArt}",
-                model = SubsonicUrlBuilder.buildCoverArtUrl(context, coverArt),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(20.dp),
-                contentScale = ContentScale.Crop
-            )
-
-            // Semi-transparent overlay to improve readability
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.3f),
-                                Color.Black.copy(alpha = 0.7f)
-                            )
-                        )
-                    )
-            )
-        }
+        BackgroundCoverArt(coverArtId = coverArt)
 
         // Content layer
         Box(
