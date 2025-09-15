@@ -23,3 +23,13 @@ In the "Device Manager", create a new virtual device with the following settings
 - Go to Build > Generate Signed App Bundle(s) / APK(s) > Generate Bundles
 - Go to https://play.google.com/console/
 - Create a new Closed test release for the Android Automotive track. Internal tests releases will *not* be shown in the car.
+
+## Marking Activities as Distraction-Optimized
+
+Activities that should run while driving need to be marked as distraction-optimized in the AndroidManifest.xml file. Add the following metadata to the `<activity>` element:
+
+```xml
+<meta-data android:name="distractionOptimized" android:value="true"/>
+```
+
+This tells the system that your activity is designed to be safe to use while driving.
