@@ -5,7 +5,6 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.networking.ktorHttpClient
-import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
 class SubsonicApi {
 

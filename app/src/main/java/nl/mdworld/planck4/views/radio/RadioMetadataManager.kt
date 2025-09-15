@@ -40,9 +40,36 @@ class RadioMetadataManager {
      * @param streamUrl The radio stream URL to monitor
      * @param callback Callback for metadata updates and errors
      */
+    //fun startMonitoring(
+    //    streamUrl: String,
+    //    callback: MetadataCallback
+    //) {
+    //    stopMonitoring()
+    //
+    //    metadataJob = scope.launch {
+    //        while (isActive) {
+    //            try {
+    //                val metadata = fetchRadioMetadata(streamUrl)
+    //                if (metadata != null) {
+    //                    callback.onMetadataUpdate(metadata)
+    //                    logRadioMetadata(metadata)
+    //                    delay(5000) // Check for metadata updates every 5 seconds
+    //                } else {
+    //                    delay(10000) // Wait longer if no metadata found
+    //                }
+    //            } catch (e: Exception) {
+    //                val errorMsg = "Error fetching metadata: ${e.message}"
+    //                println("RadioMetadata: $errorMsg")
+    //                callback.onMetadataError(errorMsg)
+    //                delay(10000) // Wait longer on error
+    //            }
+    //        }
+    //    }
+    //}
     fun startMonitoring(
         streamUrl: String,
-        callback: MetadataCallback
+        onSuccess: (RadioMetadata) -> Unit,
+        onError: (Throwable) -> Unit
     ) {
         stopMonitoring()
 
@@ -51,17 +78,16 @@ class RadioMetadataManager {
                 try {
                     val metadata = fetchRadioMetadata(streamUrl)
                     if (metadata != null) {
-                        callback.onMetadataUpdate(metadata)
+                        onSuccess(metadata)
                         logRadioMetadata(metadata)
-                        delay(5000) // Check for metadata updates every 5 seconds
+                        delay(5000)
                     } else {
-                        delay(10000) // Wait longer if no metadata found
+                        delay(10000)
                     }
                 } catch (e: Exception) {
-                    val errorMsg = "Error fetching metadata: ${e.message}"
-                    println("RadioMetadata: $errorMsg")
-                    callback.onMetadataError(errorMsg)
-                    delay(10000) // Wait longer on error
+                    println("RadioMetadata: Error fetching metadata: ${e.message}")
+                    onError(e)
+                    delay(10000)
                 }
             }
         }

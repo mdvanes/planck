@@ -11,7 +11,12 @@ import nl.mdworld.planck4.util.radiometadata.UrlConfig
 val NPO2_PRESET = RadioSchema(
     name = "npo2",
     urls = listOf(
-        UrlConfig("tracks_", "https://www.nporadio2.nl/api/tracks"),
+        UrlConfig(
+            "tracks_",
+            "https://www.nporadio2.nl/api/tracks",
+            //"https://jsonplaceholder.typicode.com/users",
+            headers = mapOf("User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:142.0) Gecko/20100101 Firefox/142.0")
+        ),
         UrlConfig("broadcasts_", "https://www.nporadio2.nl/api/broadcasts")
     ),
     paths = SchemaPaths(

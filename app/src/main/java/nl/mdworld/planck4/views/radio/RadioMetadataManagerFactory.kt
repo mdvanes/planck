@@ -15,7 +15,7 @@ object RadioMetadataManagerFactory {
     fun createForNPORadio2(): RadioMetadataManager {
         return RadioMetadataManager().apply {
             addStrategy(ApiMetadataStrategy("npo2"))
-            addStrategy(IcyMetadataStrategy())
+            //addStrategy(IcyMetadataStrategy())
         }
     }
 
