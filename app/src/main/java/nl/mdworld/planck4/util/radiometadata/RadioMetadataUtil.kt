@@ -4,6 +4,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.*
+import nl.mdworld.planck4.util.radiometadata.presets.NPO2_PRESET
+import nl.mdworld.planck4.util.radiometadata.presets.SKY_PRESET
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -96,61 +98,6 @@ data class RadioPreset(
 )
 
 object RadioMetadataUtil {
-
-    /**
-     * NPO Radio 2 preset - matches the TypeScript npo2 preset
-     */
-    val NPO2_PRESET = RadioSchema(
-        name = "npo2",
-        urls = listOf(
-            UrlConfig("tracks_", "https://www.nporadio2.nl/api/tracks"),
-            UrlConfig("broadcasts_", "https://www.nporadio2.nl/api/broadcasts")
-        ),
-        paths = SchemaPaths(
-            tracks = listOf("tracks_", "data"),
-            broadcast = SchemaPaths.BroadcastInfo(
-                title = listOf("broadcasts_", "data", 0, "title"),
-                presenters = listOf("broadcasts_", "data", 0, "presenters"),
-                imageUrl = listOf("broadcasts_", "data", 0, "image_url_400x400")
-            ),
-            time = SchemaPaths.TimeInfo(
-                start = listOf("startdatetime"),
-                end = listOf("enddatetime")
-            ),
-            song = SchemaPaths.SongInfo(
-                artist = listOf("artist"),
-                title = listOf("title"),
-                imageUrl = listOf("image_url_400x400"),
-                listenUrl = listOf("spotify_url")
-            )
-        )
-    )
-
-    /**
-     * Sky Radio preset - matches the TypeScript sky preset
-     */
-    val SKY_PRESET = RadioSchema(
-        name = "sky",
-        urls = listOf(
-            UrlConfig(
-                "tracks_",
-                "https://graph.talparad.io/?query=%7B%0A%20%20station(slug%3A%20%22sky-radio%22)%20%7B%0A%20%20%20%20title%0A%20%20%20%20playouts(profile%3A%20%22%22%2C%20limit%3A%2010)%20%7B%0A%20%20%20%20%20%20broadcastDate%0A%20%20%20%20%20%20track%20%7B%0A%20%20%20%20%20%20%20%20id%0A%20%20%20%20%20%20%20%20title%0A%20%20%20%20%20%20%20%20artistName%0A%20%20%20%20%20%20%20%20isrc%0A%20%20%20%20%20%20%20%20images%20%7B%0A%20%20%20%20%20%20%20%20%20%20type%0A%20%20%20%20%20%20%20%20%20%20uri%0A%20%20%20%20%20%20%20%20%20%20__typename%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20__typename%0A%20%20%20%20%20%20%7D%0A%20%20%20%20__typename%0A%20%20%7D%0A%7D&variables=%7B%7D",
-                headers = mapOf("x-api-key" to "")
-            )
-        ),
-        paths = SchemaPaths(
-            tracks = listOf("tracks_", "data", "station", "playouts"),
-            time = SchemaPaths.TimeInfo(
-                start = listOf("broadcastDate"),
-                end = listOf("broadcastDate")
-            ),
-            song = SchemaPaths.SongInfo(
-                artist = listOf("track", "artistName"),
-                title = listOf("track", "title"),
-                imageUrl = listOf("track", "images", 0, "uri")
-            )
-        )
-    )
 
     /**
      * Available presets map - matches the TypeScript configMap

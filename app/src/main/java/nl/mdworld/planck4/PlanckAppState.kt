@@ -21,7 +21,7 @@ import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist
-import nl.mdworld.planck4.views.radio.RadioMetadataManager
+import nl.mdworld.planck4.util.radiometadata.RadioMetadataManager
 import nl.mdworld.planck4.views.song.Song
 
 @Composable
