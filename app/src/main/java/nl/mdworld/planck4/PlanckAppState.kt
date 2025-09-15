@@ -88,6 +88,11 @@ class PlanckAppState (private val context: Context) {
     var isRadioPlaying by mutableStateOf(false)
         private set
 
+    // Radio metadata tracking
+    private var radioMetadataJob: Job? = null
+    var currentRadioMetadata by mutableStateOf<Map<String, String>>(emptyMap())
+        private set
+
     // Progress tracking
     var currentPosition by mutableStateOf(0)
         private set
@@ -326,6 +331,9 @@ class PlanckAppState (private val context: Context) {
                     start()
                     this@PlanckAppState.isRadioPlaying = true
                     this@PlanckAppState.isPlaying = true // Set main playing state for bottom bar
+
+                    // Start metadata monitoring
+                    startRadioMetadataMonitoring(audioUrl)
                 }
 
                 setOnErrorListener { _, _, _ ->
@@ -350,6 +358,7 @@ class PlanckAppState (private val context: Context) {
     }
 
     fun stopRadio() {
+        stopRadioMetadataMonitoring()
         radioPlayer?.let { player ->
             if (player.isPlaying) {
                 player.stop()
@@ -361,6 +370,122 @@ class PlanckAppState (private val context: Context) {
         isRadioPlaying = false
         isPlaying = false
         activeSong = null
+        currentRadioMetadata = emptyMap()
+    }
+
+    // Radio metadata monitoring methods
+    private fun startRadioMetadataMonitoring(streamUrl: String) {
+        stopRadioMetadataMonitoring()
+
+        radioMetadataJob = progressUpdateScope.launch {
+            while (isRadioPlaying) {
+                try {
+                    // Fetch metadata from the stream
+                    val metadata = fetchRadioMetadata(streamUrl)
+                    if (metadata.isNotEmpty()) {
+                        currentRadioMetadata = metadata
+                        logRadioMetadata(metadata)
+                    }
+                    delay(5000) // Check for metadata updates every 5 seconds
+                } catch (e: Exception) {
+                    println("RadioMetadata: Error fetching metadata: ${e.message}")
+                    delay(10000) // Wait longer on error
+                }
+            }
+        }
+    }
+
+    private fun stopRadioMetadataMonitoring() {
+        radioMetadataJob?.cancel()
+        radioMetadataJob = null
+    }
+
+    private suspend fun fetchRadioMetadata(streamUrl: String): Map<String, String> {
+        return withContext(Dispatchers.IO) {
+            val metadata = mutableMapOf<String, String>()
+
+            try {
+                // Try to fetch ICY metadata using HTTP headers first
+                val icyMetadata = fetchICYMetadata(streamUrl)
+                metadata.putAll(icyMetadata)
+
+            } catch (e: Exception) {
+                println("RadioMetadata: Error with ICY metadata: ${e.message}")
+
+                // Fallback: try MediaMetadataRetriever (may not work well with live streams)
+                try {
+                    val retriever = android.media.MediaMetadataRetriever()
+                    retriever.setDataSource(streamUrl, HashMap<String, String>())
+
+                    // Extract available metadata
+                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_TITLE)?.let {
+                        metadata["title"] = it
+                    }
+                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST)?.let {
+                        metadata["artist"] = it
+                    }
+                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM)?.let {
+                        metadata["album"] = it
+                    }
+                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_GENRE)?.let {
+                        metadata["genre"] = it
+                    }
+
+                    retriever.release()
+
+                } catch (e2: Exception) {
+                    println("RadioMetadata: Error with MediaMetadataRetriever: ${e2.message}")
+                }
+            }
+
+            metadata
+        }
+    }
+
+    private suspend fun fetchICYMetadata(streamUrl: String): Map<String, String> {
+        return withContext(Dispatchers.IO) {
+            val metadata = mutableMapOf<String, String>()
+
+            try {
+                val url = java.net.URL(streamUrl)
+                val connection = url.openConnection() as java.net.HttpURLConnection
+
+                // Request ICY metadata
+                connection.setRequestProperty("Icy-MetaData", "1")
+                connection.setRequestProperty("User-Agent", "Planck Radio Player")
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+
+                connection.connect()
+
+                // Extract ICY headers
+                connection.headerFields.forEach { (key, values) ->
+                    if (key?.startsWith("icy-", ignoreCase = true) == true && values.isNotEmpty()) {
+                        val cleanKey = key.removePrefix("icy-").lowercase()
+                        metadata[cleanKey] = values.first()
+                    }
+                }
+
+                connection.disconnect()
+
+            } catch (e: Exception) {
+                println("RadioMetadata: Error fetching ICY metadata: ${e.message}")
+            }
+
+            metadata
+        }
+    }
+
+    private fun logRadioMetadata(metadata: Map<String, String>) {
+        println("=== Radio Metadata Update ===")
+        if (metadata.isEmpty()) {
+            println("No metadata available")
+        } else {
+            metadata.forEach { (key, value) ->
+                println("$key: $value")
+            }
+        }
+        println("=============================")
     }
 
     private fun startProgressUpdates() {
