@@ -52,7 +52,7 @@ class RadioMetadataManager {
                     val metadata = fetchRadioMetadata(streamUrl)
                     if (metadata != null) {
                         onSuccess(metadata)
-                        logRadioMetadata(metadata)
+                        //logRadioMetadata(metadata)
                         delay(5000)
                     } else {
                         delay(10000)

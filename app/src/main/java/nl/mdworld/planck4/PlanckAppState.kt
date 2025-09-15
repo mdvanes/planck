@@ -17,15 +17,14 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import nl.mdworld.planck4.SettingsManager.DEFAULT_RADIO_URL
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
-import nl.mdworld.planck4.util.radiometadata.RadioMetadata
-import nl.mdworld.planck4.util.radiometadata.MetadataCallback
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist
-import nl.mdworld.planck4.views.radio.RadioMetadataManager
 import nl.mdworld.planck4.views.radio.RadioMetadataManagerFactory
 import nl.mdworld.planck4.views.song.Song
+import kotlin.text.get
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -99,7 +98,23 @@ class PlanckAppState(private val context: Context) {
         private set
 
     // Radio metadata tracking using RadioMetadataManager
-    private val radioMetadataManager = RadioMetadataManagerFactory.createForNPORadio2()
+    private var radioMetadataManager: nl.mdworld.planck4.views.radio.RadioMetadataManager =
+        createRadioMetadataManager()
+
+    private fun createRadioMetadataManager(): nl.mdworld.planck4.views.radio.RadioMetadataManager {
+        val url = SettingsManager.getRadioUrl(context)
+        return if (url == SettingsManager.DEFAULT_RADIO_URL) {
+            RadioMetadataManagerFactory.createForNPORadio2()
+        } else {
+            RadioMetadataManagerFactory.createGeneric()
+        }
+    }
+
+    fun updateRadioMetadataManager() {
+        radioMetadataManager.stopMonitoring()
+        radioMetadataManager = createRadioMetadataManager()
+    }
+
     var currentRadioMetadata by mutableStateOf<Map<String, String>>(emptyMap())
         private set
 
@@ -317,7 +332,7 @@ class PlanckAppState(private val context: Context) {
             stopPlayback()
 
             // Create a virtual radio song for display in bottom bar
-            activeSong = Song(
+            val dummySong = Song(
                 id = "radio-stream",
                 title = "Radio 2",
                 artist = "NPO Radio",
@@ -325,6 +340,8 @@ class PlanckAppState(private val context: Context) {
                 duration = 0, // Radio has no duration
                 coverArt = null
             )
+
+            activeSong = dummySong
 
             radioPlayer = MediaPlayer().apply {
                 setAudioAttributes(
@@ -343,28 +360,23 @@ class PlanckAppState(private val context: Context) {
                     this@PlanckAppState.isRadioPlaying = true
                     this@PlanckAppState.isPlaying = true // Set main playing state for bottom bar
 
-
-
                     // Start metadata monitoring using RadioMetadataManager
                     radioMetadataManager.startMonitoring(audioUrl, onSuccess = { metadata ->
-                        println("Radio Metadata: $metadata")
-                        //currentRadioMetadata = metadata
+                        //println("Radio Metadata: $metadata")
+                        val artist = metadata.song.artist ?: "Unknown Artist"
+                        val broadcast = metadata.broadcast?.title ?: "Live Stream"
+
+                        activeSong = Song(
+                            id = "radio-stream",
+                            title = metadata.song.title ?: "Unknown Title",
+                            artist = "$artist - $broadcast",
+                            album = "Radio Stream",
+                            duration = 0,
+                            coverArt = metadata.song.imageUrl ?: metadata.broadcast?.imageUrl
+                        )
                     }, onError = { metadata ->
-                        // currentRadioMetadata = metadata
+                        activeSong = dummySong
                     })
-                    //radioMetadataManager.startMonitoring(audioUrl) { metadata ->
-                    //    currentRadioMetadata = metadata
-                    //}
-                    //radioMetadataManager.startMonitoring(audioUrl, object : MetadataCallback {
-                    //     fun onMetadataUpdate(metadata: RadioMetadata) {
-                    //        currentRadioMetadata = metadata
-                    //        // Optionally update UI or state here
-                    //    }
-                    //
-                    //    override fun onMetadataError(error: Throwable) {
-                    //        // Handle error (e.g., log or show a message)
-                    //    }
-                    //})
                 }
 
                 setOnErrorListener { _, _, _ ->

@@ -14,7 +14,7 @@ object SettingsManager {
     const val DEFAULT_USERNAME = "demo_user"
     const val DEFAULT_SALT = "demo_salt_123"
     const val DEFAULT_API_TOKEN = "demo_token_456789"
-    private const val DEFAULT_RADIO_URL = "https://icecast.omroep.nl/radio2-bb-mp3"
+    const val DEFAULT_RADIO_URL = "https://icecast.omroep.nl/radio2-bb-mp3"
 
     fun saveServerUrl(context: Context, url: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
