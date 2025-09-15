@@ -4,19 +4,25 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist
-import nl.mdworld.planck4.views.song.Song
 import nl.mdworld.planck4.views.radio.RadioMetadataManager
+import nl.mdworld.planck4.views.song.Song
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -324,7 +330,8 @@ class PlanckAppState (private val context: Context) {
                         .build()
                 )
 
-                val audioUrl = "https://icecast.omroep.nl/radio2-bb-mp3"
+                // Use the radio URL from settings
+                val audioUrl = SettingsManager.getRadioUrl(context)
                 setDataSource(audioUrl)
                 prepareAsync()
 

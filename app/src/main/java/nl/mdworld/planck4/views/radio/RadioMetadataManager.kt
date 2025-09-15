@@ -71,35 +71,36 @@ class RadioMetadataManager {
             try {
                 // Try to fetch ICY metadata using HTTP headers first
                 val icyMetadata = fetchICYMetadata(streamUrl)
+                println("RadioMetadata: Fetched ICY metadata: $icyMetadata")
                 metadata.putAll(icyMetadata)
 
             } catch (e: Exception) {
                 println("RadioMetadata: Error with ICY metadata: ${e.message}")
 
                 // Fallback: try MediaMetadataRetriever (may not work well with live streams)
-                try {
-                    val retriever = android.media.MediaMetadataRetriever()
-                    retriever.setDataSource(streamUrl, HashMap<String, String>())
-
-                    // Extract available metadata
-                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_TITLE)?.let {
-                        metadata["title"] = it
-                    }
-                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST)?.let {
-                        metadata["artist"] = it
-                    }
-                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM)?.let {
-                        metadata["album"] = it
-                    }
-                    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_GENRE)?.let {
-                        metadata["genre"] = it
-                    }
-
-                    retriever.release()
-
-                } catch (e2: Exception) {
-                    println("RadioMetadata: Error with MediaMetadataRetriever: ${e2.message}")
-                }
+                //try {
+                //    val retriever = android.media.MediaMetadataRetriever()
+                //    retriever.setDataSource(streamUrl, HashMap<String, String>())
+                //
+                //    // Extract available metadata
+                //    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_TITLE)?.let {
+                //        metadata["title"] = it
+                //    }
+                //    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST)?.let {
+                //        metadata["artist"] = it
+                //    }
+                //    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM)?.let {
+                //        metadata["album"] = it
+                //    }
+                //    retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_GENRE)?.let {
+                //        metadata["genre"] = it
+                //    }
+                //
+                //    retriever.release()
+                //
+                //} catch (e2: Exception) {
+                //    println("RadioMetadata: Error with MediaMetadataRetriever: ${e2.message}")
+                //}
             }
 
             metadata
