@@ -1,6 +1,7 @@
 package nl.mdworld.planck4.views.radio
 
 import kotlinx.coroutines.*
+import nl.mdworld.planck4.util.radiometadata.RadioMetadataUtil
 
 /**
  * Manager class for handling radio stream metadata extraction and monitoring.
@@ -73,6 +74,9 @@ class RadioMetadataManager {
                 val icyMetadata = fetchICYMetadata(streamUrl)
                 println("RadioMetadata: Fetched ICY metadata: $icyMetadata")
                 metadata.putAll(icyMetadata)
+
+                val tracks = RadioMetadataUtil.getRadioMetaData("npo2")
+                println("RadioMetadata: Fetched RadioMetadataUtil metadata: $tracks")
 
             } catch (e: Exception) {
                 println("RadioMetadata: Error with ICY metadata: ${e.message}")
