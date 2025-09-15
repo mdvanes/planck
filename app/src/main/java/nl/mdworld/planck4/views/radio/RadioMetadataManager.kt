@@ -8,7 +8,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import nl.mdworld.planck4.util.radiometadata.MetadataCallback
 import nl.mdworld.planck4.util.radiometadata.RadioMetadata
 import nl.mdworld.planck4.util.radiometadata.strategies.IcyMetadataStrategy
 import nl.mdworld.planck4.util.radiometadata.strategies.MetadataStrategy
@@ -40,32 +39,6 @@ class RadioMetadataManager {
      * @param streamUrl The radio stream URL to monitor
      * @param callback Callback for metadata updates and errors
      */
-    //fun startMonitoring(
-    //    streamUrl: String,
-    //    callback: MetadataCallback
-    //) {
-    //    stopMonitoring()
-    //
-    //    metadataJob = scope.launch {
-    //        while (isActive) {
-    //            try {
-    //                val metadata = fetchRadioMetadata(streamUrl)
-    //                if (metadata != null) {
-    //                    callback.onMetadataUpdate(metadata)
-    //                    logRadioMetadata(metadata)
-    //                    delay(5000) // Check for metadata updates every 5 seconds
-    //                } else {
-    //                    delay(10000) // Wait longer if no metadata found
-    //                }
-    //            } catch (e: Exception) {
-    //                val errorMsg = "Error fetching metadata: ${e.message}"
-    //                println("RadioMetadata: $errorMsg")
-    //                callback.onMetadataError(errorMsg)
-    //                delay(10000) // Wait longer on error
-    //            }
-    //        }
-    //    }
-    //}
     fun startMonitoring(
         streamUrl: String,
         onSuccess: (RadioMetadata) -> Unit,

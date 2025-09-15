@@ -8,10 +8,8 @@ import nl.mdworld.planck4.util.radiometadata.RadioMetadata
 class ApiMetadataStrategy(private val presetName: String) : MetadataStrategy {
     override suspend fun fetchMetadata(streamUrl: String): RadioMetadata? {
         return try {
-            println("ApiMetadataStrategy: Fetching metadata for preset $presetName")
             val tracks = ApiMetadataUtil.getRadioMetaData(presetName)
             val firstTrack = tracks.firstOrNull()
-            println("ApiMetadataStrategy: Fetched ${tracks.size} tracks $firstTrack")
             firstTrack
         } catch (e: Exception) {
             println("ApiMetadataStrategy: Error fetching metadata for $presetName: ${e.message}")

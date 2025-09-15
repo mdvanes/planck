@@ -15,7 +15,7 @@ val NPO2_PRESET = RadioSchema(
             "tracks_",
             "https://www.nporadio2.nl/api/tracks",
             //"https://jsonplaceholder.typicode.com/users",
-            headers = mapOf("User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:142.0) Gecko/20100101 Firefox/142.0")
+            //headers = mapOf("User-Agent" to "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:142.0) Gecko/20100101 Firefox/142.0")
         ),
         UrlConfig("broadcasts_", "https://www.nporadio2.nl/api/broadcasts")
     ),

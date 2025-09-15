@@ -3,10 +3,11 @@ package nl.mdworld.planck4.util.radiometadata.strategies
 import android.R.attr.y
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -26,7 +27,6 @@ import nl.mdworld.planck4.util.radiometadata.presets.SKY_PRESET
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.collections.fold
-import kotlin.printStackTrace
 
 
 object ApiMetadataUtil {
@@ -64,7 +64,7 @@ object ApiMetadataUtil {
         }
 
         val firstUrl = schema.urls.firstOrNull()?.url
-        println("ApiMetadataUtil: first url = $firstUrl")
+        //println("ApiMetadataUtil: first url = $firstUrl")
 
         return coroutineScope {
             // Fetch all URLs concurrently
@@ -83,7 +83,7 @@ object ApiMetadataUtil {
                 try {
                     val track = trackElement.jsonObject
 
-                    println("ApiMetadataUtil: Processing track: $track")
+                    //println("ApiMetadataUtil: Processing track: $track")
 
                     RadioMetadata(
                         time = TimeInfo(
@@ -122,39 +122,23 @@ object ApiMetadataUtil {
                 schema.paths.tracks.isNotEmpty()
     }
 
-    //suspend fun foo(url: String) {
-    //    val y = ktorHttpClient.get(url)
-    //        .body<String>()
-    //    println("ApiMetadataUtil: Fetched JSON from $url: $y")
-    //}
-
     /**
      * Fetch JSON from URL with optional headers
      */
-    private fun fetchJson(url: String, headers: Map<String, String>?): JsonElement {
-        return try {
-            //val url2 = URL("https://jsonplaceholder.typicode.com/users")
-            //println("ApiMetadataUtil: Fetching JSON from $url2")
-            //val response1 = url2.openStream().bufferedReader().use { it.readText() }
-            //println("r1: $response1")
-
+    private suspend fun fetchJson(url: String, headers: Map<String, String>?): JsonElement = withContext(Dispatchers.IO) {
+        try {
             val connection = URL(url).openConnection() as HttpURLConnection
             headers?.forEach { (key, value) ->
-                println("ApiMetadataUtil: Header - $key: $value")
                 connection.setRequestProperty(key, value)
             }
             connection.requestMethod = "GET"
             connection.connectTimeout = 10000
             connection.readTimeout = 10000
 
-            println("ApiMetadataUtil: Response code: ${connection.responseCode}")
             val response = connection.inputStream.bufferedReader().use { it.readText() }
-            println("ApiMetadataUtil: Response body: $response")
-            Json.parseToJsonElement(response)
-            //JsonObject(emptyMap())
+            kotlinx.serialization.json.Json.parseToJsonElement(response)
         } catch (e: Exception) {
             println("ApiMetadataUtil: Exception: ${e::class.simpleName} - ${e.message}")
-            //e.printStackTrace()
             JsonObject(emptyMap())
         }
     }
