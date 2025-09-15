@@ -23,6 +23,7 @@ import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.library.ArtistCardList
 import nl.mdworld.planck4.views.playlists.Playlist
 import nl.mdworld.planck4.views.playlists.PlaylistCardList
+import nl.mdworld.planck4.views.radio.RadioScreen
 import nl.mdworld.planck4.views.settings.SettingsScreen
 import nl.mdworld.planck4.views.song.Song
 import nl.mdworld.planck4.views.song.SongCardList
@@ -232,6 +233,12 @@ fun PlanckApp(
                 AppScreen.SETTINGS -> {
                     SettingsScreen(
                         onNavigateBack = { appState.navigateToPlaylists() },
+                        appState = appState
+                    )
+                }
+
+                AppScreen.RADIO -> {
+                    RadioScreen(
                         appState = appState
                     )
                 }

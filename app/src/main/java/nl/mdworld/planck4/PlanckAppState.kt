@@ -28,7 +28,8 @@ enum class AppScreen {
     SETTINGS,
     ARTISTS,
     ALBUMS,
-    ALBUM_SONGS
+    ALBUM_SONGS,
+    RADIO
 }
 
 class PlanckAppState (private val context: Context) {
@@ -115,6 +116,10 @@ class PlanckAppState (private val context: Context) {
     }
 
     // Library navigation methods
+    fun navigateToRadio() {
+        currentScreen = AppScreen.RADIO
+    }
+
     fun navigateToArtists() {
         currentScreen = AppScreen.ARTISTS
         // Clear any previous album selection

@@ -1,6 +1,5 @@
 package nl.mdworld.planck4
 
-import android.R.attr.onClick
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.layout.Arrangement
@@ -142,38 +141,7 @@ fun PlanckBottomAppBar(
     }
 
 
-    val radioButton = @Composable {
-        IconButton(onClick = {
-            if (appState != null) {
-                if (appState.isRadioPlaying) {
-                    appState.stopRadio()
-                } else {
-                    appState.startRadio()
-                }
-            } else {
-                val mediaPlayer = MediaPlayer()
-                val audioUrl = SettingsManager.getRadioUrl(context)
-                mediaPlayer.setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
-                try {
-                    mediaPlayer.setDataSource(audioUrl)
-                    mediaPlayer.prepare()
-                    mediaPlayer.start()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }, modifier = Modifier.padding(horizontal = 2.dp)) {
-            Icon(
-                imageVector = if (appState?.isRadioPlaying == true) Icons.Filled.StopCircle else Icons.Filled.Radio,
-                contentDescription = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
-                modifier = Modifier.size(BottomAppBar.IconSize),
-            )
-        }
-    }
+
 
     Column {
         // Progress bar at the top
@@ -291,7 +259,12 @@ fun PlanckBottomAppBar(
                                     onClick = { appState?.navigateToArtists() }
                                 )
 
-                                radioButton()
+                                NavigationButton(
+                                    icon = Icons.Filled.Radio,
+                                    contentDescription = "Radio",
+                                    isSelected = currentScreen == AppScreen.RADIO,
+                                    onClick = { appState?.navigateToRadio() }
+                                )
 
                                 NavigationButton(
                                     icon = Icons.Filled.Settings,
