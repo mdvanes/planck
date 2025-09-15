@@ -214,21 +214,45 @@ class PlanckAppState (private val context: Context) {
     }
 
     fun pausePlayback() {
-        mediaPlayer?.let { player ->
-            if (player.isPlaying) {
-                player.pause()
-                isPlaying = false
-                stopProgressUpdates()
+        if (isRadioPlaying) {
+            // Handle radio pause
+            radioPlayer?.let { player ->
+                if (player.isPlaying) {
+                    player.pause()
+                    isPlaying = false
+                    isRadioPlaying = false
+                }
+            }
+        } else {
+            // Handle regular song pause
+            mediaPlayer?.let { player ->
+                if (player.isPlaying) {
+                    player.pause()
+                    isPlaying = false
+                    stopProgressUpdates()
+                }
             }
         }
     }
 
     fun resumePlayback() {
-        mediaPlayer?.let { player ->
-            if (!player.isPlaying) {
-                player.start()
-                isPlaying = true
-                startProgressUpdates()
+        if (activeSong?.id == "radio-stream") {
+            // Handle radio resume
+            radioPlayer?.let { player ->
+                if (!player.isPlaying) {
+                    player.start()
+                    isPlaying = true
+                    isRadioPlaying = true
+                }
+            }
+        } else {
+            // Handle regular song resume
+            mediaPlayer?.let { player ->
+                if (!player.isPlaying) {
+                    player.start()
+                    isPlaying = true
+                    startProgressUpdates()
+                }
             }
         }
     }
@@ -277,6 +301,16 @@ class PlanckAppState (private val context: Context) {
             // Stop regular music playback to avoid conflicts
             stopPlayback()
 
+            // Create a virtual radio song for display in bottom bar
+            activeSong = Song(
+                id = "radio-stream",
+                title = "Radio 2",
+                artist = "NPO Radio",
+                album = "Live Stream",
+                duration = 0, // Radio has no duration
+                coverArt = null
+            )
+
             radioPlayer = MediaPlayer().apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -291,20 +325,27 @@ class PlanckAppState (private val context: Context) {
                 setOnPreparedListener {
                     start()
                     this@PlanckAppState.isRadioPlaying = true
+                    this@PlanckAppState.isPlaying = true // Set main playing state for bottom bar
                 }
 
                 setOnErrorListener { _, _, _ ->
                     this@PlanckAppState.isRadioPlaying = false
+                    this@PlanckAppState.isPlaying = false
+                    this@PlanckAppState.activeSong = null
                     false
                 }
 
                 setOnCompletionListener {
                     this@PlanckAppState.isRadioPlaying = false
+                    this@PlanckAppState.isPlaying = false
+                    this@PlanckAppState.activeSong = null
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
             isRadioPlaying = false
+            isPlaying = false
+            activeSong = null
         }
     }
 
@@ -318,6 +359,8 @@ class PlanckAppState (private val context: Context) {
         }
         radioPlayer = null
         isRadioPlaying = false
+        isPlaying = false
+        activeSong = null
     }
 
     private fun startProgressUpdates() {
