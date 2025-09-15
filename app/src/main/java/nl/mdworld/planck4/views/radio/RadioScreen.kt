@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
@@ -87,29 +89,44 @@ fun RadioScreen(
                 .padding(horizontal = 32.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                startRadioButton()
+            Row {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    startRadioButton()
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                if (appState?.isRadioPlaying == true) {
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Now Playing",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        text = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    if (appState?.isRadioPlaying == true) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Now Playing",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                Column ( modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    AsyncImage(
+                        model = appState?.activeSong?.coverArt,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(180.dp)
                     )
                 }
             }
+
+
         }
     }
 }
