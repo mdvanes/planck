@@ -49,17 +49,15 @@ fun SettingsScreen(
     // Load current values from settings
     var serverUrl by remember { mutableStateOf(SettingsManager.getServerUrl(context)) }
     var username by remember { mutableStateOf(SettingsManager.getUsername(context)) }
-    var salt by remember { mutableStateOf(SettingsManager.getSalt(context)) }
-    var apiToken by remember { mutableStateOf(SettingsManager.getApiToken(context)) }
+    var password by remember { mutableStateOf(SettingsManager.getPassword(context)) }
     var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
     // Track changes to enable save button
-    LaunchedEffect(serverUrl, username, salt, apiToken, radioUrl) {
+    LaunchedEffect(serverUrl, username, password, radioUrl) {
         hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context) ||
                 username != SettingsManager.getUsername(context) ||
-                salt != SettingsManager.getSalt(context) ||
-                apiToken != SettingsManager.getApiToken(context) ||
+                password != SettingsManager.getPassword(context) ||
                 radioUrl != SettingsManager.getRadioUrl(context)
     }
 
@@ -111,34 +109,13 @@ fun SettingsScreen(
                 placeholder = { Text("your_username") }
             )
 
-            var passwordVisibility1 by remember { mutableStateOf(false) }
-            OutlinedTextField(
-                value = salt,
-                onValueChange = { salt = it },
-                label = { Text("Salt") },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("random_salt_value") },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Password
-                ),
-                visualTransformation = if (passwordVisibility1) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    TextButton(onClick = { passwordVisibility1 = !passwordVisibility1 }) {
-                        Text(
-                            text = if (passwordVisibility1) "Hide" else "Show",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            )
-
             var passwordVisibility by remember { mutableStateOf(false) }
             OutlinedTextField(
-                value = apiToken,
-                onValueChange = { apiToken = it },
-                label = { Text("API Token") },
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("your_api_token") },
+                placeholder = { Text("random_password") },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Password
                 ),
@@ -174,8 +151,7 @@ fun SettingsScreen(
                     // Save all settings
                     SettingsManager.saveServerUrl(context, serverUrl)
                     SettingsManager.saveUsername(context, username)
-                    SettingsManager.saveSalt(context, salt)
-                    SettingsManager.saveApiToken(context, apiToken)
+                    SettingsManager.savePassword(context, password)
                     SettingsManager.saveRadioUrl(context, radioUrl)
                     hasUnsavedChanges = false
 

@@ -1,8 +1,9 @@
 package nl.mdworld.planck4.networking.subsonic
 
 import android.content.Context
-import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
+import java.security.MessageDigest
+import java.util.UUID
 
 object SubsonicUrlBuilder {
     private const val API_VERSION = "1.16.0"
@@ -13,7 +14,12 @@ object SubsonicUrlBuilder {
      * Builds the API configuration string with authentication parameters
      */
     fun buildApiConfig(context: Context): String {
-        return "?u=${SettingsManager.getUsername(context)}&t=${SettingsManager.getApiToken(context)}&s=${SettingsManager.getSalt(context)}&v=$API_VERSION&c=$PLAYER_NAME&f=$FORMAT"
+        val salt = UUID.randomUUID().toString().replace("-", "").take(12)
+        val passAndSalt = "${SettingsManager.getPassword(context)}$salt"
+        val md = MessageDigest.getInstance("MD5")
+        val hashBytes = md.digest(passAndSalt.toByteArray())
+        val token = hashBytes.joinToString("") { "%02x".format(it) }
+        return "?u=${SettingsManager.getUsername(context)}&t=${token}&s=${salt}&v=$API_VERSION&c=$PLAYER_NAME&f=$FORMAT"
     }
 
     /**

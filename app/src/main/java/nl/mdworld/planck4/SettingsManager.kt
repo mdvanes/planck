@@ -6,14 +6,12 @@ object SettingsManager {
     private const val PREFS_NAME = "planck_prefs"
     private const val KEY_SERVER_URL = "server_url"
     private const val KEY_USERNAME = "username"
-    private const val KEY_SALT = "salt"
-    private const val KEY_API_TOKEN = "api_token"
+    private const val KEY_PASSWORD = "password"
     private const val KEY_RADIO_URL = "radio_url"
 
     private const val DEFAULT_SERVER_URL = "https://example.com/rest/"
     const val DEFAULT_USERNAME = "demo_user"
-    const val DEFAULT_SALT = "demo_salt_123"
-    const val DEFAULT_API_TOKEN = "demo_token_456789"
+    const val DEFAULT_PASSWORD = "demo_password"
     const val DEFAULT_RADIO_URL = "https://icecast.omroep.nl/radio2-bb-mp3"
 
     fun saveServerUrl(context: Context, url: String) {
@@ -36,24 +34,14 @@ object SettingsManager {
         return prefs.getString(KEY_USERNAME, DEFAULT_USERNAME) ?: DEFAULT_USERNAME
     }
 
-    fun saveSalt(context: Context, salt: String) {
+    fun savePassword(context: Context, token: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_SALT, salt).apply()
+        prefs.edit().putString(KEY_PASSWORD, token).apply()
     }
 
-    fun getSalt(context: Context): String {
+    fun getPassword(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_SALT, DEFAULT_SALT) ?: DEFAULT_SALT
-    }
-
-    fun saveApiToken(context: Context, token: String) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(KEY_API_TOKEN, token).apply()
-    }
-
-    fun getApiToken(context: Context): String {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_API_TOKEN, DEFAULT_API_TOKEN) ?: DEFAULT_API_TOKEN
+        return prefs.getString(KEY_PASSWORD, DEFAULT_PASSWORD) ?: DEFAULT_PASSWORD
     }
 
     fun saveRadioUrl(context: Context, url: String) {

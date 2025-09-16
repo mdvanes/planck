@@ -9,10 +9,9 @@ import nl.mdworld.planck4.networking.ktorHttpClient
 class SubsonicApi {
 
     private fun areCredentialsValid(context: Context): Boolean {
-        val apiToken = SettingsManager.getApiToken(context)
-        val salt = SettingsManager.getSalt(context)
         val username = SettingsManager.getUsername(context)
-        return !(apiToken == SettingsManager.DEFAULT_API_TOKEN || salt == SettingsManager.DEFAULT_SALT || salt.isEmpty() || username.isEmpty())
+        val password = SettingsManager.getPassword(context)
+        return password != SettingsManager.DEFAULT_PASSWORD && !password.isEmpty() && username != SettingsManager.DEFAULT_USERNAME && !username.isEmpty()
     }
 
     suspend fun getPlaylistsKtor(context: Context): SubsonicPlaylistsResponse {
