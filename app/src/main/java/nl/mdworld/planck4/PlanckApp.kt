@@ -1,5 +1,6 @@
 package nl.mdworld.planck4
 
+import android.util.Log
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,7 +10,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
@@ -33,6 +36,7 @@ fun PlanckApp(
     appState: PlanckAppState = rememberPlanckAppState()
 ) {
     val context = LocalContext.current
+    val focusParkingRequester = remember { FocusRequester() }
 
     // Load playlists on app start
     LaunchedEffect(Unit) {
@@ -173,74 +177,85 @@ fun PlanckApp(
         }
     }
 
-    Scaffold(
-        bottomBar = {
-            PlanckBottomAppBar(
-                currentScreen = appState.currentScreen,
-                onNavigateBack = { appState.navigateToPlaylists() },
-                activeSong = appState.activeSong,
-                onNavigateToSettings = { appState.navigateToSettings() },
-                appState = appState
-            )
+    // Add Focus Parking View for rotary controller support
+    FocusParkingView(focusRequester = focusParkingRequester)
+
+    RotaryControllerHandler(
+        onRotaryConfirmClick = {
+            // Handle rotary confirm button - you can add your next song logic here
+            Log.d("PlanckApp", "🎵 ROTARY CONFIRM CLICKED - Ready to implement next song!")
+            // Example: appState.playNextSong() - you can add this later
         }
-    ) { innerPadding ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    top = innerPadding.calculateTopPadding(),
-                    start = innerPadding.calculateStartPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
-                    end = innerPadding.calculateEndPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
-                    bottom = 0.dp // Remove excessive bottom padding
-                ),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            when (appState.currentScreen) {
-                AppScreen.PLAYLISTS -> {
-                    PlaylistCardList(
-                        modifier = Modifier,
-                        playlists = appState.playlists,
-                        appState = appState
-                    )
-                }
+    ) {
+        Scaffold(
+            bottomBar = {
+                PlanckBottomAppBar(
+                    currentScreen = appState.currentScreen,
+                    onNavigateBack = { appState.navigateToPlaylists() },
+                    activeSong = appState.activeSong,
+                    onNavigateToSettings = { appState.navigateToSettings() },
+                    appState = appState
+                )
+            }
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = innerPadding.calculateTopPadding(),
+                        start = innerPadding.calculateStartPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
+                        end = innerPadding.calculateEndPadding(layoutDirection = androidx.compose.ui.unit.LayoutDirection.Ltr),
+                        bottom = 0.dp // Remove excessive bottom padding
+                    ),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                when (appState.currentScreen) {
+                    AppScreen.PLAYLISTS -> {
+                        PlaylistCardList(
+                            modifier = Modifier,
+                            playlists = appState.playlists,
+                            appState = appState
+                        )
+                    }
 
-                AppScreen.SONGS -> {
-                    SongCardList(
-                        songs = appState.songs.toList(),
-                        playlistTitle = appState.selectedPlaylistName ?: "Playlist",
-                        currentlyPlayingSong = appState.activeSong,
-                        onSongClick = { song -> appState.playStream(song) }
-                    )
-                }
+                    AppScreen.SONGS -> {
+                        SongCardList(
+                            songs = appState.songs.toList(),
+                            playlistTitle = appState.selectedPlaylistName ?: "Playlist",
+                            currentlyPlayingSong = appState.activeSong,
+                            onSongClick = { song -> appState.playStream(song) }
+                        )
+                    }
 
-                AppScreen.ARTISTS -> {
-                    ArtistCardList(appState.artists, appState)
-                }
+                    AppScreen.ARTISTS -> {
+                        ArtistCardList(appState.artists, appState)
+                    }
 
-                AppScreen.ALBUMS -> {
-                    AlbumCardList(appState.albums, appState)
-                }
+                    AppScreen.ALBUMS -> {
+                        AlbumCardList(appState.albums, appState)
+                    }
 
-                AppScreen.ALBUM_SONGS -> {
-                    SongCardList(
-                        songs = appState.songs.toList(),
-                        playlistTitle = appState.selectedAlbumName ?: "Album",
-                        currentlyPlayingSong = appState.activeSong,
-                        onSongClick = { song -> appState.playStream(song) }
-                    )
-                }
+                    AppScreen.ALBUM_SONGS -> {
+                        SongCardList(
+                            songs = appState.songs.toList(),
+                            playlistTitle = appState.selectedAlbumName ?: "Album",
+                            currentlyPlayingSong = appState.activeSong,
+                            onSongClick = { song -> appState.playStream(song) }
+                        )
+                    }
 
-                AppScreen.SETTINGS -> {
-                    SettingsScreen(
-                        onNavigateBack = { appState.navigateToPlaylists() },
-                        appState = appState
-                    )
-                }
+                    AppScreen.SETTINGS -> {
+                        SettingsScreen(
+                            onNavigateBack = { appState.navigateToPlaylists() },
+                            appState = appState
+                        )
+                    }
 
-                AppScreen.RADIO -> {
-                    RadioScreen(
-                        appState = appState
-                    )
+                    AppScreen.RADIO -> {
+                        RadioScreen(
+                            appState = appState
+                        )
+                    }
                 }
             }
         }

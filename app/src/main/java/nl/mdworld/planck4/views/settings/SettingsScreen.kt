@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import nl.mdworld.planck4.BuildConfig
+import nl.mdworld.planck4.KeyCodeTracker
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.SettingsManager
 
@@ -138,12 +139,13 @@ fun SettingsScreen(
                 placeholder = { Text("https://your-radio.com/stream/") }
             )
 
-            var cacheEnabled by remember { mutableStateOf(true) }
-            SettingsSwitch(
-                label = "Enable Caching",
-                checked = cacheEnabled,
-                onCheckedChange = { cacheEnabled = it }
-            )
+            // TODO leave this toggle for now, until caching is implemented
+            //var cacheEnabled by remember { mutableStateOf(true) }
+            //SettingsSwitch(
+            //    label = "Enable Caching",
+            //    checked = cacheEnabled,
+            //    onCheckedChange = { cacheEnabled = it }
+            //)
 
             // Save button with reload functionality
             Button(
@@ -162,6 +164,35 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Save Settings")
+            }
+        }
+
+        // Debug Section - Key Code Tracker
+        SettingsSection(
+            title = "Debug - Key Codes"
+        ) {
+            val keyCodes = KeyCodeTracker.keyCodes
+
+            if (keyCodes.isEmpty()) {
+                SettingsItem(
+                    label = "No key codes pressed yet",
+                    value = "Press car buttons to see them here"
+                )
+            } else {
+                keyCodes.forEachIndexed { index, keyCode ->
+                    SettingsItem(
+                        label = "${index + 1}.",
+                        value = keyCode
+                    )
+                }
+            }
+
+            // Clear button
+            Button(
+                onClick = { KeyCodeTracker.clear() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Clear Key Codes")
             }
         }
 
