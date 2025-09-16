@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
             KeyEvent.KEYCODE_DPAD_RIGHT -> "DPAD_RIGHT"
             else -> KeyEvent.keyCodeToString(keyCode)
         }
-        KeyCodeTracker.addKeyCode(keyCode, keyName)
+        KeyCodeTracker.addKeyCode(keyCode.toString(), keyName.toString())
 
         when (keyCode) {
             KeyEvent.KEYCODE_DPAD_CENTER -> {
@@ -112,6 +112,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d("MainActivity", "🎵 KEY UP - KeyCode: $keyCode, Event: $event")
+        KeyCodeTracker.addKeyCode(keyCode.toString(), event?.keyCode.toString())
         return super.onKeyUp(keyCode, event)
     }
 }

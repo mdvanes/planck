@@ -40,6 +40,7 @@ fun RotaryControllerHandler(
             .focusable()
             .onKeyEvent { keyEvent ->
                 Log.d("RotaryController", "🎵 KEY EVENT: ${keyEvent.key} - ${keyEvent.type}")
+                KeyCodeTracker.addKeyCode(keyEvent.key.toString(), keyEvent.type.toString())
 
                 when {
                     keyEvent.key == Key.DirectionCenter && keyEvent.type == KeyEventType.KeyDown -> {

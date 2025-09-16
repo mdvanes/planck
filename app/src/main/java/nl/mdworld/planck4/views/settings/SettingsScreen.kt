@@ -171,20 +171,28 @@ fun SettingsScreen(
         SettingsSection(
             title = "Debug - Key Codes"
         ) {
-            val keyCodes = KeyCodeTracker.keyCodes
-
-            if (keyCodes.isEmpty()) {
+            if (KeyCodeTracker.keyCodes.isEmpty()) {
                 SettingsItem(
                     label = "No key codes pressed yet",
                     value = "Press car buttons to see them here"
                 )
             } else {
-                keyCodes.forEachIndexed { index, keyCode ->
+                KeyCodeTracker.keyCodes.forEachIndexed { index, keyCode ->
                     SettingsItem(
                         label = "${index + 1}.",
                         value = keyCode
                     )
                 }
+            }
+
+            // Test button to verify UI updates
+            Button(
+                onClick = {
+                    KeyCodeTracker.addKeyCode("999", "TEST_BUTTON")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Add Test Key Code")
             }
 
             // Clear button
