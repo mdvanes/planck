@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.networking.subsonic.SubsonicPlaylistsResponse
@@ -37,6 +38,12 @@ fun PlanckApp(
 ) {
     val context = LocalContext.current
     val focusParkingRequester = remember { FocusRequester() }
+    val mainViewModel: MainViewModel = viewModel()
+
+    // Keep MainViewModel in sync with PlanckAppState
+    LaunchedEffect(appState) {
+        mainViewModel.setAppState(appState)
+    }
 
     // Load playlists on app start
     LaunchedEffect(Unit) {

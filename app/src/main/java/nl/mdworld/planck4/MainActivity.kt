@@ -6,10 +6,13 @@ import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 class MainActivity : ComponentActivity() {
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before calling super.onCreate()
         installSplashScreen()
@@ -78,7 +81,8 @@ class MainActivity : ComponentActivity() {
 
         if(keyCode == KeyEvent.KEYCODE_S) {
             println("pause / play")
-            // FIXME handlePlayPause(this, appState)
+            val appState = mainViewModel.appState.value
+            handlePlayPause(this, appState)
         }
 
         //// Track key codes for debugging in Settings
