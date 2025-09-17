@@ -1,5 +1,6 @@
 package nl.mdworld.planck4.views.radio
 
+import android.R.attr.contentDescription
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.Image
@@ -11,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -18,14 +22,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 import nl.mdworld.planck4.views.song.BackgroundCoverArt
 import java.time.LocalDateTime
@@ -76,7 +83,12 @@ fun RadioScreen(
             modifier = Modifier.size(100.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.npo_radio_2),
+                painter = painterResource(
+                    id = if (appState?.isRadioPlaying == true)
+                        R.drawable.npo_radio_2
+                    else
+                        R.drawable.npo_radio_2_disabled
+                ),
                 contentDescription = "Start Radio",
                 modifier = Modifier.size(100.dp)
             )
@@ -101,9 +113,17 @@ fun RadioScreen(
 
                 startRadioButton()
 
-                startRadioButton()
+                Image(
+                    painter = painterResource(id = R.drawable.sky_radio),
+                    contentDescription = "Dummy Radio",
+                    modifier = Modifier.size(100.dp)
+                )
 
-                startRadioButton()
+                Image(
+                    painter = painterResource(id = R.drawable.sky_radio),
+                    contentDescription = "Dummy Radio",
+                    modifier = Modifier.size(100.dp)
+                )
             }
 
             if (firstTrack?.song?.title != null) {
@@ -158,9 +178,51 @@ fun RadioScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+
+                // Previous tracks list (excluding the first/current track)
+                val previousTracks = appState?.radioMetadata?.drop(1).orEmpty()
+                if (previousTracks.isNotEmpty()) {
+                    Text(
+                        text = "Previous tracks",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = true),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(previousTracks) { track ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                val start = track.time?.start?.let { runCatching { formatFromIsoString(it) }.getOrElse { "--:--" } } ?: "--:--"
+                                Text(
+                                    text = start,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Text(
+                                    text = track.song.title ?: "Title",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f, fill = true)
+                                )
+                                Text(
+                                    text = track.song.artist ?: "Artist",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
-
+            // TODO list of all previous tracks (implemented above)
         }
 
 
