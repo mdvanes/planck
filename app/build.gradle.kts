@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "nl.mdworld.planck4"
-        minSdk = 24
+        minSdk = 30
         targetSdk = 36
         versionCode = 18
         versionName = "1.0.18"
