@@ -33,40 +33,42 @@ fun RotaryControllerHandler(
         focusRequester.requestFocus()
     }
 
+    // TODO remove full RotaryControllerHandler?
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
             .focusable()
-            .onKeyEvent { keyEvent ->
-                Log.d("RotaryController", "🎵 KEY EVENT: ${keyEvent.key} - ${keyEvent.type}")
-                KeyCodeTracker.addKeyCode(keyEvent.key.toString(), keyEvent.type.toString())
-
-                when {
-                    keyEvent.key == Key.DirectionCenter && keyEvent.type == KeyEventType.KeyDown -> {
-                        Log.d("RotaryController", "🎵 CAR ROTARY CONFIRM BUTTON CLICKED!")
-                        onRotaryConfirmClick()
-                        true
-                    }
-                    keyEvent.key == Key.DirectionUp && keyEvent.type == KeyEventType.KeyDown -> {
-                        Log.d("RotaryController", "🎵 CAR ROTARY UP!")
-                        true
-                    }
-                    keyEvent.key == Key.DirectionDown && keyEvent.type == KeyEventType.KeyDown -> {
-                        Log.d("RotaryController", "🎵 CAR ROTARY DOWN!")
-                        true
-                    }
-                    keyEvent.key == Key.DirectionLeft && keyEvent.type == KeyEventType.KeyDown -> {
-                        Log.d("RotaryController", "🎵 CAR ROTARY LEFT!")
-                        true
-                    }
-                    keyEvent.key == Key.DirectionRight && keyEvent.type == KeyEventType.KeyDown -> {
-                        Log.d("RotaryController", "🎵 CAR ROTARY RIGHT!")
-                        true
-                    }
-                    else -> false
-                }
-            }
+            //.onKeyEvent { keyEvent ->
+            //    Log.d("RotaryController", "🎵 KEY EVENT: ${keyEvent.key} - ${keyEvent.type}")
+            //    KeyCodeTracker.addKeyCode(keyEvent.key.toString(), keyEvent.type.toString())
+            //
+            //    when {
+            //        keyEvent.key == Key.DirectionCenter && keyEvent.type == KeyEventType.KeyDown -> {
+            //            Log.d("RotaryController", "🎵 CAR ROTARY CONFIRM BUTTON CLICKED!")
+            //            onRotaryConfirmClick()
+            //            true
+            //        }
+            //        keyEvent.key == Key.DirectionUp && keyEvent.type == KeyEventType.KeyDown -> {
+            //            Log.d("RotaryController", "🎵 CAR ROTARY UP!")
+            //            true
+            //        }
+            //        keyEvent.key == Key.DirectionDown && keyEvent.type == KeyEventType.KeyDown -> {
+            //            Log.d("RotaryController", "🎵 CAR ROTARY DOWN!")
+            //            true
+            //        }
+            //        keyEvent.key == Key.DirectionLeft && keyEvent.type == KeyEventType.KeyDown -> {
+            //            Log.d("RotaryController", "🎵 CAR ROTARY LEFT!")
+            //            true
+            //        }
+            //        keyEvent.key == Key.DirectionRight && keyEvent.type == KeyEventType.KeyDown -> {
+            //            Log.d("RotaryController", "🎵 CAR ROTARY RIGHT!")
+            //            true
+            //        }
+            //        else -> false
+            //    }
+            //}
     ) {
         content()
     }

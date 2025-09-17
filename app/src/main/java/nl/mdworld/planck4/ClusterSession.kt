@@ -1,5 +1,6 @@
 package nl.mdworld.planck4
 
+import android.util.Log
 import androidx.car.app.Screen
 import androidx.car.app.Session
 import androidx.car.app.model.MessageTemplate
@@ -9,6 +10,7 @@ import androidx.car.app.model.Header
 
 class ClusterSession : Session() {
     override fun onCreateScreen(intent: android.content.Intent): Screen {
+        Log.d("ClusterCarAppService", "Session created")
         val screen = ClusterScreen(carContext)
         ClusterScreen.currentScreen = screen
         return screen

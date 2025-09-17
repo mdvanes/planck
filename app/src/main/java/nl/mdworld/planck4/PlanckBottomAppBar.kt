@@ -1,5 +1,6 @@
 package nl.mdworld.planck4
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +38,32 @@ import androidx.compose.ui.unit.sp
 import nl.mdworld.planck4.views.components.BottomAppBar
 import nl.mdworld.planck4.views.components.NavigationButton
 import nl.mdworld.planck4.views.song.Song
+
+fun handlePlayPause(context: Context, appState: PlanckAppState?) {
+    val activeSong = appState?.activeSong
+    if (appState != null && activeSong != null) {
+        if (appState.isPlaying) {
+            appState.pausePlayback()
+        } else {
+            appState.resumePlayback()
+        }
+    } else {
+        val mediaPlayer = MediaPlayer()
+        val audioUrl = SettingsManager.getRadioUrl(context)
+        mediaPlayer.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .build()
+        )
+        try {
+            mediaPlayer.setDataSource(audioUrl)
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
 
 
 @Composable
@@ -106,32 +132,12 @@ fun PlanckBottomAppBar(
         }
     }
 
-
     val playPauseButton = @Composable {
-        IconButton(onClick = {
-            if (appState != null && activeSong != null) {
-                if (appState.isPlaying) {
-                    appState.pausePlayback()
-                } else {
-                    appState.resumePlayback()
-                }
-            } else {
-                val mediaPlayer = MediaPlayer()
-                val audioUrl = SettingsManager.getRadioUrl(context)
-                mediaPlayer.setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
-                try {
-                    mediaPlayer.setDataSource(audioUrl)
-                    mediaPlayer.prepare()
-                    mediaPlayer.start()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }, modifier = Modifier.padding(horizontal = 2.dp)) {
+        IconButton(
+            onClick =
+                { handlePlayPause(context, appState) }, modifier = Modifier
+                .padding(horizontal = 2.dp)
+        ) {
             Icon(
                 imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 contentDescription = if (appState?.isPlaying == true) "Pause" else "Play",
@@ -139,9 +145,6 @@ fun PlanckBottomAppBar(
             )
         }
     }
-
-
-
 
     Column {
         // Progress bar at the top

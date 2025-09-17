@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.10"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
     kotlin("plugin.serialization") version "1.9.21"
     //id("androidx.navigation.safeargs")
 }
@@ -14,8 +14,8 @@ android {
         applicationId = "nl.mdworld.planck4"
         minSdk = 24
         targetSdk = 36
-        versionCode = 17
-        versionName = "1.0.17"
+        versionCode = 18
+        versionName = "1.0.18"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,7 +51,7 @@ dependencies {
 
     val navVersion = "2.9.4"
     val composeBom = platform("androidx.compose:compose-bom:2024.04.00")
-    val ktorVersion = "3.2.3"
+    val ktorVersion = "3.3.0"
 
     // Java language implementation
     //implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
