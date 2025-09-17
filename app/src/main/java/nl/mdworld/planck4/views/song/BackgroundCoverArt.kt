@@ -14,20 +14,32 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
+/**
+ * Displays a blurred, darkened cover art as a background.
+ * Provide either [coverArtUrl] (takes precedence) or [coverArtId] (converted via SubsonicUrlBuilder).
+ */
 @Composable
 fun BackgroundCoverArt(
-    coverArtId: String?,
     modifier: Modifier = Modifier,
+    coverArtId: String? = null,
+    coverArtUrl: String? = null,
     blurRadius: Int = 20,
     overlayAlphaTop: Float = 0.5f,
     overlayAlphaBottom: Float = 0.9f
 ) {
     val context = LocalContext.current
 
-    if (coverArtId != null) {
+    // Determine final model URL: explicit URL wins; else build from id; else null (no background)
+    val model: String? = when {
+        coverArtUrl != null -> coverArtUrl
+        coverArtId != null -> SubsonicUrlBuilder.buildCoverArtUrl(context, coverArtId)
+        else -> null
+    }
+
+    if (model != null) {
         // Background cover art image
         AsyncImage(
-            model = SubsonicUrlBuilder.buildCoverArtUrl(context, coverArtId),
+            model = model,
             contentDescription = null,
             modifier = modifier
                 .fillMaxSize()

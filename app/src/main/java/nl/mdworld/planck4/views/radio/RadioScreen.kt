@@ -3,31 +3,23 @@ package nl.mdworld.planck4.views.radio
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.ui.theme.PlanckTheme
+import nl.mdworld.planck4.views.song.BackgroundCoverArt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,60 +65,77 @@ fun RadioScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background blurred cover art of the active song (if available)
+        BackgroundCoverArt(coverArtUrl = appState?.activeSong?.coverArt)
+
+        startRadioButton()
 
 
-        // Radio control button
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 32.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Row {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    startRadioButton()
 
-                    Spacer(modifier = Modifier.height(16.dp))
+        //Column(
+        //    modifier = Modifier
+        //        .fillMaxSize()
+        //        .padding(16.dp),
+        //    horizontalAlignment = Alignment.CenterHorizontally,
+        //    verticalArrangement = Arrangement.Top
+        //) {
+        //    // Radio control button
+        //    Card(
+        //        modifier = Modifier
+        //            .fillMaxWidth()
+        //            .padding(horizontal = 32.dp),
+        //        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        //    ) {
+        //        Row {
+        //            Column(
+        //                modifier = Modifier.padding(24.dp),
+        //                horizontalAlignment = Alignment.CenterHorizontally
+        //            ) {
+        //                startRadioButton()
+        //
+        //                Spacer(modifier = Modifier.height(16.dp))
+        //
+        //                Text(
+        //                    text = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
+        //                    style = MaterialTheme.typography.titleMedium,
+        //                    color = MaterialTheme.colorScheme.onSurface
+        //                )
+        //
+        //                if (appState?.isRadioPlaying == true) {
+        //                    Spacer(modifier = Modifier.height(8.dp))
+        //                    Text(
+        //                        text = "Now Playing",
+        //                        style = MaterialTheme.typography.bodySmall,
+        //                        color = MaterialTheme.colorScheme.primary
+        //                    )
+        //                }
+        //            }
+        //
+        //            Column ( modifier = Modifier.padding(24.dp),
+        //                horizontalAlignment = Alignment.CenterHorizontally) {
+        //
+        //                AsyncImage(
+        //                    model = appState?.activeSong?.coverArt,
+        //                    contentDescription = null,
+        //                    modifier = Modifier
+        //                        .size(180.dp)
+        //                )
+        //            }
+        //        }
+        //    }
+        //}
+    }
+}
 
-                    Text(
-                        text = if (appState?.isRadioPlaying == true) "Stop Radio" else "Start Radio",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+@Preview(name = "Song List Preview")
+@Composable
+fun PreviewRadioScreen() {
+    PlanckTheme {
+        Surface {
+            RadioScreen(
 
-                    if (appState?.isRadioPlaying == true) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Now Playing",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                Column ( modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-
-                    AsyncImage(
-                        model = appState?.activeSong?.coverArt,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(180.dp)
-                    )
-                }
-            }
-
-
+            )
         }
     }
 }
