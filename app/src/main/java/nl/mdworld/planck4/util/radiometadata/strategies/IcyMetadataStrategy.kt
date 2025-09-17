@@ -14,7 +14,7 @@ class IcyMetadataStrategy : MetadataStrategy {
     ///**
     // * Legacy function for ICY metadata parsing (kept for backward compatibility)
     // */
-    fun parseIcyMetadata(icyString: String): RadioMetadata {
+    fun parseIcyMetadata(icyString: String): List<RadioMetadata> {
         val regex = Regex("StreamTitle='(.*?)';")
         val match = regex.find(icyString)
         val streamTitle = match?.groups?.get(1)?.value ?: icyString
@@ -22,12 +22,12 @@ class IcyMetadataStrategy : MetadataStrategy {
         val artist = if (split.size == 2) split[0].trim().ifEmpty { null } else null
         val title = if (split.size == 2) split[1].trim().ifEmpty { null } else streamTitle.trim().ifEmpty { null }
 
-        return RadioMetadata(
+        return listOf(RadioMetadata(
             song = SongInfo(artist = artist, title = title)
-        )
+        ))
     }
 
-    override suspend fun fetchMetadata(streamUrl: String): RadioMetadata? {
+    override suspend fun fetchMetadata(streamUrl: String): List<RadioMetadata> {
         return try {
             val icyData = icyFetcher.fetchICYMetadata(streamUrl)
             if (icyData.isNotEmpty()) {
@@ -42,18 +42,18 @@ class IcyMetadataStrategy : MetadataStrategy {
                 }
 
                 // Otherwise use individual fields
-                RadioMetadata(
+                listOf(RadioMetadata(
                     song = SongInfo(
                         artist = artist,
                         title = title ?: "Unknown"
                     )
-                )
+                ))
             } else {
-                null
+                listOf()
             }
         } catch (e: Exception) {
             println("IcyMetadataStrategy: Error fetching ICY metadata: ${e.message}")
-            null
+            listOf()
         }
     }
 }

@@ -6,8 +6,14 @@ package nl.mdworld.planck4.util.radiometadata
 data class RadioMetadata(
     val time: TimeInfo? = null,
     val broadcast: BroadcastInfo? = null,
-    val song: SongInfo
+    val song: SongInfo,
+    val tracks: List<TrackInfo> = listOf<TrackInfo>()
 )
+
+data class TrackInfo(
+    val time: TimeInfo? = null,
+    val broadcast: BroadcastInfo? = null,
+    val song: SongInfo)
 
 data class TimeInfo(
     val start: String? = null,

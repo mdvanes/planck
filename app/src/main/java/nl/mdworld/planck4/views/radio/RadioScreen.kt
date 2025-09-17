@@ -1,25 +1,44 @@
 package nl.mdworld.planck4.views.radio
 
+
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 import nl.mdworld.planck4.views.song.BackgroundCoverArt
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+//private val hourMinuteFormatter = DateTimeFormatter.ofPattern("HH:mm")
+//
+//
+//fun formatFromIsoString(iso: String): String {
+//    val ldt = LocalDateTime.parse(iso)           // ISO-8601 without zone
+//    return ldt.format(hourMinuteFormatter)
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +46,7 @@ fun RadioScreen(
     appState: PlanckAppState? = null
 ) {
     val context = LocalContext.current
+    val firstTrack = appState?.radioMetadata?.firstOrNull()
 
     val startRadioButton = @Composable {
         IconButton(
@@ -69,8 +89,66 @@ fun RadioScreen(
         // Background blurred cover art of the active song (if available)
         BackgroundCoverArt(coverArtUrl = appState?.activeSong?.coverArt)
 
-        startRadioButton()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
 
+                startRadioButton()
+
+                startRadioButton()
+
+                startRadioButton()
+            }
+
+            Row {
+                Text(
+                    text = firstTrack?.song?.title ?: "Song Title",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Row {
+                Text(
+                    text = firstTrack?.song?.artist ?: "Artist",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            //Row {
+            //    Text(
+            //        text = firstTrack?.time?.start ? formatFromIsoString(firstTrack?.time?.start) : "Start Time",
+            //        style = MaterialTheme.typography.bodySmall,
+            //        color = MaterialTheme.colorScheme.primary
+            //    )
+            //}
+
+            Row( modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = firstTrack?.broadcast?.title ?: "Broadcast Title",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Text(
+                    text = firstTrack?.broadcast?.presenters ?: "Broadcast Presenters",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+
+        }
 
 
         //Column(
@@ -128,13 +206,27 @@ fun RadioScreen(
     }
 }
 
-@Preview(name = "Song List Preview")
+@Preview(name = "Radio Screen Preview")
 @Composable
 fun PreviewRadioScreen() {
+    //val mockState = remember {
+    //    PlanckAppState(
+    //        context = TODO()
+    //    ).apply {
+    //        activeSong = Song(
+    //            id = "preview",
+    //            title = "Preview Song",
+    //            artist = "Preview Artist",
+    //            album = "Preview Album",
+    //            duration = 100,
+    //            coverArt = "https://picsum.photos/800"
+    //        )
+    //    }
+    //}
     PlanckTheme {
         Surface {
             RadioScreen(
-
+                //appState = mockState
             )
         }
     }

@@ -41,7 +41,7 @@ class RadioMetadataManager {
      */
     fun startMonitoring(
         streamUrl: String,
-        onSuccess: (RadioMetadata) -> Unit,
+        onSuccess: (List<RadioMetadata>) -> Unit,
         onError: (Throwable) -> Unit
     ) {
         stopMonitoring()
@@ -89,7 +89,7 @@ class RadioMetadataManager {
      * @param streamUrl The radio stream URL
      * @return RadioMetadata object or null if no strategy succeeded
      */
-    private suspend fun fetchRadioMetadata(streamUrl: String): RadioMetadata? {
+    private suspend fun fetchRadioMetadata(streamUrl: String): List<RadioMetadata> {
         if (strategies.isEmpty()) {
             // Default to ICY strategy if none configured
             strategies.add(IcyMetadataStrategy())
@@ -107,7 +107,7 @@ class RadioMetadataManager {
             }
         }
 
-        return null
+        return listOf()
     }
 
     /**

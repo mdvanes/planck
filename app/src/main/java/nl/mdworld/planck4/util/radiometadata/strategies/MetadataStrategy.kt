@@ -12,7 +12,7 @@ interface MetadataStrategy {
      * @param streamUrl The radio stream URL (may not be used by all strategies)
      * @return RadioMetadata object or null if no metadata available
      */
-    suspend fun fetchMetadata(streamUrl: String): RadioMetadata?
+    suspend fun fetchMetadata(streamUrl: String): List<RadioMetadata>
 }
 
 

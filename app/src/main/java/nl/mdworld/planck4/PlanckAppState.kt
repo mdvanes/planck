@@ -19,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.SettingsManager.DEFAULT_RADIO_URL
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
+import nl.mdworld.planck4.util.radiometadata.RadioMetadata
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist
@@ -83,6 +84,9 @@ class PlanckAppState(private val context: Context) {
         private set
 
     var activeSong by mutableStateOf<Song?>(null)
+
+    var radioMetadata by mutableStateOf<List<RadioMetadata>>(listOf())
+        private set
 
     // Current song index in the playlist for auto-progression
     var currentSongIndex by mutableStateOf(0)
@@ -362,18 +366,18 @@ class PlanckAppState(private val context: Context) {
 
                     // Start metadata monitoring using RadioMetadataManager
                     radioMetadataManager.startMonitoring(audioUrl, onSuccess = { metadata ->
-                        //println("Radio Metadata: $metadata")
-                        val artist = metadata.song.artist ?: "Unknown Artist"
-                        val broadcast = metadata.broadcast?.title ?: "Live Stream"
+                        val firstTrack = metadata.firstOrNull()
+                        val artist = firstTrack?.song?.artist ?: "Unknown Artist"
 
                         activeSong = Song(
                             id = "radio-stream",
-                            title = metadata.song.title ?: "Unknown Title",
-                            artist = "$artist - $broadcast",
+                            title = firstTrack?.song?.title ?: "Unknown Title",
+                            artist = artist,
                             album = "Radio Stream",
                             duration = 0,
-                            coverArt = metadata.song.imageUrl ?: metadata.broadcast?.imageUrl
+                            coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
                         )
+                        radioMetadata = metadata
                     }, onError = { metadata ->
                         activeSong = dummySong
                     })
