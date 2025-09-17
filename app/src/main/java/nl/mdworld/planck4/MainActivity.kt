@@ -76,58 +76,24 @@ class MainActivity : ComponentActivity() {
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.d("MainActivity", "🎵 KEY DOWN - KeyCode: $keyCode, Event: $event")
+        val appState = mainViewModel.appState.value
 
-        //println("🎵 My Test ... KEY DOWN - KeyCode: $keyCode, Event: $event")
-
-        if(keyCode == KeyEvent.KEYCODE_S) {
-            println("pause / play")
-            val appState = mainViewModel.appState.value
+        if(keyCode == KeyEvent.KEYCODE_S || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
             handlePlayPause(this, appState)
         }
 
-        //// Track key codes for debugging in Settings
-        //val keyName = when (keyCode) {
-        //    KeyEvent.KEYCODE_DPAD_CENTER -> "DPAD_CENTER (Rotary Confirm)"
-        //    KeyEvent.KEYCODE_MEDIA_NEXT -> "MEDIA_NEXT"
-        //    KeyEvent.KEYCODE_MEDIA_PREVIOUS -> "MEDIA_PREVIOUS"
-        //    KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> "MEDIA_PLAY_PAUSE"
-        //    KeyEvent.KEYCODE_DPAD_UP -> "DPAD_UP"
-        //    KeyEvent.KEYCODE_DPAD_DOWN -> "DPAD_DOWN"
-        //    KeyEvent.KEYCODE_DPAD_LEFT -> "DPAD_LEFT"
-        //    KeyEvent.KEYCODE_DPAD_RIGHT -> "DPAD_RIGHT"
-        //    else -> KeyEvent.keyCodeToString(keyCode)
-        //}
+        if(keyCode == KeyEvent.KEYCODE_A || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
+            println("prev")
+            appState?.playPreviousSong()
+        }
 
-        KeyCodeTracker.addKeyCode(keyCode.toString(), event?.keyCode.toString())
+        if(keyCode == KeyEvent.KEYCODE_D || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT) {
+            println("next")
+            appState?.playNextSong()
+        }
 
-        //when (keyCode) {
-        //    KeyEvent.KEYCODE_DPAD_CENTER -> {
-        //        Log.d("MainActivity", "🎵 CAR ROTARY CONFIRM BUTTON PRESSED!")
-        //        return true
-        //    }
-        //    KeyEvent.KEYCODE_MEDIA_NEXT -> {
-        //        Log.d("MainActivity", "🎵 CAR NEXT BUTTON PRESSED!")
-        //        return true
-        //    }
-        //    KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-        //        Log.d("MainActivity", "🎵 CAR PREVIOUS BUTTON PRESSED!")
-        //        return true
-        //    }
-        //    KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-        //        Log.d("MainActivity", "🎵 CAR PLAY/PAUSE BUTTON PRESSED!")
-        //        return true
-        //    }
-        //}
+        KeyCodeTracker.addKeyCode(keyCode.toString(), KeyEvent.keyCodeToString(keyCode))
 
         return super.onKeyDown(keyCode, event)
     }
-
-    //override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-    //    Log.d("MainActivity", "🎵 KEY UP - KeyCode: $keyCode, Event: $event")
-    //
-    //    //println("🎵 My Test ... KEY UP - KeyCode: $keyCode, Event: $event")
-    //
-    //    KeyCodeTracker.addKeyCode(keyCode.toString(), event?.keyCode.toString())
-    //    return super.onKeyUp(keyCode, event)
-    //}
 }
