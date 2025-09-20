@@ -86,7 +86,6 @@ class PlanckAppState(private val context: Context) {
     var activeSong by mutableStateOf<Song?>(null)
 
     var radioMetadata by mutableStateOf<List<RadioMetadata>>(listOf())
-        private set
 
     // Current song index in the playlist for auto-progression
     var currentSongIndex by mutableStateOf(0)
@@ -99,7 +98,6 @@ class PlanckAppState(private val context: Context) {
     // Radio state management
     private var radioPlayer: MediaPlayer? = null
     var isRadioPlaying by mutableStateOf(false)
-        private set
 
     // Radio metadata tracking using RadioMetadataManager
     private var radioMetadataManager: nl.mdworld.planck4.views.radio.RadioMetadataManager =

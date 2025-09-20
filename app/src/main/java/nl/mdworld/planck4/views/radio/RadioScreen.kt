@@ -1,6 +1,6 @@
 package nl.mdworld.planck4.views.radio
 
-import android.R.attr.contentDescription
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.Image
@@ -14,26 +14,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
-import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.ui.theme.PlanckTheme
+import nl.mdworld.planck4.util.radiometadata.BroadcastInfo
+import nl.mdworld.planck4.util.radiometadata.RadioMetadata
+import nl.mdworld.planck4.util.radiometadata.SongInfo
+import nl.mdworld.planck4.util.radiometadata.TimeInfo
 import nl.mdworld.planck4.views.song.BackgroundCoverArt
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -47,10 +49,10 @@ fun formatFromIsoString(iso: String): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RadioScreen(
-    appState: PlanckAppState? = null
+fun RadioScreenContent(
+    appState: PlanckAppState? = null,
+    context: Context = LocalContext.current
 ) {
-    val context = LocalContext.current
     val firstTrack = appState?.radioMetadata?.firstOrNull()
 
     val startRadioButton = @Composable {
@@ -84,13 +86,10 @@ fun RadioScreen(
         ) {
             Image(
                 painter = painterResource(
-                    id = if (appState?.isRadioPlaying == true)
-                        R.drawable.npo_radio_2
-                    else
-                        R.drawable.npo_radio_2_disabled
+                    id = R.drawable.npo_radio_2
                 ),
                 contentDescription = "Start Radio",
-                modifier = Modifier.size(100.dp)
+                modifier = Modifier.size(100.dp).alpha(if (appState?.isRadioPlaying == true) 1f else 0.5f)
             )
         }
     }
@@ -203,53 +202,104 @@ fun RadioScreen(
                                 Text(
                                     text = start,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.colorScheme.primary,fontSize = 28.sp
                                 )
                                 Text(
-                                    text = track.song.title ?: "Title",
+                                    //text = track.song.title ?: "Title",
+                                    text = "${track.song.title ?: "Title"} - ${track.song.artist ?: "Artist"}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f, fill = true)
+                                    //modifier = Modifier.weight(1f, fill = true),
+                                            fontSize = 28.sp
                                 )
-                                Text(
-                                    text = track.song.artist ?: "Artist",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
+                                //Text(
+                                //    text = track.song.artist ?: "Artist",
+                                //    style = MaterialTheme.typography.bodySmall,
+                                //    color = MaterialTheme.colorScheme.primary
+                                //)
                             }
                         }
                     }
                 }
             }
-
-            // TODO list of all previous tracks (implemented above)
         }
-
-
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RadioScreen(
+    appState: PlanckAppState? = null
+) {
+    val context = LocalContext.current
+    RadioScreenContent(appState, context)
 }
 
 @Preview(name = "Radio Screen Preview")
 @Composable
 fun PreviewRadioScreen() {
-    //val mockState = remember {
-    //    PlanckAppState(
-    //        context = TODO()
-    //    ).apply {
-    //        activeSong = Song(
-    //            id = "preview",
-    //            title = "Preview Song",
-    //            artist = "Preview Artist",
-    //            album = "Preview Album",
-    //            duration = 100,
-    //            coverArt = "https://picsum.photos/800"
-    //        )
-    //    }
-    //}
+    val context = LocalContext.current
+    val mockState = remember {
+        PlanckAppState(context = context).apply {
+            isRadioPlaying = true
+            radioMetadata = listOf(
+                RadioMetadata(
+                    song = SongInfo(
+                        title = "Song Title 1",
+                        artist = "Artist 1",
+                        imageUrl = "https://picsum.photos/200"
+                    ),
+                    broadcast = BroadcastInfo(
+                        title = "Morning Show",
+                        presenters = "DJ Mike",
+                        imageUrl = "https://picsum.photos/200"
+                    ),
+                    time = TimeInfo(
+                        start = "2023-10-01T08:00:00",
+                        end = "2023-10-01T09:00:00"
+                    )
+                ),
+                RadioMetadata(
+                    song = SongInfo(
+                        title = "Song Title 2",
+                        artist = "Artist 1",
+                        imageUrl = "https://picsum.photos/200"
+                    ),
+                    broadcast = BroadcastInfo(
+                        title = "Morning Show",
+                        presenters = "DJ Mike",
+                        imageUrl = "https://picsum.photos/200"
+                    ),
+                    time = TimeInfo(
+                        start = "2023-10-01T08:00:00",
+                        end = "2023-10-01T09:00:00"
+                    )
+                ),
+                RadioMetadata(
+                    song = SongInfo(
+                        title = "Song Title 3",
+                        artist = "Artist 1",
+                        imageUrl = "https://fastly.picsum.photos/id/307/200/200.jpg"
+                    ),
+                    broadcast = BroadcastInfo(
+                        title = "Morning Show",
+                        presenters = "DJ Mike",
+                        imageUrl = "https://picsum.photos/200"
+                    ),
+                    time = TimeInfo(
+                        start = "2023-10-01T08:00:00",
+                        end = "2023-10-01T09:00:00"
+                    )
+                ),
+            )
+        }
+    }
+
     PlanckTheme {
         Surface {
-            RadioScreen(
-                //appState = mockState
+            RadioScreenContent(
+                appState = mockState,
+                context = context
             )
         }
     }
