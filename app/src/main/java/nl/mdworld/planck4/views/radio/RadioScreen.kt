@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -36,6 +41,7 @@ import nl.mdworld.planck4.util.radiometadata.BroadcastInfo
 import nl.mdworld.planck4.util.radiometadata.RadioMetadata
 import nl.mdworld.planck4.util.radiometadata.SongInfo
 import nl.mdworld.planck4.util.radiometadata.TimeInfo
+import nl.mdworld.planck4.views.components.BottomAppBar
 import nl.mdworld.planck4.views.song.BackgroundCoverArt
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -89,13 +95,13 @@ fun RadioScreenContent(
                     id = R.drawable.npo_radio_2
                 ),
                 contentDescription = "Start Radio",
-                modifier = Modifier.size(100.dp).alpha(if (appState?.isRadioPlaying == true) 1f else 0.5f)
+                modifier = Modifier.size(100.dp).alpha(if (appState?.isRadioPlaying == true) 1f else 0.2f)
             )
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background blurred cover art of the active song (if available)
+        // Background cover art of the active song (if available)
         BackgroundCoverArt(
             coverArtUrl = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
         )
@@ -103,88 +109,36 @@ fun RadioScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(bottom = 84.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
                 startRadioButton()
 
                 Image(
                     painter = painterResource(id = R.drawable.sky_radio),
                     contentDescription = "Dummy Radio",
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(100.dp).alpha(0.2f)
                 )
 
-                Image(
-                    painter = painterResource(id = R.drawable.sky_radio),
-                    contentDescription = "Dummy Radio",
-                    modifier = Modifier.size(100.dp)
+                Icon(
+                    imageVector = Icons.Filled.SkipNext,
+                    contentDescription = "SkipNext",
+                    modifier = Modifier.size(100.dp).alpha(0.2f),
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
             if (firstTrack?.song?.title != null) {
-                Row {
-                    Text(
-                        text = firstTrack.song.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Row {
-                    Text(
-                        text = firstTrack.song.artist ?: "Artist",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = firstTrack.time?.start?.let { formatFromIsoString(it) }
-                            ?: "Start Time",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = firstTrack.time?.end?.let { formatFromIsoString(it) } ?: "End Time",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = firstTrack.broadcast?.title ?: "Broadcast Title",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Text(
-                        text = firstTrack.broadcast?.presenters ?: "Broadcast Presenters",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
                 // Previous tracks list (excluding the first/current track)
                 val previousTracks = appState?.radioMetadata?.drop(1).orEmpty()
                 if (previousTracks.isNotEmpty()) {
                     Text(
                         text = "Previous tracks",
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, start = 16.dp, end = 16.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
                     LazyColumn(
@@ -195,7 +149,7 @@ fun RadioScreenContent(
                     ) {
                         items(previousTracks) { track ->
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 val start = track.time?.start?.let { runCatching { formatFromIsoString(it) }.getOrElse { "--:--" } } ?: "--:--"
@@ -205,21 +159,25 @@ fun RadioScreenContent(
                                     color = MaterialTheme.colorScheme.primary,fontSize = 28.sp
                                 )
                                 Text(
-                                    //text = track.song.title ?: "Title",
                                     text = "${track.song.title ?: "Title"} - ${track.song.artist ?: "Artist"}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary,
-                                    //modifier = Modifier.weight(1f, fill = true),
-                                            fontSize = 28.sp
+                                    fontSize = 28.sp
                                 )
-                                //Text(
-                                //    text = track.song.artist ?: "Artist",
-                                //    style = MaterialTheme.typography.bodySmall,
-                                //    color = MaterialTheme.colorScheme.primary
-                                //)
                             }
                         }
                     }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(16.dp),
+                ) {
+                    Text(
+                        text = "${firstTrack.broadcast?.title ?: "Broadcast Title"} - ${firstTrack.broadcast?.presenters ?: "Broadcast Presenters"}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 28.sp
+                    )
                 }
             }
         }
@@ -262,7 +220,7 @@ fun PreviewRadioScreen() {
                 RadioMetadata(
                     song = SongInfo(
                         title = "Song Title 2",
-                        artist = "Artist 1",
+                        artist = "Artist 2",
                         imageUrl = "https://picsum.photos/200"
                     ),
                     broadcast = BroadcastInfo(
@@ -278,7 +236,7 @@ fun PreviewRadioScreen() {
                 RadioMetadata(
                     song = SongInfo(
                         title = "Song Title 3",
-                        artist = "Artist 1",
+                        artist = "Artist 3",
                         imageUrl = "https://fastly.picsum.photos/id/307/200/200.jpg"
                     ),
                     broadcast = BroadcastInfo(

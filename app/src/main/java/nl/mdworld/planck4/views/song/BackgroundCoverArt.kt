@@ -24,7 +24,7 @@ fun BackgroundCoverArt(
     coverArtId: String? = null,
     coverArtUrl: String? = null,
     blurRadius: Int = 20,
-    overlayAlphaTop: Float = 0.5f,
+    overlayAlphaTop: Float = 0.9f,
     overlayAlphaBottom: Float = 0.9f
 ) {
     val context = LocalContext.current
@@ -42,8 +42,8 @@ fun BackgroundCoverArt(
             model = model,
             contentDescription = null,
             modifier = modifier
-                .fillMaxSize()
-                .blur(blurRadius.dp),
+                .fillMaxSize(),
+                //.blur(blurRadius.dp),
             contentScale = ContentScale.Crop
         )
 
