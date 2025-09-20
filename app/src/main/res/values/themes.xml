@@ -3,7 +3,7 @@
     <!-- Base application theme using standard Material theme -->
     <style name="Base.Theme.Planck" parent="Theme.MaterialComponents.DayNight">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimary">@color/blue_500</item>
     </style>
 
     <!-- Splash Screen Theme with black background -->
