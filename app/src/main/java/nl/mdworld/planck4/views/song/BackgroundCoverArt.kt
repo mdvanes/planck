@@ -5,12 +5,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
@@ -24,8 +22,8 @@ fun BackgroundCoverArt(
     coverArtId: String? = null,
     coverArtUrl: String? = null,
     blurRadius: Int = 20,
-    overlayAlphaTop: Float = 0.9f,
-    overlayAlphaBottom: Float = 0.9f
+    overlayAlphaTop: Float = 0.8f,
+    overlayAlphaBottom: Float = 0.8f
 ) {
     val context = LocalContext.current
 

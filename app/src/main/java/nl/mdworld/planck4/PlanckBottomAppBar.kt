@@ -77,6 +77,8 @@ fun PlanckBottomAppBar(
             }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
+        } else {
+            Spacer(modifier = Modifier.width(12.dp))
         }
 
         // Title + artist column (weight to push controls to end)

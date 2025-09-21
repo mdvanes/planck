@@ -84,7 +84,7 @@ fun RadioScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 84.dp)
+                .padding(bottom = 80.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -125,7 +125,7 @@ fun RadioScreenContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f, fill = true),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(previousTracks) { track ->
                             Row(
