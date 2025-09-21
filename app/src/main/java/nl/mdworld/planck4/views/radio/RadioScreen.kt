@@ -161,7 +161,6 @@ fun RadioScreenContent(
                     Text(
                         text = "${firstTrack.broadcast?.title ?: "Broadcast Title"} - ${firstTrack.broadcast?.presenters ?: "Broadcast Presenters"}",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 18.sp
                     )
                 }
