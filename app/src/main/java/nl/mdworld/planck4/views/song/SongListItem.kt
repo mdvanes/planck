@@ -81,7 +81,7 @@ fun SongListItem(
                 text = "${index + 1}",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = 28.sp,
+                fontSize = 24.sp,
                 modifier = Modifier.width(32.dp)
             )
         }

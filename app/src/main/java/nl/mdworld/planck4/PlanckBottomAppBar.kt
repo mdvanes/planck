@@ -83,7 +83,7 @@ fun PlanckBottomAppBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = activeSong.title,
@@ -126,7 +126,7 @@ fun PlanckBottomAppBar(
             if (currentScreen == AppScreen.SONGS || currentScreen == AppScreen.ALBUMS || currentScreen == AppScreen.ALBUM_SONGS) {
                 navigateBackButton()
             } else {
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(4.dp))
             }
 
             // Title + artist column (weight to push controls to end)
@@ -136,10 +136,10 @@ fun PlanckBottomAppBar(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    activeSong?.artist?.let { artist ->
+                    if(activeSong?.artist != null) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -147,7 +147,7 @@ fun PlanckBottomAppBar(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = artist,
+                                text = activeSong.artist,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 18.sp,
                                 maxLines = 1,
@@ -155,6 +155,8 @@ fun PlanckBottomAppBar(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     Row {
