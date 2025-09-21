@@ -14,8 +14,8 @@ android {
         applicationId = "nl.mdworld.planck4"
         minSdk = 30
         targetSdk = 36
-        versionCode = 19
-        versionName = "1.0.19"
+        versionCode = 20
+        versionName = "1.0.20"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -50,7 +50,7 @@ android {
 dependencies {
 
     val navVersion = "2.9.4"
-    val composeBom = platform("androidx.compose:compose-bom:2024.04.00")
+    val composeBom = platform("androidx.compose:compose-bom:2024.09.01")
     val ktorVersion = "3.3.0"
 
     // Java language implementation
@@ -71,7 +71,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("eu.bambooapps:compose-material3-pullrefresh:1.1.1")
     implementation("io.ktor:ktor-client-core:${ktorVersion}")
     implementation("io.ktor:ktor-client-cio:${ktorVersion}")
