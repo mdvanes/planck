@@ -338,9 +338,21 @@ class PlanckAppState(private val context: Context) {
 
                     // Start metadata monitoring using RadioMetadataManager
                     radioMetadataManager.startMonitoring(audioUrl, onSuccess = { metadata ->
-                        val firstTrack = metadata.firstOrNull(); val artist = firstTrack?.song?.artist ?: "Unknown Artist"
-                        activeSong = Song(id = "radio-stream", title = firstTrack?.song?.title ?: "Unknown Title", artist = artist, album = "Radio Stream", duration = 0, coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl)
-                        radioMetadata = metadata
+                        val firstTrack = metadata.firstOrNull();
+                        val artist = firstTrack?.song?.artist ?: "Unknown Artist"
+                        val prevStartTime = radioMetadata.firstOrNull()?.time?.start
+                        val newStartTime = firstTrack?.time?.start
+                        // Prevent stale metadata from updating the display
+                        if(prevStartTime == null || (newStartTime != null && newStartTime > prevStartTime)) {
+                            activeSong = Song(
+                                id = "radio-stream",
+                                title = firstTrack?.song?.title ?: "Unknown Title",
+                                artist = artist,
+                                album = "Radio Stream",
+                                duration = 0,
+                                coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl)
+                            radioMetadata = metadata
+                        }
                     }, onError = { _ -> activeSong = dummySong })
                 }
 
