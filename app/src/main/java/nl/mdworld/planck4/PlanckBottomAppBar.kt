@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -24,7 +25,9 @@ fun handlePlayPause(context: Context, appState: PlanckAppState?) {
         if (appState.isPlaying) appState.pausePlayback() else appState.resumePlayback()
     } else {
         val mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
+            setAudioAttributes(
+                AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+            )
             val audioUrl = SettingsManager.getRadioUrl(context)
             try {
                 setDataSource(audioUrl)
@@ -32,7 +35,9 @@ fun handlePlayPause(context: Context, appState: PlanckAppState?) {
                 setOnPreparedListener { start() }
                 setOnCompletionListener { runCatching { reset(); release() } }
                 setOnErrorListener { _, _, _ -> runCatching { reset(); release() }; false }
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         AppAudioManager.register(mediaPlayer)
     }
@@ -48,67 +53,51 @@ fun PlanckBottomAppBar(
 ) {
     val context = LocalContext.current
 
-    // Progress bar above the bar when a song is active
-    if (activeSong != null && appState != null) {
-        val progress = if (appState.duration > 0) appState.currentPosition.toFloat() / appState.duration.toFloat() else 0f
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-
-    BottomAppBar(
-        modifier = if (activeSong != null) Modifier.height(80.dp) else Modifier
-    ) {
-        // Back / navigation context button
-        if (currentScreen == AppScreen.SONGS || currentScreen == AppScreen.ALBUMS || currentScreen == AppScreen.ALBUM_SONGS) {
-            IconButton(onClick = {
+    val navigateBackButton = @Composable {
+        IconButton(
+            onClick = {
                 when (currentScreen) {
                     AppScreen.SONGS -> onNavigateBack()
                     AppScreen.ALBUMS -> appState?.navigateToArtists()
                     AppScreen.ALBUM_SONGS -> {
                         if (appState?.selectedArtistId != null && appState.selectedArtistName != null) {
-                            appState.navigateToAlbums(appState.selectedArtistId!!, appState.selectedArtistName!!)
+                            appState.navigateToAlbums(
+                                appState.selectedArtistId!!,
+                                appState.selectedArtistName!!
+                            )
                         } else appState?.navigateToArtists()
                     }
+
                     else -> onNavigateBack()
                 }
-            }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-        } else {
-            Spacer(modifier = Modifier.width(12.dp))
-        }
-
-        // Title + artist column (weight to push controls to end)
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 4.dp),
+            }, modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 8.dp)
         ) {
-            if (activeSong != null) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+        }
+    }
+
+    val songTitleRow = @Composable {
+        if (activeSong != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
                 Text(
                     text = activeSong.title,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 18.sp,
+                    fontSize = 28.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                activeSong.artist?.let { artist ->
-                    Text(
-                        text = artist,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
+    }
 
-        // Media controls
+    val playPauseButton = @Composable {
         IconButton(onClick = { handlePlayPause(context, appState) }) {
             Icon(
                 imageVector = if (appState?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
@@ -116,40 +105,117 @@ fun PlanckBottomAppBar(
                 modifier = Modifier.size(BottomAppBar.IconSize)
             )
         }
-        IconButton(onClick = { appState?.stopPlayback() }) {
-            Icon(Icons.Filled.Stop, contentDescription = "Stop", modifier = Modifier.size(BottomAppBar.IconSize))
-        }
-        IconButton(onClick = { appState?.playPreviousSong() }) {
-            Icon(Icons.Filled.SkipPrevious, contentDescription = "Prev", modifier = Modifier.size(BottomAppBar.IconSize))
-        }
-        IconButton(onClick = { appState?.playNextSong() }) {
-            Icon(Icons.Filled.SkipNext, contentDescription = "Next", modifier = Modifier.size(BottomAppBar.IconSize))
+    }
+
+    Column {
+        // Progress bar above the bar when a song is active
+        if (activeSong != null && appState != null) {
+            val progress =
+                if (appState.duration > 0) appState.currentPosition.toFloat() / appState.duration.toFloat() else 0f
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        // Navigation buttons
-        NavigationButton(
-            icon = Icons.Filled.LibraryMusic,
-            contentDescription = "Playlists",
-            isSelected = currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS,
-            onClick = { appState?.navigateToPlaylists() }
-        )
-        NavigationButton(
-            icon = Icons.Filled.Folder,
-            contentDescription = "Library",
-            isSelected = currentScreen == AppScreen.ARTISTS || currentScreen == AppScreen.ALBUMS || currentScreen == AppScreen.ALBUM_SONGS,
-            onClick = { appState?.navigateToArtists() }
-        )
-        NavigationButton(
-            icon = Icons.Filled.Radio,
-            contentDescription = "Radio",
-            isSelected = currentScreen == AppScreen.RADIO,
-            onClick = { appState?.navigateToRadio() }
-        )
-        NavigationButton(
-            icon = Icons.Filled.Settings,
-            contentDescription = "Settings",
-            isSelected = currentScreen == AppScreen.SETTINGS,
-            onClick = onNavigateToSettings
-        )
+        BottomAppBar(
+            modifier = if (activeSong != null) Modifier.height(80.dp) else Modifier
+        ) {
+            // Back / navigation context button
+            if (currentScreen == AppScreen.SONGS || currentScreen == AppScreen.ALBUMS || currentScreen == AppScreen.ALBUM_SONGS) {
+                navigateBackButton()
+            } else {
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+
+            // Title + artist column (weight to push controls to end)
+            Column {
+                songTitleRow()
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    activeSong?.artist?.let { artist ->
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 4.dp),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = artist,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 18.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Row {
+                        // Media controls
+                        playPauseButton()
+
+                        IconButton(onClick = { appState?.stopPlayback() }) {
+                            Icon(
+                                Icons.Filled.Stop,
+                                contentDescription = "Stop",
+                                modifier = Modifier.size(BottomAppBar.IconSize)
+                            )
+                        }
+
+                        IconButton(onClick = { appState?.playPreviousSong() }) {
+                            Icon(
+                                Icons.Filled.SkipPrevious,
+                                contentDescription = "Prev",
+                                modifier = Modifier.size(BottomAppBar.IconSize)
+                            )
+                        }
+
+                        IconButton(onClick = { appState?.playNextSong() }) {
+                            Icon(
+                                Icons.Filled.SkipNext,
+                                contentDescription = "Next",
+                                modifier = Modifier.size(BottomAppBar.IconSize)
+                            )
+                        }
+
+                        // Navigation buttons
+                        NavigationButton(
+                            icon = Icons.Filled.LibraryMusic,
+                            contentDescription = "Playlists",
+                            isSelected = currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS,
+                            onClick = { appState?.navigateToPlaylists() }
+                        )
+                        NavigationButton(
+                            icon = Icons.Filled.Folder,
+                            contentDescription = "Library",
+                            isSelected = currentScreen == AppScreen.ARTISTS || currentScreen == AppScreen.ALBUMS || currentScreen == AppScreen.ALBUM_SONGS,
+                            onClick = { appState?.navigateToArtists() }
+                        )
+                        NavigationButton(
+                            icon = Icons.Filled.Radio,
+                            contentDescription = "Radio",
+                            isSelected = currentScreen == AppScreen.RADIO,
+                            onClick = { appState?.navigateToRadio() }
+                        )
+                        NavigationButton(
+                            icon = Icons.Filled.Settings,
+                            contentDescription = "Settings",
+                            isSelected = currentScreen == AppScreen.SETTINGS,
+                            onClick = onNavigateToSettings
+                        )
+                    }
+                }
+            }
+
+
+        }
     }
+
 }
