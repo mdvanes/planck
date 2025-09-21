@@ -5,25 +5,12 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,25 +20,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import nl.mdworld.planck4.AppAudioManager
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.R
 import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.ui.theme.PlanckTheme
-import nl.mdworld.planck4.util.radiometadata.BroadcastInfo
-import nl.mdworld.planck4.util.radiometadata.RadioMetadata
-import nl.mdworld.planck4.util.radiometadata.SongInfo
-import nl.mdworld.planck4.util.radiometadata.TimeInfo
-import nl.mdworld.planck4.views.components.BottomAppBar
+import nl.mdworld.planck4.util.radiometadata.*
 import nl.mdworld.planck4.views.song.BackgroundCoverArt
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 private val hourMinuteFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-fun formatFromIsoString(iso: String): String {
-    val ldt = LocalDateTime.parse(iso)           // ISO-8601 without zone
-    return ldt.format(hourMinuteFormatter)
-}
+fun formatFromIsoString(iso: String): String = LocalDateTime.parse(iso).format(hourMinuteFormatter)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,43 +46,37 @@ fun RadioScreenContent(
         IconButton(
             onClick = {
                 if (appState != null) {
-                    if (appState.isRadioPlaying) {
-                        appState.stopRadio()
-                    } else {
-                        appState.startRadio()
-                    }
+                    if (appState.isRadioPlaying) appState.stopRadio() else appState.startRadio()
                 } else {
-                    // Fallback radio control if appState is null
-                    val mediaPlayer = MediaPlayer()
                     val audioUrl = SettingsManager.getRadioUrl(context)
-                    mediaPlayer.setAudioAttributes(
-                        AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-                    )
-                    try {
-                        mediaPlayer.setDataSource(audioUrl)
-                        mediaPlayer.prepare()
-                        mediaPlayer.start()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    val mediaPlayer = MediaPlayer().apply {
+                        setAudioAttributes(
+                            AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+                        )
+                        try {
+                            setDataSource(audioUrl)
+                            prepareAsync()
+                            setOnPreparedListener { start() }
+                            setOnCompletionListener { runCatching { reset(); release() } }
+                            setOnErrorListener { _, _, _ -> runCatching { reset(); release() }; false }
+                        } catch (e: Exception) { e.printStackTrace() }
                     }
+                    AppAudioManager.register(mediaPlayer)
                 }
             },
             modifier = Modifier.size(100.dp)
         ) {
             Image(
-                painter = painterResource(
-                    id = R.drawable.npo_radio_2
-                ),
+                painter = painterResource(id = R.drawable.npo_radio_2),
                 contentDescription = "Start Radio",
-                modifier = Modifier.size(100.dp).alpha(if (appState?.isRadioPlaying == true) 1f else 0.2f)
+                modifier = Modifier
+                    .size(100.dp)
+                    .alpha(if (appState?.isRadioPlaying == true) 1f else 0.2f)
             )
         }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background cover art of the active song (if available)
         BackgroundCoverArt(
             coverArtUrl = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
         )
@@ -112,7 +87,9 @@ fun RadioScreenContent(
                 .padding(bottom = 84.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 startRadioButton()
@@ -120,19 +97,22 @@ fun RadioScreenContent(
                 Image(
                     painter = painterResource(id = R.drawable.sky_radio),
                     contentDescription = "Dummy Radio",
-                    modifier = Modifier.size(100.dp).alpha(0.2f)
+                    modifier = Modifier
+                        .size(100.dp)
+                        .alpha(0.2f)
                 )
 
                 Icon(
                     imageVector = Icons.Filled.SkipNext,
-                    contentDescription = "SkipNext",
-                    modifier = Modifier.size(100.dp).alpha(0.2f),
+                    contentDescription = "SkipNext (disabled)",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .alpha(0.2f),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
 
             if (firstTrack?.song?.title != null) {
-                // Previous tracks list (excluding the first/current track)
                 val previousTracks = appState?.radioMetadata?.drop(1).orEmpty()
                 if (previousTracks.isNotEmpty()) {
                     Text(
@@ -149,14 +129,17 @@ fun RadioScreenContent(
                     ) {
                         items(previousTracks) { track ->
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 val start = track.time?.start?.let { runCatching { formatFromIsoString(it) }.getOrElse { "--:--" } } ?: "--:--"
                                 Text(
                                     text = start,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,fontSize = 28.sp
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontSize = 28.sp
                                 )
                                 Text(
                                     text = "${track.song.title ?: "Title"} - ${track.song.artist ?: "Artist"}",
@@ -170,7 +153,10 @@ fun RadioScreenContent(
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp)
                 ) {
                     Text(
                         text = "${firstTrack.broadcast?.title ?: "Broadcast Title"} - ${firstTrack.broadcast?.presenters ?: "Broadcast Presenters"}",
@@ -186,9 +172,7 @@ fun RadioScreenContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RadioScreen(
-    appState: PlanckAppState? = null
-) {
+fun RadioScreen(appState: PlanckAppState? = null) {
     val context = LocalContext.current
     RadioScreenContent(appState, context)
 }

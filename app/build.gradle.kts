@@ -90,6 +90,10 @@ dependencies {
     implementation("androidx.media2:media2-session:1.3.0")
     implementation("androidx.media2:media2-player:1.3.0")
 
+    // Lifecycle for process-wide lifecycle (needed for cleanup on background)
+    implementation("androidx.lifecycle:lifecycle-process:2.9.4")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
+
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")

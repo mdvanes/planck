@@ -96,4 +96,10 @@ class MainActivity : ComponentActivity() {
 
         return super.onKeyDown(keyCode, event)
     }
+
+    override fun onDestroy() {
+        // Ensure all audio is stopped when activity finishes
+        AppAudioManager.cleanupAllState()
+        super.onDestroy()
+    }
 }

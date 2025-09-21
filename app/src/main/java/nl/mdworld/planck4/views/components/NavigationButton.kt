@@ -43,7 +43,7 @@ fun NavigationButton(
 @Composable
 fun NavigationButtonPreview() {
     NavigationButton(
-        icon = Icons.Default.Home, // Replace with an appropriate icon
+        icon = Icons.Default.Home,
         contentDescription = "Home",
         isSelected = true,
         onClick = {}

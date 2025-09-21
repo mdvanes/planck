@@ -3,21 +3,10 @@ package nl.mdworld.planck4
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import nl.mdworld.planck4.AppAudioManager
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import nl.mdworld.planck4.SettingsManager.DEFAULT_RADIO_URL
+import kotlinx.coroutines.*
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.util.radiometadata.RadioMetadata
 import nl.mdworld.planck4.views.library.Album
@@ -25,7 +14,7 @@ import nl.mdworld.planck4.views.library.Artist
 import nl.mdworld.planck4.views.playlists.Playlist
 import nl.mdworld.planck4.views.radio.RadioMetadataManagerFactory
 import nl.mdworld.planck4.views.song.Song
-import kotlin.text.get
+import java.lang.ref.WeakReference
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -43,6 +32,8 @@ enum class AppScreen {
 }
 
 class PlanckAppState(private val context: Context) {
+    init { PlanckAppStateHolder.set(this) }
+
     val playlists = mutableStateListOf(
         Playlist(
             id = "empty",
@@ -177,7 +168,6 @@ class PlanckAppState(private val context: Context) {
 
     fun playStream(song: Song) {
         try {
-            // Stop current playback if any
             stopPlayback()
 
             // Set the active song and find its index in the current playlist
@@ -203,18 +193,10 @@ class PlanckAppState(private val context: Context) {
                 prepareAsync()
 
                 setOnPreparedListener {
-                    start()
-                    this@PlanckAppState.isPlaying = true
-                    this@PlanckAppState.duration = duration
-                    this@PlanckAppState.currentPosition = 0
-                    startProgressUpdates()
+                    start(); this@PlanckAppState.isPlaying = true; this@PlanckAppState.duration = duration; this@PlanckAppState.currentPosition = 0; startProgressUpdates()
                 }
 
-                setOnErrorListener { _, _, _ ->
-                    this@PlanckAppState.isPlaying = false
-                    stopProgressUpdates()
-                    false
-                }
+                setOnErrorListener { _, _, _ -> this@PlanckAppState.isPlaying = false; stopProgressUpdates(); false }
 
                 setOnCompletionListener {
                     this@PlanckAppState.isPlaying = false
@@ -222,11 +204,9 @@ class PlanckAppState(private val context: Context) {
                     // Automatically play next song in playlist
                     playNextSong()
                 }
-            }
+            }.also { AppAudioManager.register(it) }
         } catch (e: Exception) {
-            e.printStackTrace()
-            isPlaying = false
-            stopProgressUpdates()
+            e.printStackTrace(); isPlaying = false; stopProgressUpdates()
         }
     }
 
@@ -346,11 +326,7 @@ class PlanckAppState(private val context: Context) {
             activeSong = dummySong
 
             radioPlayer = MediaPlayer().apply {
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .build()
-                )
+                setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
 
                 // Use the radio URL from settings
                 val audioUrl = SettingsManager.getRadioUrl(context)
@@ -358,47 +334,26 @@ class PlanckAppState(private val context: Context) {
                 prepareAsync()
 
                 setOnPreparedListener {
-                    start()
-                    this@PlanckAppState.isRadioPlaying = true
-                    this@PlanckAppState.isPlaying = true // Set main playing state for bottom bar
+                    start(); this@PlanckAppState.isRadioPlaying = true; this@PlanckAppState.isPlaying = true
 
                     // Start metadata monitoring using RadioMetadataManager
                     radioMetadataManager.startMonitoring(audioUrl, onSuccess = { metadata ->
-                        val firstTrack = metadata.firstOrNull()
-                        val artist = firstTrack?.song?.artist ?: "Unknown Artist"
-
-                        activeSong = Song(
-                            id = "radio-stream",
-                            title = firstTrack?.song?.title ?: "Unknown Title",
-                            artist = artist,
-                            album = "Radio Stream",
-                            duration = 0,
-                            coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
-                        )
+                        val firstTrack = metadata.firstOrNull(); val artist = firstTrack?.song?.artist ?: "Unknown Artist"
+                        activeSong = Song(id = "radio-stream", title = firstTrack?.song?.title ?: "Unknown Title", artist = artist, album = "Radio Stream", duration = 0, coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl)
                         radioMetadata = metadata
-                    }, onError = { metadata ->
-                        activeSong = dummySong
-                    })
+                    }, onError = { _ -> activeSong = dummySong })
                 }
 
-                setOnErrorListener { _, _, _ ->
-                    this@PlanckAppState.isRadioPlaying = false
-                    this@PlanckAppState.isPlaying = false
-                    this@PlanckAppState.activeSong = null
-                    false
-                }
+                setOnErrorListener { _, _, _ -> this@PlanckAppState.isRadioPlaying = false; this@PlanckAppState.isPlaying = false; this@PlanckAppState.activeSong = null; false }
 
                 setOnCompletionListener {
                     this@PlanckAppState.isRadioPlaying = false
                     this@PlanckAppState.isPlaying = false
                     this@PlanckAppState.activeSong = null
                 }
-            }
+            }.also { AppAudioManager.register(it) }
         } catch (e: Exception) {
-            e.printStackTrace()
-            isRadioPlaying = false
-            isPlaying = false
-            activeSong = null
+            e.printStackTrace(); isRadioPlaying = false; isPlaying = false; activeSong = null
         }
     }
 
@@ -428,8 +383,8 @@ class PlanckAppState(private val context: Context) {
                             currentPosition = player.currentPosition
                         }
                     }
-                    delay(100) // Update every 100ms for smooth progress
-                } catch (e: Exception) {
+                    delay(100)
+                } catch (_: Exception) {
                     break
                 }
             }
@@ -441,7 +396,6 @@ class PlanckAppState(private val context: Context) {
         progressUpdateJob = null
     }
 
-    // Clean up resources when the state is destroyed
     fun cleanup() {
         stopPlayback()
         stopRadio()
@@ -464,6 +418,12 @@ class PlanckAppState(private val context: Context) {
         artists.clear()
         albums.clear()
     }
+}
+
+object PlanckAppStateHolder {
+    private var ref: WeakReference<PlanckAppState>? = null
+    fun set(state: PlanckAppState) { ref = WeakReference(state) }
+    fun get(): PlanckAppState? = ref?.get()
 }
 
 fun setSelectedPlaylist(context: Context, playlistName: String) {
