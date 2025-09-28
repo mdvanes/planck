@@ -1,3 +1,5 @@
+import java.lang.module.ModuleFinder.compose
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -14,8 +16,8 @@ android {
         applicationId = "nl.mdworld.planck4"
         minSdk = 30
         targetSdk = 36
-        versionCode = 20
-        versionName = "1.0.20"
+        versionCode = 21
+        versionName = "1.0.21"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
