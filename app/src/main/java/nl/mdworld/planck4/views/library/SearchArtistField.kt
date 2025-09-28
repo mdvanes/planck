@@ -15,10 +15,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 
 @Composable
 fun SearchArtistField(
@@ -27,6 +30,18 @@ fun SearchArtistField(
 ) {
     var text by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+    // Focus requester to grab focus when the field becomes visible
+    val focusRequester = remember { FocusRequester() }
+    // Ensure we only auto-focus once (avoid stealing focus on recompositions)
+    var hasAutoFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (!hasAutoFocused) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+            hasAutoFocused = true
+        }
+    }
 
     OutlinedTextField(
         value = text,
@@ -42,6 +57,9 @@ fun SearchArtistField(
                 IconButton(onClick = {
                     text = ""
                     onSearch("")
+                    // Keep focus after clearing so user can immediately type again
+                    focusRequester.requestFocus()
+                    keyboardController?.show()
                 }) {
                     Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear search")
                 }
@@ -49,7 +67,8 @@ fun SearchArtistField(
         },
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .focusRequester(focusRequester),
         keyboardOptions = KeyboardOptions.Default.copy(
             imeAction = ImeAction.Search
         ),
