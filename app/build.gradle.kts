@@ -51,7 +51,7 @@ android {
 
 dependencies {
 
-    val navVersion = "2.9.4"
+    val navVersion = "2.9.5"
     val composeBom = platform("androidx.compose:compose-bom:2024.09.01")
     val ktorVersion = "3.3.0"
 
