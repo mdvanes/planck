@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,7 +34,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import nl.mdworld.planck4.BuildConfig
 import nl.mdworld.planck4.KeyCodeTracker
 import nl.mdworld.planck4.PlanckAppState
@@ -142,25 +140,11 @@ fun SettingsScreen(
                 placeholder = { Text("https://your-radio.com/stream/") }
             )
 
-            // Overlay opacity slider (auto-saves dynamically)
-            Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                Text(
-                    text = "Background Overlay Opacity: ${(overlayOpacity * 100).toInt()}%",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Slider(
-                    value = overlayOpacity,
-                    onValueChange = { newValue ->
-                        val clamped = newValue.coerceIn(0f, 1f)
-                        val quantized = (clamped * 20f).roundToInt() / 20f  // 0.00, 0.05, 0.10, ... 1.00
-                        overlayOpacity = quantized
-                        SettingsManager.saveOverlayOpacity(context, quantized)
-                    },
-                    valueRange = 0f..1f,
-                    steps = 19 // 20 intervals -> 5% increments
-                )
-            }
+            // Extracted overlay opacity slider component
+            OverlayOpacitySlider(
+                value = overlayOpacity,
+                onValueChange = { overlayOpacity = it }
+            )
 
             // Save button with reload functionality
             Button(
