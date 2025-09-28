@@ -35,6 +35,7 @@
         <!-- Main Activity for phone/tablet use -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="uiMode"
             android:exported="true"
             android:theme="@style/Theme.Planck.SplashScreen">
             <intent-filter>
