@@ -145,7 +145,9 @@ fun RadioScreenContent(
                                     text = "${track.song.title ?: "Title"} - ${track.song.artist ?: "Artist"}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontSize = 28.sp
+                                    fontSize = 28.sp,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
                             }
                         }
