@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import nl.mdworld.planck4.BuildConfig
 import nl.mdworld.planck4.KeyCodeTracker
 import nl.mdworld.planck4.PlanckAppState
@@ -52,9 +54,10 @@ fun SettingsScreen(
     var username by remember { mutableStateOf(SettingsManager.getUsername(context)) }
     var password by remember { mutableStateOf(SettingsManager.getPassword(context)) }
     var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
+    var overlayOpacity by remember { mutableStateOf(SettingsManager.getOverlayOpacity(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
-    // Track changes to enable save button
+    // Track changes to enable save button (overlayOpacity auto-saves, so exclude)
     LaunchedEffect(serverUrl, username, password, radioUrl) {
         hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context) ||
                 username != SettingsManager.getUsername(context) ||
@@ -139,18 +142,30 @@ fun SettingsScreen(
                 placeholder = { Text("https://your-radio.com/stream/") }
             )
 
-            // TODO leave this toggle for now, until caching is implemented
-            //var cacheEnabled by remember { mutableStateOf(true) }
-            //SettingsSwitch(
-            //    label = "Enable Caching",
-            //    checked = cacheEnabled,
-            //    onCheckedChange = { cacheEnabled = it }
-            //)
+            // Overlay opacity slider (auto-saves dynamically)
+            Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Text(
+                    text = "Background Overlay Opacity: ${(overlayOpacity * 100).toInt()}%",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Slider(
+                    value = overlayOpacity,
+                    onValueChange = { newValue ->
+                        val clamped = newValue.coerceIn(0f, 1f)
+                        val quantized = (clamped * 20f).roundToInt() / 20f  // 0.00, 0.05, 0.10, ... 1.00
+                        overlayOpacity = quantized
+                        SettingsManager.saveOverlayOpacity(context, quantized)
+                    },
+                    valueRange = 0f..1f,
+                    steps = 19 // 20 intervals -> 5% increments
+                )
+            }
 
             // Save button with reload functionality
             Button(
                 onClick = {
-                    // Save all settings
+                    // Save all explicit settings
                     SettingsManager.saveServerUrl(context, serverUrl)
                     SettingsManager.saveUsername(context, username)
                     SettingsManager.savePassword(context, password)

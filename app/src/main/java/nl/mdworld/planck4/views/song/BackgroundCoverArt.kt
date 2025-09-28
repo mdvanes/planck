@@ -10,11 +10,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
 /**
  * Displays a blurred, darkened cover art as a background.
  * Provide either [coverArtUrl] (takes precedence) or [coverArtId] (converted via SubsonicUrlBuilder).
+ * The overlay opacity is loaded from settings unless explicitly overridden.
  */
 @Composable
 fun BackgroundCoverArt(
@@ -22,8 +24,7 @@ fun BackgroundCoverArt(
     coverArtId: String? = null,
     coverArtUrl: String? = null,
     blurRadius: Int = 20,
-    overlayAlphaTop: Float = 0.8f,
-    overlayAlphaBottom: Float = 0.8f
+    overlayAlpha: Float? = null
 ) {
     val context = LocalContext.current
 
@@ -33,6 +34,8 @@ fun BackgroundCoverArt(
         coverArtId != null -> SubsonicUrlBuilder.buildCoverArtUrl(context, coverArtId)
         else -> null
     }
+
+    val finalAlpha = (overlayAlpha ?: SettingsManager.getOverlayOpacity(context)).coerceIn(0f, 1f)
 
     if (model != null) {
         // Background cover art image
@@ -52,8 +55,8 @@ fun BackgroundCoverArt(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = overlayAlphaTop),
-                            Color.Black.copy(alpha = overlayAlphaBottom)
+                            Color.Black.copy(alpha = finalAlpha),
+                            Color.Black.copy(alpha = finalAlpha)
                         )
                     )
                 )
