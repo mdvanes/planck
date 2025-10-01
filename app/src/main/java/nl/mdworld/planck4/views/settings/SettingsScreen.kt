@@ -81,7 +81,7 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 80.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header
@@ -184,23 +184,46 @@ fun SettingsScreen(
         SettingsSection(
             title = "Album Art Cache"
         ) {
+             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(64.dp)
+            ) {
+                 SettingsItem(
+                     label = "Cache Size",
+                     value = cacheSizeText,
+                     modifier = Modifier.weight(1f)
+                 )
+
+                 Button(
+                     onClick = { refreshCacheSize() },
+                     modifier = Modifier.weight(1f)
+                 ) { Text("Refresh Size") }
+
+                 Button(
+                    onClick = {
+                        scope.launch {
+                            CoverArtCacheManager.clearAsync(context)
+                            refreshCacheSize()
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("Clear Album Art Cache") }
+            }
+        }
+
+        // About Section
+        SettingsSection(
+            title = "About"
+        ) {
             SettingsItem(
-                label = "Cache Size",
-                value = cacheSizeText
+                label = "Version",
+                value = BuildConfig.VERSION_NAME
             )
-            Button(
-                onClick = {
-                    scope.launch {
-                        CoverArtCacheManager.clearAsync(context)
-                        refreshCacheSize()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Clear Album Art Cache") }
-            Button(
-                onClick = { refreshCacheSize() },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Refresh Size") }
+
+            SettingsItem(
+                label = "Build",
+                value = if (BuildConfig.DEBUG) "Debug" else "Release"
+            )
         }
 
         // Debug Section - Key Code Tracker
@@ -221,48 +244,29 @@ fun SettingsScreen(
                 }
             }
 
-            // Test button to verify UI updates
-            Button(
-                onClick = {
-                    KeyCodeTracker.addKeyCode("999", "TEST_BUTTON")
-                },
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(64.dp  )
             ) {
-                Text("Add Test Key Code")
-            }
+                // Test button to verify UI updates
+                Button(
+                    onClick = {
+                        KeyCodeTracker.addKeyCode("999", "TEST_BUTTON")
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Add Test Key Code")
+                }
 
-            // Clear button
-            Button(
-                onClick = { KeyCodeTracker.clear() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Clear Key Codes")
+                // Clear button
+                Button(
+                    onClick = { KeyCodeTracker.clear() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Clear Key Codes")
+                }
             }
         }
 
-        // About Section
-        SettingsSection(
-            title = "About"
-        ) {
-            SettingsItem(
-                label = "Version",
-                value = BuildConfig.VERSION_NAME
-            )
-
-            SettingsItem(
-                label = "Build",
-                value = if (BuildConfig.DEBUG) "Debug" else "Release"
-            )
-
-            SettingsItem(
-                label = "Padding",
-                value = "Padding",
-            )
-
-            SettingsItem(
-                label = "Padding",
-                value = "Padding",
-            )
-        }
     }
 }
