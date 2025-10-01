@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,10 +35,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import nl.mdworld.planck4.BuildConfig
 import nl.mdworld.planck4.KeyCodeTracker
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.imageloading.CoverArtCacheManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +49,7 @@ fun SettingsScreen(
     appState: PlanckAppState? = null
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     // Load current values from settings
     var serverUrl by remember { mutableStateOf(SettingsManager.getServerUrl(context)) }
@@ -54,6 +58,16 @@ fun SettingsScreen(
     var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
     var overlayOpacity by remember { mutableStateOf(SettingsManager.getOverlayOpacity(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
+
+    // Album art cache state
+    var cacheSizeText by remember { mutableStateOf("Calculating…") }
+    fun refreshCacheSize() {
+        scope.launch {
+            val size = CoverArtCacheManager.sizeBytesAsync(context)
+            cacheSizeText = CoverArtCacheManager.formatSize(size)
+        }
+    }
+    LaunchedEffect(true) { refreshCacheSize() }
 
     // Track changes to enable save button (overlayOpacity auto-saves, so exclude)
     LaunchedEffect(serverUrl, username, password, radioUrl) {
@@ -164,6 +178,29 @@ fun SettingsScreen(
             ) {
                 Text("Save Settings")
             }
+        }
+
+        // Album Art Cache Section
+        SettingsSection(
+            title = "Album Art Cache"
+        ) {
+            SettingsItem(
+                label = "Cache Size",
+                value = cacheSizeText
+            )
+            Button(
+                onClick = {
+                    scope.launch {
+                        CoverArtCacheManager.clearAsync(context)
+                        refreshCacheSize()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Clear Album Art Cache") }
+            Button(
+                onClick = { refreshCacheSize() },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Refresh Size") }
         }
 
         // Debug Section - Key Code Tracker

@@ -25,7 +25,7 @@ import coil.compose.AsyncImage
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.setSelectedPlaylist
 import nl.mdworld.planck4.ui.theme.PlanckTheme
-import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
+import nl.mdworld.planck4.imageloading.CoverArtRequests
 
 @Composable
 fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
@@ -41,7 +41,7 @@ fun PlaylistCard(playlist: Playlist, appState: PlanckAppState? = null) {
         }
     ) {
         AsyncImage(
-            model = SubsonicUrlBuilder.buildCoverArtUrl(context, playlist.coverArt),
+            model = CoverArtRequests.buildCoverArtRequest(context, playlist.coverArt),
             contentDescription = null,
             modifier = Modifier
                 .size(100.dp)
