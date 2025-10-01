@@ -334,7 +334,9 @@ class PlanckAppState(private val context: Context) {
                 prepareAsync()
 
                 setOnPreparedListener {
-                    start(); this@PlanckAppState.isRadioPlaying = true; this@PlanckAppState.isPlaying = true
+                    start()
+                    this@PlanckAppState.isRadioPlaying = true
+                    this@PlanckAppState.isPlaying = true
 
                     // Start metadata monitoring using RadioMetadataManager
                     radioMetadataManager.startMonitoring(audioUrl, onSuccess = { metadata ->
@@ -344,13 +346,16 @@ class PlanckAppState(private val context: Context) {
                         val newStartTime = firstTrack?.time?.start
                         // Prevent stale metadata from updating the display
                         if(prevStartTime == null || (newStartTime != null && newStartTime > prevStartTime)) {
-                            activeSong = Song(
-                                id = "radio-stream",
-                                title = firstTrack?.song?.title ?: "Unknown Title",
-                                artist = artist,
-                                album = "Radio Stream",
-                                duration = 0,
-                                coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl)
+                            // only update activeSong if isRadioPlaying
+                            if(isRadioPlaying) {
+                                activeSong = Song(
+                                    id = "radio-stream",
+                                    title = firstTrack?.song?.title ?: "Unknown Title",
+                                    artist = artist,
+                                    album = "Radio Stream",
+                                    duration = 0,
+                                    coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl)
+                            }
                             radioMetadata = metadata
                         }
                     }, onError = { _ -> activeSong = dummySong })
