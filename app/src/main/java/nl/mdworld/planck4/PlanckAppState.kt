@@ -1,9 +1,9 @@
 package nl.mdworld.planck4
 
+import android.Manifest
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import nl.mdworld.planck4.AppAudioManager
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.*
@@ -15,6 +15,16 @@ import nl.mdworld.planck4.views.playlists.Playlist
 import nl.mdworld.planck4.views.radio.RadioMetadataManagerFactory
 import nl.mdworld.planck4.views.song.Song
 import java.lang.ref.WeakReference
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+import androidx.annotation.RequiresPermission
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.media.app.NotificationCompat as MediaNotificationCompat
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -121,6 +131,94 @@ class PlanckAppState(private val context: Context) {
     private var progressUpdateJob: Job? = null
     private val progressUpdateScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    // MediaSessionCompat for handling media metadata and playback state
+    private val mediaSession: MediaSessionCompat = MediaSessionCompat(context, "PlanckSession").apply {
+        setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+        isActive = true
+        // Set initial static metadata
+        val initialMetadata = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Planck")
+            .build()
+        setMetadata(initialMetadata)
+        val initialState = PlaybackStateCompat.Builder()
+            .setActions(
+                PlaybackStateCompat.ACTION_PLAY or
+                        PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                        PlaybackStateCompat.ACTION_PAUSE or
+                        PlaybackStateCompat.ACTION_STOP or
+                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+            )
+            .setState(PlaybackStateCompat.STATE_STOPPED, 0L, 1.0f)
+            .build()
+        setPlaybackState(initialState)
+    }
+
+    private val notificationManager: NotificationManagerCompat = NotificationManagerCompat.from(context)
+    private val notificationChannelId = "planck_playback"
+    private val notificationId = 1001
+
+    private fun ensureNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val mgr = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (mgr.getNotificationChannel(notificationChannelId) == null) {
+                val ch = NotificationChannel(notificationChannelId, "Playback", NotificationManager.IMPORTANCE_LOW)
+                mgr.createNotificationChannel(ch)
+            }
+        }
+    }
+
+    private fun buildNotification(title: String = "Planck", artist: String? = null, isPlayingNow: Boolean = isPlaying): android.app.Notification {
+        ensureNotificationChannel()
+        return NotificationCompat.Builder(context, notificationChannelId)
+            .setContentTitle(title)
+            .setContentText(artist ?: "")
+            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setOngoing(isPlayingNow)
+            .setOnlyAlertOnce(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setStyle(MediaNotificationCompat.MediaStyle().setMediaSession(mediaSession.sessionToken))
+            .build()
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun updateNotification() {
+        val title = "Planck" // static for now per requirement
+        val artist = null // can be extended later
+        try {
+            notificationManager.notify(notificationId, buildNotification(title, artist, isPlaying))
+        } catch (_: SecurityException) { /* Ignore if POST_NOTIFICATIONS not granted (Automotive usually allows) */ }
+    }
+
+    private fun cancelNotification() {
+        try { notificationManager.cancel(notificationId) } catch (_: Exception) {}
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun updateMediaSessionMetadata(title: String = "Planck") {
+        val metadata = MediaMetadataCompat.Builder()
+            .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+            .build()
+        mediaSession.setMetadata(metadata)
+        updateNotification()
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun updateMediaSessionPlaybackState(state: Int, position: Long = 0L) {
+        val actions = PlaybackStateCompat.ACTION_PLAY or
+                PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                PlaybackStateCompat.ACTION_PAUSE or
+                PlaybackStateCompat.ACTION_STOP or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        val playbackState = PlaybackStateCompat.Builder()
+            .setActions(actions)
+            .setState(state, position, 1.0f)
+            .build()
+        mediaSession.setPlaybackState(playbackState)
+        updateNotification()
+    }
+
     fun navigateToSongs(playlistId: String, playlistName: String) {
         selectedPlaylistId = playlistId
         selectedPlaylistName = playlistName
@@ -172,6 +270,7 @@ class PlanckAppState(private val context: Context) {
 
             // Set the active song and find its index in the current playlist
             activeSong = song
+            updateMediaSessionMetadata("Planck")
             currentSongIndex = songs.indexOfFirst { it.id == song.id }.takeIf { it >= 0 } ?: 0
 
             // Reset progress for new song
@@ -193,20 +292,22 @@ class PlanckAppState(private val context: Context) {
                 prepareAsync()
 
                 setOnPreparedListener {
-                    start(); this@PlanckAppState.isPlaying = true; this@PlanckAppState.duration = duration; this@PlanckAppState.currentPosition = 0; startProgressUpdates()
+                    start(); this@PlanckAppState.isPlaying = true; this@PlanckAppState.duration = duration; this@PlanckAppState.currentPosition = 0; startProgressUpdates();
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, 0L)
                 }
 
-                setOnErrorListener { _, _, _ -> this@PlanckAppState.isPlaying = false; stopProgressUpdates(); false }
+                setOnErrorListener { _, _, _ -> this@PlanckAppState.isPlaying = false; stopProgressUpdates(); updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_ERROR, 0L); false }
 
                 setOnCompletionListener {
                     this@PlanckAppState.isPlaying = false
                     stopProgressUpdates()
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
                     // Automatically play next song in playlist
                     playNextSong()
                 }
             }.also { AppAudioManager.register(it) }
         } catch (e: Exception) {
-            e.printStackTrace(); isPlaying = false; stopProgressUpdates()
+            e.printStackTrace(); isPlaying = false; stopProgressUpdates(); updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_ERROR, 0L)
         }
     }
 
@@ -223,6 +324,7 @@ class PlanckAppState(private val context: Context) {
         isPlaying = false
         currentPosition = 0
         duration = 0
+        updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
     fun pausePlayback() {
@@ -233,6 +335,7 @@ class PlanckAppState(private val context: Context) {
                     player.pause()
                     isPlaying = false
                     isRadioPlaying = false
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PAUSED, currentPosition.toLong())
                 }
             }
         } else {
@@ -242,6 +345,7 @@ class PlanckAppState(private val context: Context) {
                     player.pause()
                     isPlaying = false
                     stopProgressUpdates()
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PAUSED, currentPosition.toLong())
                 }
             }
         }
@@ -255,6 +359,7 @@ class PlanckAppState(private val context: Context) {
                     player.start()
                     isPlaying = true
                     isRadioPlaying = true
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, currentPosition.toLong())
                 }
             }
         } else {
@@ -264,6 +369,7 @@ class PlanckAppState(private val context: Context) {
                     player.start()
                     isPlaying = true
                     startProgressUpdates()
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, currentPosition.toLong())
                 }
             }
         }
@@ -324,6 +430,7 @@ class PlanckAppState(private val context: Context) {
             )
 
             activeSong = dummySong
+            updateMediaSessionMetadata("Planck")
 
             radioPlayer = MediaPlayer().apply {
                 setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
@@ -337,6 +444,7 @@ class PlanckAppState(private val context: Context) {
                     start()
                     this@PlanckAppState.isRadioPlaying = true
                     this@PlanckAppState.isPlaying = true
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, 0L)
 
                     // Start metadata monitoring using RadioMetadataManager
                     radioMetadataManager.startMonitoring(audioUrl, onSuccess = { metadata ->
@@ -361,16 +469,17 @@ class PlanckAppState(private val context: Context) {
                     }, onError = { _ -> activeSong = dummySong })
                 }
 
-                setOnErrorListener { _, _, _ -> this@PlanckAppState.isRadioPlaying = false; this@PlanckAppState.isPlaying = false; this@PlanckAppState.activeSong = null; false }
+                setOnErrorListener { _, _, _ -> this@PlanckAppState.isRadioPlaying = false; this@PlanckAppState.isPlaying = false; this@PlanckAppState.activeSong = null; updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_ERROR, 0L); false }
 
                 setOnCompletionListener {
                     this@PlanckAppState.isRadioPlaying = false
                     this@PlanckAppState.isPlaying = false
                     this@PlanckAppState.activeSong = null
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
                 }
             }.also { AppAudioManager.register(it) }
         } catch (e: Exception) {
-            e.printStackTrace(); isRadioPlaying = false; isPlaying = false; activeSong = null
+            e.printStackTrace(); isRadioPlaying = false; isPlaying = false; activeSong = null; updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_ERROR, 0L)
         }
     }
 
@@ -388,6 +497,7 @@ class PlanckAppState(private val context: Context) {
         isPlaying = false
         activeSong = null
         currentRadioMetadata = emptyMap()
+        updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
     private fun startProgressUpdates() {
@@ -418,6 +528,8 @@ class PlanckAppState(private val context: Context) {
         stopRadio()
         radioMetadataManager.cleanup()
         progressUpdateScope.cancel()
+        mediaSession.release()
+        cancelNotification()
     }
 
     fun triggerReload() {
