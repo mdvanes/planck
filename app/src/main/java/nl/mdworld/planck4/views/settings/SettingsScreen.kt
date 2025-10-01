@@ -36,8 +36,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import nl.mdworld.planck4.BuildConfig
-import nl.mdworld.planck4.KeyCodeTracker
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.imageloading.CoverArtCacheManager
@@ -181,92 +179,21 @@ fun SettingsScreen(
         }
 
         // Album Art Cache Section
-        SettingsSection(
-            title = "Album Art Cache"
-        ) {
-             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(64.dp)
-            ) {
-                 SettingsItem(
-                     label = "Cache Size",
-                     value = cacheSizeText,
-                     modifier = Modifier.weight(1f)
-                 )
-
-                 Button(
-                     onClick = { refreshCacheSize() },
-                     modifier = Modifier.weight(1f)
-                 ) { Text("Refresh Size") }
-
-                 Button(
-                    onClick = {
-                        scope.launch {
-                            CoverArtCacheManager.clearAsync(context)
-                            refreshCacheSize()
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                ) { Text("Clear Album Art Cache") }
-            }
-        }
-
-        // About Section
-        SettingsSection(
-            title = "About"
-        ) {
-            SettingsItem(
-                label = "Version",
-                value = BuildConfig.VERSION_NAME
-            )
-
-            SettingsItem(
-                label = "Build",
-                value = if (BuildConfig.DEBUG) "Debug" else "Release"
-            )
-        }
-
-        // Debug Section - Key Code Tracker
-        SettingsSection(
-            title = "Debug - Key Codes"
-        ) {
-            if (KeyCodeTracker.keyCodes.isEmpty()) {
-                SettingsItem(
-                    label = "No key codes pressed yet",
-                    value = "Press car buttons to see them here"
-                )
-            } else {
-                KeyCodeTracker.keyCodes.forEachIndexed { index, keyCode ->
-                    SettingsItem(
-                        label = "${index + 1}.",
-                        value = keyCode
-                    )
+        AlbumArtCacheSection(
+            cacheSizeText = cacheSizeText,
+            onRefresh = { refreshCacheSize() },
+            onClear = {
+                scope.launch {
+                    CoverArtCacheManager.clearAsync(context)
+                    refreshCacheSize()
                 }
             }
+        )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(64.dp  )
-            ) {
-                // Test button to verify UI updates
-                Button(
-                    onClick = {
-                        KeyCodeTracker.addKeyCode("999", "TEST_BUTTON")
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Add Test Key Code")
-                }
+        // About Section (extracted)
+        AboutSection()
 
-                // Clear button
-                Button(
-                    onClick = { KeyCodeTracker.clear() },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Clear Key Codes")
-                }
-            }
-        }
-
+        // Debug Key Codes Section (extracted)
+        DebugKeyCodesSection()
     }
 }
