@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.mdworld.planck4.views.components.NavigationButton
 import nl.mdworld.planck4.views.components.BottomAppBar
+import nl.mdworld.planck4.views.radio.createAndStartRadioPlayer
 import nl.mdworld.planck4.views.song.Song
 
 fun handlePlayPause(context: Context, appState: PlanckAppState?) {
@@ -24,22 +25,7 @@ fun handlePlayPause(context: Context, appState: PlanckAppState?) {
     if (appState != null && activeSong != null) {
         if (appState.isPlaying) appState.pausePlayback() else appState.resumePlayback()
     } else {
-        val mediaPlayer = MediaPlayer().apply {
-            setAudioAttributes(
-                AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
-            )
-            val audioUrl = SettingsManager.getRadioUrl(context)
-            try {
-                setDataSource(audioUrl)
-                prepareAsync()
-                setOnPreparedListener { start() }
-                setOnCompletionListener { runCatching { reset(); release() } }
-                setOnErrorListener { _, _, _ -> runCatching { reset(); release() }; false }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-        AppAudioManager.register(mediaPlayer)
+        createAndStartRadioPlayer(context)
     }
 }
 

@@ -34,6 +34,30 @@ private val hourMinuteFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 fun formatFromIsoString(iso: String): String = LocalDateTime.parse(iso).format(hourMinuteFormatter)
 
+/**
+ * Creates, prepares and starts a radio MediaPlayer.
+ * Automatically registers with AppAudioManager and releases on completion/error.
+ */
+fun createAndStartRadioPlayer(
+    context: Context,
+): MediaPlayer {
+    val audioUrl = SettingsManager.getRadioUrl(context)
+    val mediaPlayer = MediaPlayer().apply {
+        setAudioAttributes(
+            AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
+        )
+        try {
+            setDataSource(audioUrl)
+            prepareAsync()
+            setOnPreparedListener { start() }
+            setOnCompletionListener { runCatching { reset(); release() } }
+            setOnErrorListener { _, _, _ -> runCatching { reset(); release() }; false }
+        } catch (e: Exception) { e.printStackTrace() }
+    }
+    AppAudioManager.register(mediaPlayer)
+    return mediaPlayer
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RadioScreenContent(
@@ -42,26 +66,14 @@ fun RadioScreenContent(
 ) {
     val firstTrack = appState?.radioMetadata?.firstOrNull()
 
+
     val startRadioButton = @Composable {
         IconButton(
             onClick = {
                 if (appState != null) {
                     if (appState.isRadioPlaying) appState.stopRadio() else appState.startRadio()
                 } else {
-                    val audioUrl = SettingsManager.getRadioUrl(context)
-                    val mediaPlayer = MediaPlayer().apply {
-                        setAudioAttributes(
-                            AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
-                        )
-                        try {
-                            setDataSource(audioUrl)
-                            prepareAsync()
-                            setOnPreparedListener { start() }
-                            setOnCompletionListener { runCatching { reset(); release() } }
-                            setOnErrorListener { _, _, _ -> runCatching { reset(); release() }; false }
-                        } catch (e: Exception) { e.printStackTrace() }
-                    }
-                    AppAudioManager.register(mediaPlayer)
+                    createAndStartRadioPlayer(context)
                 }
             },
             modifier = Modifier.size(100.dp)
