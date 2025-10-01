@@ -11,7 +11,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import nl.mdworld.planck4.SettingsManager
-import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
+import nl.mdworld.planck4.imageloading.CoverArtRequests
 
 /**
  * Displays a blurred, darkened cover art as a background.
@@ -29,26 +29,23 @@ fun BackgroundCoverArt(
     val context = LocalContext.current
 
     // Determine final model URL: explicit URL wins; else build from id; else null (no background)
-    val model: String? = when {
+    val model: Any? = when {
         coverArtUrl != null -> coverArtUrl
-        coverArtId != null -> SubsonicUrlBuilder.buildCoverArtUrl(context, coverArtId)
+        coverArtId != null -> CoverArtRequests.buildCoverArtRequest(context, coverArtId)
         else -> null
     }
 
     val finalAlpha = (overlayAlpha ?: SettingsManager.getOverlayOpacity(context)).coerceIn(0f, 1f)
 
     if (model != null) {
-        // Background cover art image
         AsyncImage(
             model = model,
             contentDescription = null,
             modifier = modifier
                 .fillMaxSize(),
-                //.blur(blurRadius.dp),
             contentScale = ContentScale.Crop
         )
 
-        // Semi-transparent overlay to improve readability
         Box(
             modifier = modifier
                 .fillMaxSize()
