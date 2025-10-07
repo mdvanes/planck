@@ -411,6 +411,7 @@ class PlanckAppState(private val context: Context) {
     }
 
     // Radio control methods
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun startRadio() {
         try {
             // Stop any current radio playback
@@ -419,11 +420,14 @@ class PlanckAppState(private val context: Context) {
             // Stop regular music playback to avoid conflicts
             stopPlayback()
 
+            val firstTrack = radioMetadata.firstOrNull();
+            val title = firstTrack?.song?.title ?: "NPO Radio 2"
+            val artist = firstTrack?.song?.artist ?: ""
             // Create a virtual radio song for display in bottom bar
             val dummySong = Song(
                 id = "radio-stream",
-                title = "Radio 2",
-                artist = "NPO Radio",
+                title = title,
+                artist = artist,
                 album = "Live Stream",
                 duration = 0, // Radio has no duration
                 coverArt = null
