@@ -1,76 +1,69 @@
 package nl.mdworld.planck4
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels()
 
+    // Launcher for notification permission (API 33+)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Regardless of grant result, attempt to start service (if denied, notification won't show)
+        startMediaService()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before calling super.onCreate()
         installSplashScreen()
-
         super.onCreate(savedInstanceState)
 
-        // Start the MediaPlaybackService to enable car hardware button support
-        val mediaServiceIntent = Intent(this, MediaPlaybackService::class.java)
-        startService(mediaServiceIntent)
-
-        //val navController = rememberNavController()
-
-        //val playlists = mutableListOf<Playlist>(
-        //    Playlist(
-        //        "Empty",
-        //        "No Playlist"
-        //    )
-        //)
-        //
-        //// TODO what is the proper way to call an API on app start? Maybe this: https://github.com/KatieBarnett/Experiments/blob/main/jc-refresh/src/main/java/dev/katiebarnett/experiments/jcrefresh/MainViewModel.kt
-        //// NOTE: this is hacky
-        //GlobalScope.launch {
-        //    try {
-        //        val response: SubsonicPlaylistsResponse = SubsonicApi().getPlaylistsKtor()
-        //        val playlistStrings: List<String> = response.sr.playlists.playlist.map {
-        //            "${it.id} - ${it.name} (${it.coverArt})"
-        //        }
-        //        println(playlistStrings.joinToString(","))
-        //        val newPlaylists: List<Playlist> =
-        //            response.sr.playlists.playlist.map { Playlist(it.coverArt, it.name) }
-        //        playlists.clear()
-        //        playlists.addAll(newPlaylists)
-        //    } catch (e: Exception) {
-        //        println("Failed to call API:$e")
-        //    } finally {
-        //        ktorHttpClient.close()
-        //    }
-        //}
+        // Request notification permission first (Android 13+) then start foreground media service
+        maybeRequestNotificationPermissionAndStartService()
 
         setContent {
             PlanckTheme {
                 PlanckApp()
-                //Scaffold(
-                //    bottomBar = {
-                //        PlanckBottomAppBar()
-                //    }
-                //) { innerPadding ->
-                //    // TODO how to remove the unused innerPadding param?
-                //    println(innerPadding)
-                //    // A surface container using the 'background' color from the theme
-                //    Surface(
-                //        modifier = Modifier.fillMaxSize(),
-                //        color = MaterialTheme.colorScheme.background
-                //    ) {
-                //        PlaylistCardList(playlists)
-                //    }
-                //}
             }
+        }
+    }
+
+    private fun maybeRequestNotificationPermissionAndStartService() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            val granted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            if (granted) {
+                startMediaService()
+            } else {
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            startMediaService()
+        }
+    }
+
+    private fun startMediaService() {
+        val mediaServiceIntent = Intent(this, MediaPlaybackService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Use startForegroundService for API 26+ to ensure timely foreground promotion
+            startForegroundService(mediaServiceIntent)
+        } else {
+            startService(mediaServiceIntent)
         }
     }
 

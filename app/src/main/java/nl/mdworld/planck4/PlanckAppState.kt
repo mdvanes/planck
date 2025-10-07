@@ -22,9 +22,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.media.app.NotificationCompat as MediaNotificationCompat
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -42,7 +39,10 @@ enum class AppScreen {
 }
 
 class PlanckAppState(private val context: Context) {
-    init { PlanckAppStateHolder.set(this) }
+    init {
+        PlanckAppStateHolder.set(this)
+        // Removed immediate notification posting to avoid crashes during very early app startup.
+    }
 
     val playlists = mutableStateListOf(
         Playlist(
@@ -154,44 +154,20 @@ class PlanckAppState(private val context: Context) {
         setPlaybackState(initialState)
     }
 
-    private val notificationManager: NotificationManagerCompat = NotificationManagerCompat.from(context)
     private val notificationChannelId = "planck_playback"
     private val notificationId = 1001
 
+    // Safe no-op channel creator (kept for potential future dynamic updates)
     private fun ensureNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val mgr = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (mgr.getNotificationChannel(notificationChannelId) == null) {
-                val ch = NotificationChannel(notificationChannelId, "Playback", NotificationManager.IMPORTANCE_LOW)
-                mgr.createNotificationChannel(ch)
-            }
+            try {
+                val mgr = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (mgr.getNotificationChannel(notificationChannelId) == null) {
+                    val ch = NotificationChannel(notificationChannelId, "Playback", NotificationManager.IMPORTANCE_LOW)
+                    mgr.createNotificationChannel(ch)
+                }
+            } catch (_: Exception) { /* Ignore any failure on automotive / restricted hosts */ }
         }
-    }
-
-    private fun buildNotification(title: String = "Planck", artist: String? = null, isPlayingNow: Boolean = isPlaying): android.app.Notification {
-        ensureNotificationChannel()
-        return NotificationCompat.Builder(context, notificationChannelId)
-            .setContentTitle(title)
-            .setContentText(artist ?: "")
-            .setSmallIcon(android.R.drawable.ic_media_play)
-            .setOngoing(isPlayingNow)
-            .setOnlyAlertOnce(true)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setStyle(MediaNotificationCompat.MediaStyle().setMediaSession(mediaSession.sessionToken))
-            .build()
-    }
-
-    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    private fun updateNotification() {
-        val title = "Planck" // static for now per requirement
-        val artist = null // can be extended later
-        try {
-            notificationManager.notify(notificationId, buildNotification(title, artist, isPlaying))
-        } catch (_: SecurityException) { /* Ignore if POST_NOTIFICATIONS not granted (Automotive usually allows) */ }
-    }
-
-    private fun cancelNotification() {
-        try { notificationManager.cancel(notificationId) } catch (_: Exception) {}
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -200,7 +176,7 @@ class PlanckAppState(private val context: Context) {
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
             .build()
         mediaSession.setMetadata(metadata)
-        updateNotification()
+        // No notification update here anymore.
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -216,7 +192,7 @@ class PlanckAppState(private val context: Context) {
             .setState(state, position, 1.0f)
             .build()
         mediaSession.setPlaybackState(playbackState)
-        updateNotification()
+        // No notification update here anymore.
     }
 
     fun navigateToSongs(playlistId: String, playlistName: String) {
@@ -264,6 +240,7 @@ class PlanckAppState(private val context: Context) {
         songs.clear()
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun playStream(song: Song) {
         try {
             stopPlayback()
@@ -311,6 +288,7 @@ class PlanckAppState(private val context: Context) {
         }
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun stopPlayback() {
         stopProgressUpdates()
         mediaPlayer?.let { player ->
@@ -327,6 +305,7 @@ class PlanckAppState(private val context: Context) {
         updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun pausePlayback() {
         if (isRadioPlaying) {
             // Handle radio pause
@@ -376,6 +355,7 @@ class PlanckAppState(private val context: Context) {
     }
 
     // Play the next song in the playlist
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun playNextSong() {
         if (songs.isNotEmpty()) {
             if (currentSongIndex < songs.size - 1) {
@@ -391,6 +371,7 @@ class PlanckAppState(private val context: Context) {
     }
 
     // Play the previous song in the playlist
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun playPreviousSong() {
         if (songs.isNotEmpty()) {
             if (currentSongIndex > 0) {
@@ -406,6 +387,7 @@ class PlanckAppState(private val context: Context) {
     }
 
     // Manually trigger next song (for skip button)
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun skipToNext() {
         playNextSong()
     }
@@ -487,6 +469,7 @@ class PlanckAppState(private val context: Context) {
         }
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun stopRadio() {
         radioMetadataManager.stopMonitoring()
         radioPlayer?.let { player ->
@@ -527,13 +510,14 @@ class PlanckAppState(private val context: Context) {
         progressUpdateJob = null
     }
 
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun cleanup() {
         stopPlayback()
         stopRadio()
         radioMetadataManager.cleanup()
         progressUpdateScope.cancel()
         mediaSession.release()
-        cancelNotification()
+        // Notification persistence handled by service; nothing to cancel here.
     }
 
     fun triggerReload() {
