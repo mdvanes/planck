@@ -13,6 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.CarDistractionOptimizer
+import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.SettingsManager.BrowsingMode
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.views.song.Song
 
@@ -101,24 +103,40 @@ class AlbumSongsCarScreen(
     private fun loadSongs() {
         scope.launch {
             try {
-                val response = SubsonicApi().getMusicDirectoryKtor(carContext, albumId)
-                val newSongs = response.sr.directory.child
-                    .filter { !it.isDir }
-                    .map { child ->
+                val mode = SettingsManager.getBrowsingMode(carContext)
+                if (mode == BrowsingMode.FILES) {
+                    val response = SubsonicApi().getMusicDirectoryKtor(carContext, albumId)
+                    val newSongs = response.sr.directory.child
+                        .filter { !it.isDir }
+                        .map { child ->
+                            Song(
+                                id = child.id,
+                                title = child.title,
+                                artist = child.artist,
+                                album = child.album ?: albumName,
+                                duration = child.duration,
+                                coverArt = child.coverArt
+                            )
+                        }
+                    songs.clear()
+                    songs.addAll(newSongs)
+                } else { // TAGS mode
+                    val response = SubsonicApi().getAlbumKtor(carContext, albumId)
+                    val newSongs = response.sr.album.songs?.map { song ->
                         Song(
-                            id = child.id,
-                            title = child.title,
-                            artist = child.artist,
-                            album = child.album ?: albumName,
-                            duration = child.duration,
-                            coverArt = child.coverArt
+                            id = song.id,
+                            title = song.title,
+                            artist = song.artist,
+                            album = song.album,
+                            duration = song.duration,
+                            coverArt = song.coverArt
                         )
-                    }
-                songs.clear()
-                songs.addAll(newSongs)
+                    } ?: emptyList()
+                    songs.clear(); songs.addAll(newSongs)
+                }
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load album songs (musicDirectory): $e")
+                println("CarScreen: Failed to load album songs (mode): $e")
                 // Add error item
                 songs.clear()
                 songs.add(Song("error", "Failed to load songs", "", "", 0, ""))

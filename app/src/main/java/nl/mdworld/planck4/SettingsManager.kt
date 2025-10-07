@@ -10,6 +10,9 @@ object SettingsManager {
     private const val KEY_RADIO_URL = "radio_url"
     // New: overlay opacity for background cover art
     private const val KEY_OVERLAY_OPACITY = "overlay_opacity"
+    private const val KEY_BROWSING_MODE = "browsing_mode"
+
+    enum class BrowsingMode { TAGS, FILES }
 
     private const val DEFAULT_SERVER_URL = "https://example.com/rest/"
     const val DEFAULT_USERNAME = "demo_user"
@@ -17,6 +20,7 @@ object SettingsManager {
     const val DEFAULT_RADIO_URL = "https://icecast.omroep.nl/radio2-bb-mp3"
     // New default overlay opacity (matches old hardcoded 0.8f)
     const val DEFAULT_OVERLAY_OPACITY = 0.8f
+    private val DEFAULT_BROWSING_MODE = BrowsingMode.FILES
 
     fun saveServerUrl(context: Context, url: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -68,6 +72,18 @@ object SettingsManager {
     fun getOverlayOpacity(context: Context): Float {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getFloat(KEY_OVERLAY_OPACITY, DEFAULT_OVERLAY_OPACITY)
+    }
+
+    // New browsing mode preference helpers
+    fun saveBrowsingMode(context: Context, mode: BrowsingMode) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_BROWSING_MODE, mode.name).apply()
+    }
+
+    fun getBrowsingMode(context: Context): BrowsingMode {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val value = prefs.getString(KEY_BROWSING_MODE, DEFAULT_BROWSING_MODE.name)
+        return try { BrowsingMode.valueOf(value!!) } catch (e: Exception) { DEFAULT_BROWSING_MODE }
     }
 
     // Convenience method for getting the Jukebox base URL (same as server URL)

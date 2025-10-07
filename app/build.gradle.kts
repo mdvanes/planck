@@ -16,8 +16,8 @@ android {
         applicationId = "nl.mdworld.planck4"
         minSdk = 30
         targetSdk = 36
-        versionCode = 28
-        versionName = "1.0.28"
+        versionCode = 29
+        versionName = "1.0.293"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -55,9 +55,6 @@ dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.09.01")
     val ktorVersion = "3.3.0"
 
-    // Java language implementation
-    //implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
-    //implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
     // Kotlin
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
     implementation("androidx.navigation:navigation-ui-ktx:$navVersion")

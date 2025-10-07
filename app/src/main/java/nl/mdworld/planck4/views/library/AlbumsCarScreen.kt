@@ -11,8 +11,13 @@ import androidx.car.app.model.Row
 import androidx.car.app.model.Template
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.CarDistractionOptimizer
+import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.SettingsManager.BrowsingMode
+import nl.mdworld.planck4.networking.subsonic.SubsonicAlbumsResponse
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 
 class AlbumsCarScreen(
@@ -100,26 +105,70 @@ class AlbumsCarScreen(
     private fun loadAlbums() {
         scope.launch {
             try {
-                val response = SubsonicApi().getMusicDirectoryKtor(carContext, artistId)
-                val newAlbums = response.sr.directory.child
-                    .filter { it.isDir }
-                    .map { dir ->
+                val mode = SettingsManager.getBrowsingMode(carContext)
+                if (mode == BrowsingMode.FILES) {
+                    val response = SubsonicApi().getMusicDirectoryKtor(carContext, artistId)
+                    val newAlbums = response.sr.directory.child
+                        .filter { it.isDir }
+                        .map { dir ->
+                            Album(
+                                id = dir.id,
+                                name = dir.title,
+                                artist = artistName,
+                                artistId = artistId,
+                                songCount = 0,
+                                duration = 0,
+                                coverArt = dir.coverArt,
+                                year = null
+                            )
+                        }
+                    albums.clear()
+                    albums.addAll(newAlbums)
+                    invalidate() // initial list
+
+                    // Enrich song counts asynchronously
+                    try {
+                        val api = SubsonicApi()
+                        val deferred = newAlbums.map { album ->
+                            async {
+                                try {
+                                    val dir = api.getMusicDirectoryKtor(carContext, album.id)
+                                    val songCount = dir.sr.directory.child.count { !it.isDir }
+                                    album.id to songCount
+                                } catch (e: Exception) { album.id to 0 }
+                            }
+                        }
+                        val results = deferred.awaitAll()
+                        var updated = false
+                        results.forEach { (id, count) ->
+                            val idx = albums.indexOfFirst { it.id == id }
+                            if (idx >= 0 && albums[idx].songCount != count) {
+                                albums[idx] = albums[idx].copy(songCount = count)
+                                updated = true
+                            }
+                        }
+                        if (updated) invalidate()
+                    } catch (e: Exception) {
+                        println("CarScreen: Album enrichment failed $e")
+                    }
+                } else { // TAGS mode
+                    val response: SubsonicAlbumsResponse = SubsonicApi().getArtistKtor(carContext, artistId)
+                    val newAlbums = response.sr.artist.album.map { albumEntity ->
                         Album(
-                            id = dir.id,
-                            name = dir.title,
-                            artist = artistName,
-                            artistId = artistId,
-                            songCount = 0,
-                            duration = 0,
-                            coverArt = dir.coverArt,
-                            year = null
+                            id = albumEntity.id,
+                            name = albumEntity.name,
+                            artist = albumEntity.artist,
+                            artistId = albumEntity.artistId,
+                            songCount = albumEntity.songCount,
+                            duration = albumEntity.duration,
+                            coverArt = albumEntity.coverArt,
+                            year = albumEntity.year
                         )
                     }
-                albums.clear()
-                albums.addAll(newAlbums)
-                invalidate() // Refresh the screen with new data
+                    albums.clear(); albums.addAll(newAlbums); invalidate()
+                }
             } catch (e: Exception) {
-                println("CarScreen: Failed to load albums (musicDirectory): $e")
+                println("CarScreen: Failed to load albums: $e")
                 // Add error item
                 albums.clear()
                 albums.add(Album("error", "Failed to load albums", "", "", 0, 0, "", null))

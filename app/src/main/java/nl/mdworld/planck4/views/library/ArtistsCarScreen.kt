@@ -11,8 +11,12 @@ import androidx.car.app.model.Row
 import androidx.car.app.model.Template
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.CarDistractionOptimizer
+import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.SettingsManager.BrowsingMode
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 
 class ArtistsCarScreen(carContext: CarContext) : Screen(carContext) {
@@ -107,22 +111,66 @@ class ArtistsCarScreen(carContext: CarContext) : Screen(carContext) {
     private fun loadArtists() {
         scope.launch {
             try {
-                val response = SubsonicApi().getIndexesKtor(carContext)
-                val newArtists = response.sr.indexes.index.flatMap { idx ->
-                    idx.artist.map { folderArtist ->
-                        Artist(
-                            id = folderArtist.id,
-                            name = folderArtist.name,
-                            albumCount = 0,
-                            coverArt = null
-                        )
+                val mode = SettingsManager.getBrowsingMode(carContext)
+                if (mode == BrowsingMode.FILES) {
+                    val response = SubsonicApi().getIndexesKtor(carContext)
+                    val newArtists = response.sr.indexes.index.flatMap { idx ->
+                        idx.artist.map { folderArtist ->
+                            Artist(
+                                id = folderArtist.id,
+                                name = folderArtist.name,
+                                albumCount = 0,
+                                coverArt = null
+                            )
+                        }
                     }
+                    artists.clear()
+                    artists.addAll(newArtists)
+                    invalidate() // initial list
+
+                    // Enrich album counts asynchronously for FILES mode
+                    try {
+                        val api = SubsonicApi()
+                        val deferred = newArtists.map { artist ->
+                            async {
+                                try {
+                                    val dir = api.getMusicDirectoryKtor(carContext, artist.id)
+                                    val count = dir.sr.directory.child.count { it.isDir }
+                                    artist.id to count
+                                } catch (e: Exception) { artist.id to 0 }
+                            }
+                        }
+                        val results = deferred.awaitAll()
+                        var updated = false
+                        results.forEach { (id, count) ->
+                            val idxA = artists.indexOfFirst { it.id == id }
+                            if (idxA >= 0 && artists[idxA].albumCount != count) {
+                                artists[idxA] = artists[idxA].copy(albumCount = count)
+                                updated = true
+                            }
+                        }
+                        if (updated) invalidate()
+                    } catch (e: Exception) {
+                        println("CarScreen: Artist enrichment failed $e")
+                    }
+                } else { // TAGS mode
+                    val response = SubsonicApi().getArtistsKtor(carContext)
+                    val newArtists = response.sr.artists.index.flatMap { idx ->
+                        idx.artist.map { ae ->
+                            Artist(
+                                id = ae.id,
+                                name = ae.name,
+                                albumCount = ae.albumCount,
+                                coverArt = ae.coverArt
+                            )
+                        }
+                    }
+                    artists.clear()
+                    artists.addAll(newArtists)
+                    invalidate()
                 }
-                artists.clear()
-                artists.addAll(newArtists)
-                invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load artists (indexes): $e")
+                println("CarScreen: Failed to load artists: $e")
                 // Add error item
                 artists.clear()
                 artists.add(Artist("error", "Failed to load artists", 0, ""))

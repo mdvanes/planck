@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.SettingsManager
+import nl.mdworld.planck4.SettingsManager.BrowsingMode
 import nl.mdworld.planck4.imageloading.CoverArtCacheManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +57,7 @@ fun SettingsScreen(
     var password by remember { mutableStateOf(SettingsManager.getPassword(context)) }
     var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
     var overlayOpacity by remember { mutableStateOf(SettingsManager.getOverlayOpacity(context)) }
+    var browsingMode by remember { mutableStateOf(SettingsManager.getBrowsingMode(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
     // Album art cache state
@@ -68,11 +71,12 @@ fun SettingsScreen(
     LaunchedEffect(true) { refreshCacheSize() }
 
     // Track changes to enable save button (overlayOpacity auto-saves, so exclude)
-    LaunchedEffect(serverUrl, username, password, radioUrl) {
+    LaunchedEffect(serverUrl, username, password, radioUrl, browsingMode) {
         hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context) ||
                 username != SettingsManager.getUsername(context) ||
                 password != SettingsManager.getPassword(context) ||
-                radioUrl != SettingsManager.getRadioUrl(context)
+                radioUrl != SettingsManager.getRadioUrl(context) ||
+                browsingMode != SettingsManager.getBrowsingMode(context)
     }
 
     Column(
@@ -158,6 +162,23 @@ fun SettingsScreen(
                 onValueChange = { overlayOpacity = it }
             )
 
+            // Browsing mode selection
+            Text(
+                text = "Library Browsing Mode",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = browsingMode == BrowsingMode.FILES, onClick = { browsingMode = BrowsingMode.FILES })
+                    Text("Folders", modifier = Modifier.padding(start = 4.dp))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = browsingMode == BrowsingMode.TAGS, onClick = { browsingMode = BrowsingMode.TAGS })
+                    Text("Tags", modifier = Modifier.padding(start = 4.dp))
+                }
+            }
+
             // Save button with reload functionality
             Button(
                 onClick = {
@@ -166,6 +187,7 @@ fun SettingsScreen(
                     SettingsManager.saveUsername(context, username)
                     SettingsManager.savePassword(context, password)
                     SettingsManager.saveRadioUrl(context, radioUrl)
+                    SettingsManager.saveBrowsingMode(context, browsingMode)
                     hasUnsavedChanges = false
 
                     // Trigger data reload with new settings
