@@ -101,23 +101,24 @@ class AlbumSongsCarScreen(
     private fun loadSongs() {
         scope.launch {
             try {
-                val response = SubsonicApi().getAlbumKtor(carContext, albumId)
-                val newSongs = response.sr.album.songs?.map { song ->
-                    Song(
-                        id = song.id,
-                        title = song.title,
-                        artist = song.artist,
-                        album = song.album,
-                        duration = song.duration,
-                        coverArt = song.coverArt
-                    )
-                } ?: emptyList()
-
+                val response = SubsonicApi().getMusicDirectoryKtor(carContext, albumId)
+                val newSongs = response.sr.directory.child
+                    .filter { !it.isDir }
+                    .map { child ->
+                        Song(
+                            id = child.id,
+                            title = child.title,
+                            artist = child.artist,
+                            album = child.album ?: albumName,
+                            duration = child.duration,
+                            coverArt = child.coverArt
+                        )
+                    }
                 songs.clear()
                 songs.addAll(newSongs)
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load album songs: $e")
+                println("CarScreen: Failed to load album songs (musicDirectory): $e")
                 // Add error item
                 songs.clear()
                 songs.add(Song("error", "Failed to load songs", "", "", 0, ""))

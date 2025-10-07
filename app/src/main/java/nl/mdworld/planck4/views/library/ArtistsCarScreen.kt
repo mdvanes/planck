@@ -107,14 +107,14 @@ class ArtistsCarScreen(carContext: CarContext) : Screen(carContext) {
     private fun loadArtists() {
         scope.launch {
             try {
-                val response = SubsonicApi().getArtistsKtor(carContext)
-                val newArtists = response.sr.artists.index.flatMap { index ->
-                    index.artist.map { artistEntity ->
+                val response = SubsonicApi().getIndexesKtor(carContext)
+                val newArtists = response.sr.indexes.index.flatMap { idx ->
+                    idx.artist.map { folderArtist ->
                         Artist(
-                            id = artistEntity.id,
-                            name = artistEntity.name,
-                            albumCount = artistEntity.albumCount,
-                            coverArt = artistEntity.coverArt
+                            id = folderArtist.id,
+                            name = folderArtist.name,
+                            albumCount = 0,
+                            coverArt = null
                         )
                     }
                 }
@@ -122,7 +122,7 @@ class ArtistsCarScreen(carContext: CarContext) : Screen(carContext) {
                 artists.addAll(newArtists)
                 invalidate() // Refresh the screen with new data
             } catch (e: Exception) {
-                println("CarScreen: Failed to load artists: $e")
+                println("CarScreen: Failed to load artists (indexes): $e")
                 // Add error item
                 artists.clear()
                 artists.add(Artist("error", "Failed to load artists", 0, ""))

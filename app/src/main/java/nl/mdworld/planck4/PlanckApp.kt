@@ -19,8 +19,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CancellationException
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.networking.subsonic.SubsonicPlaylistsResponse
-import nl.mdworld.planck4.networking.subsonic.SubsonicArtistsResponse
-import nl.mdworld.planck4.networking.subsonic.SubsonicAlbumsResponse
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.AlbumCardList
 import nl.mdworld.planck4.views.library.Artist
@@ -110,14 +108,16 @@ fun PlanckApp(
         if (appState.currentScreen == AppScreen.ARTISTS) {
             appState.artists.clear()
             try {
-                val response: SubsonicArtistsResponse = SubsonicApi().getArtistsKtor(context)
-                val artists: List<Artist> = response.sr.artists.index.flatMap { index ->
-                    index.artist.map { artistEntity ->
+                // File-structure browsing using getIndexes replaces getArtists
+                val response = SubsonicApi().getIndexesKtor(context)
+                val artists = response.sr.indexes.index.flatMap { idx ->
+                    idx.artist.map { folderArtist ->
+                        // albumCount unknown in file browsing without extra calls; set 0
                         Artist(
-                            id = artistEntity.id,
-                            name = artistEntity.name,
-                            albumCount = artistEntity.albumCount,
-                            coverArt = artistEntity.coverArt
+                            id = folderArtist.id,
+                            name = folderArtist.name,
+                            albumCount = 0,
+                            coverArt = null
                         )
                     }
                 }
@@ -125,61 +125,63 @@ fun PlanckApp(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                println("Failed to load artists: $e")
+                println("Failed to load artists (indexes): $e")
             }
         }
     }
 
-    // Load albums when navigating to albums view
+    // Load albums when navigating to albums view (using file browsing: getMusicDirectory on artist folder)
     LaunchedEffect(appState.selectedArtistId, appState.currentScreen) {
         if (appState.selectedArtistId != null && appState.currentScreen == AppScreen.ALBUMS) {
             appState.albums.clear()
             try {
-                val response: SubsonicAlbumsResponse =
-                    SubsonicApi().getArtistKtor(context, appState.selectedArtistId!!)
-                val albums: List<Album> = response.sr.artist.album.map { albumEntity ->
-                    Album(
-                        id = albumEntity.id,
-                        name = albumEntity.name,
-                        artist = albumEntity.artist,
-                        artistId = albumEntity.artistId,
-                        songCount = albumEntity.songCount,
-                        duration = albumEntity.duration,
-                        coverArt = albumEntity.coverArt,
-                        year = albumEntity.year
-                    )
-                }
+                val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedArtistId!!)
+                val albums: List<Album> = response.sr.directory.child
+                    .filter { it.isDir }
+                    .map { childDir ->
+                        Album(
+                            id = childDir.id,
+                            name = childDir.title,
+                            artist = appState.selectedArtistName ?: "",
+                            artistId = appState.selectedArtistId!!,
+                            songCount = 0, // Unknown without deeper traversal
+                            duration = 0,
+                            coverArt = childDir.coverArt,
+                            year = null
+                        )
+                    }
                 appState.albums.addAll(albums)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                println("Failed to load albums: $e")
+                println("Failed to load albums (musicDirectory): $e")
             }
         }
     }
 
-    // Load album songs when navigating to album songs view
+    // Load album songs when navigating to album songs view (using file browsing: getMusicDirectory on album folder)
     LaunchedEffect(appState.selectedAlbumId, appState.currentScreen) {
         if (appState.selectedAlbumId != null && appState.currentScreen == AppScreen.ALBUM_SONGS) {
             appState.songs.clear()
             try {
-                val response = SubsonicApi().getAlbumKtor(context, appState.selectedAlbumId!!)
-                val songs = response.sr.album.songs?.map { song ->
-                    Song(
-                        id = song.id,
-                        title = song.title,
-                        artist = song.artist,
-                        album = song.album,
-                        duration = song.duration,
-                        coverArt = song.coverArt
-                    )
-                } ?: emptyList()
-
+                val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedAlbumId!!)
+                val songs = response.sr.directory.child
+                    .filter { !it.isDir }
+                    .map { child ->
+                        Song(
+                            id = child.id,
+                            title = child.title,
+                            artist = child.artist,
+                            album = child.album ?: appState.selectedAlbumName,
+                            duration = child.duration,
+                            coverArt = child.coverArt
+                        )
+                    }
                 appState.songs.addAll(songs)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                println("Failed to load album songs: $e")
+                println("Failed to load album songs (musicDirectory): $e")
             }
         }
     }

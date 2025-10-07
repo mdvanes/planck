@@ -213,4 +213,74 @@ object SubsonicDummyResponses {
             )
         )
     }
+
+    fun createDummyIndexesResponse(): SubsonicIndexesResponse {
+        val dummyArtists = listOf(
+            SubsonicFileArtist(id = "artist-folder-1", name = "🎻 Folder Artist One"),
+            SubsonicFileArtist(id = "artist-folder-2", name = "🎷 Folder Artist Two")
+        )
+        return SubsonicIndexesResponse(
+            sr = SubsonicIndexesResponse2(
+                indexes = SubsonicIndexesContainer(
+                    index = listOf(
+                        SubsonicFileArtistIndex(name = "A", artist = dummyArtists)
+                    )
+                )
+            )
+        )
+    }
+
+    fun createDummyMusicDirectoryResponse(id: String): SubsonicMusicDirectoryResponse {
+        // If id represents an artist folder, return album directories; else return songs
+        val children = if (id.startsWith("artist-folder")) {
+            listOf(
+                SubsonicChild(
+                    id = "album-folder-1",
+                    parent = id,
+                    isDir = true,
+                    title = "🗂 Album Folder One"
+                ),
+                SubsonicChild(
+                    id = "album-folder-2",
+                    parent = id,
+                    isDir = true,
+                    title = "🗂 Album Folder Two"
+                )
+            )
+        } else {
+            listOf(
+                SubsonicChild(
+                    id = "song-file-1",
+                    parent = id,
+                    isDir = false,
+                    title = "Dummy Song In Folder",
+                    artist = "Folder Artist",
+                    album = "Album Folder One",
+                    duration = 200,
+                    track = 1,
+                    coverArt = null
+                ),
+                SubsonicChild(
+                    id = "song-file-2",
+                    parent = id,
+                    isDir = false,
+                    title = "Another Dummy Track",
+                    artist = "Folder Artist",
+                    album = "Album Folder One",
+                    duration = 240,
+                    track = 2,
+                    coverArt = null
+                )
+            )
+        }
+        return SubsonicMusicDirectoryResponse(
+            sr = SubsonicMusicDirectoryResponse2(
+                directory = SubsonicDirectory(
+                    id = id,
+                    name = id,
+                    child = children
+                )
+            )
+        )
+    }
 }

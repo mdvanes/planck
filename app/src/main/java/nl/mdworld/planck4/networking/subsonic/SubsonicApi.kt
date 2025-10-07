@@ -61,4 +61,18 @@ class SubsonicApi {
         return ktorHttpClient.get(SubsonicUrlBuilder.buildAlbumUrl(context, id))
             .body()
     }
+
+    suspend fun getIndexesKtor(context: Context): SubsonicIndexesResponse {
+        if (!areCredentialsValid(context)) {
+            return SubsonicDummyResponses.createDummyIndexesResponse()
+        }
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildIndexesUrl(context)).body()
+    }
+
+    suspend fun getMusicDirectoryKtor(context: Context, id: String): SubsonicMusicDirectoryResponse {
+        if (!areCredentialsValid(context)) {
+            return SubsonicDummyResponses.createDummyMusicDirectoryResponse(id)
+        }
+        return ktorHttpClient.get(SubsonicUrlBuilder.buildMusicDirectoryUrl(context, id)).body()
+    }
 }

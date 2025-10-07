@@ -79,4 +79,18 @@ object SubsonicUrlBuilder {
     fun buildAlbumUrl(context: Context, albumId: String): String {
         return buildApiUrl(context, "getAlbum", "&id=$albumId")
     }
+
+    /**
+     * Builds an indexes URL
+     */
+    fun buildIndexesUrl(context: Context): String {
+        return buildApiUrl(context, "getIndexes")
+    }
+
+    /**
+     * Builds a music directory URL for the given directory ID
+     */
+    fun buildMusicDirectoryUrl(context: Context, directoryId: String): String {
+        return buildApiUrl(context, "getMusicDirectory", "&id=$directoryId")
+    }
 }
