@@ -42,7 +42,7 @@ fun ArtistCard(artist: Artist, appState: PlanckAppState? = null) {
             )
             if (artist.albumCount > 0) {
                 Text(
-                    text = "${artist.albumCount} albums",
+                    text = "${artist.albumCount} ${if (artist.albumCount == 1) "album" else "albums"}",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )

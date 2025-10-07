@@ -48,7 +48,7 @@ class ArtistsCarScreen(carContext: CarContext) : Screen(carContext) {
             itemListBuilder.addItem(
                 Row.Builder()
                     .setTitle(artist.name)
-                    .addText("${artist.albumCount} albums")
+                    .addText("${artist.albumCount} ${if (artist.albumCount == 1) "album" else "albums"}")
                     .setOnClickListener {
                         // Navigate to albums for this artist
                         screenManager.push(AlbumsCarScreen(carContext, artist.id, artist.name))
