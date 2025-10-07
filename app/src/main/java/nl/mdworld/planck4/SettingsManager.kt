@@ -11,6 +11,7 @@ object SettingsManager {
     // New: overlay opacity for background cover art
     private const val KEY_OVERLAY_OPACITY = "overlay_opacity"
     private const val KEY_BROWSING_MODE = "browsing_mode"
+    private const val KEY_FOLDER_COUNT_ENRICH = "folder_count_enrich"
 
     enum class BrowsingMode { TAGS, FILES }
 
@@ -84,6 +85,17 @@ object SettingsManager {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val value = prefs.getString(KEY_BROWSING_MODE, DEFAULT_BROWSING_MODE.name)
         return try { BrowsingMode.valueOf(value!!) } catch (e: Exception) { DEFAULT_BROWSING_MODE }
+    }
+
+    // New folder count enrichment preference helpers
+    fun saveFolderCountEnrichmentEnabled(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_FOLDER_COUNT_ENRICH, enabled).apply()
+    }
+
+    fun getFolderCountEnrichmentEnabled(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getBoolean(KEY_FOLDER_COUNT_ENRICH, false)
     }
 
     // Convenience method for getting the Jukebox base URL (same as server URL)

@@ -19,6 +19,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,6 +59,7 @@ fun SettingsScreen(
     var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
     var overlayOpacity by remember { mutableStateOf(SettingsManager.getOverlayOpacity(context)) }
     var browsingMode by remember { mutableStateOf(SettingsManager.getBrowsingMode(context)) }
+    var folderCountEnrich by remember { mutableStateOf(SettingsManager.getFolderCountEnrichmentEnabled(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
     // Album art cache state
@@ -71,12 +73,13 @@ fun SettingsScreen(
     LaunchedEffect(true) { refreshCacheSize() }
 
     // Track changes to enable save button (overlayOpacity auto-saves, so exclude)
-    LaunchedEffect(serverUrl, username, password, radioUrl, browsingMode) {
+    LaunchedEffect(serverUrl, username, password, radioUrl, browsingMode, folderCountEnrich) {
         hasUnsavedChanges = serverUrl != SettingsManager.getServerUrl(context) ||
                 username != SettingsManager.getUsername(context) ||
                 password != SettingsManager.getPassword(context) ||
                 radioUrl != SettingsManager.getRadioUrl(context) ||
-                browsingMode != SettingsManager.getBrowsingMode(context)
+                browsingMode != SettingsManager.getBrowsingMode(context) ||
+                folderCountEnrich != SettingsManager.getFolderCountEnrichmentEnabled(context)
     }
 
     Column(
@@ -178,6 +181,17 @@ fun SettingsScreen(
                     Text("Tags", modifier = Modifier.padding(start = 4.dp))
                 }
             }
+            // Folder count enrichment toggle (only meaningful in Folders mode)
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Compute album & song counts in folder mode")
+                    Text(
+                        text = if (folderCountEnrich) "May slow down loading on large libraries" else "Faster loading (counts disabled)",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Switch(checked = folderCountEnrich, enabled = browsingMode == BrowsingMode.FILES, onCheckedChange = { folderCountEnrich = it })
+            }
 
             // Save button with reload functionality
             Button(
@@ -188,6 +202,7 @@ fun SettingsScreen(
                     SettingsManager.savePassword(context, password)
                     SettingsManager.saveRadioUrl(context, radioUrl)
                     SettingsManager.saveBrowsingMode(context, browsingMode)
+                    SettingsManager.saveFolderCountEnrichmentEnabled(context, folderCountEnrich)
                     hasUnsavedChanges = false
 
                     // Trigger data reload with new settings

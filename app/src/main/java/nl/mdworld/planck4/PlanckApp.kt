@@ -17,8 +17,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import nl.mdworld.planck4.SettingsManager.BrowsingMode
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.networking.subsonic.SubsonicPlaylistsResponse
+import nl.mdworld.planck4.networking.subsonic.SubsonicArtistsResponse
+import nl.mdworld.planck4.networking.subsonic.SubsonicAlbumsResponse
 import nl.mdworld.planck4.views.library.Album
 import nl.mdworld.planck4.views.library.AlbumCardList
 import nl.mdworld.planck4.views.library.Artist
@@ -108,24 +113,59 @@ fun PlanckApp(
         if (appState.currentScreen == AppScreen.ARTISTS) {
             appState.artists.clear()
             try {
-                // File-structure browsing using getIndexes replaces getArtists
-                val response = SubsonicApi().getIndexesKtor(context)
-                val artists = response.sr.indexes.index.flatMap { idx ->
-                    idx.artist.map { folderArtist ->
-                        // albumCount unknown in file browsing without extra calls; set 0
-                        Artist(
-                            id = folderArtist.id,
-                            name = folderArtist.name,
-                            albumCount = 0,
-                            coverArt = null
-                        )
+                val mode = SettingsManager.getBrowsingMode(context)
+                if (mode == BrowsingMode.FILES) {
+                    val response = SubsonicApi().getIndexesKtor(context)
+                    val artists = response.sr.indexes.index.flatMap { idx ->
+                        idx.artist.map { folderArtist ->
+                            Artist(
+                                id = folderArtist.id,
+                                name = folderArtist.name,
+                                albumCount = 0,
+                                coverArt = null
+                            )
+                        }
                     }
+                    appState.artists.addAll(artists)
+                    if (SettingsManager.getFolderCountEnrichmentEnabled(context)) {
+                        try {
+                            val api = SubsonicApi()
+                            val deferred = artists.map { artist ->
+                                async {
+                                    try {
+                                        val dir = api.getMusicDirectoryKtor(context, artist.id)
+                                        val albumCount = dir.sr.directory.child.count { it.isDir }
+                                        artist.id to albumCount
+                                    } catch (e: Exception) { artist.id to 0 }
+                                }
+                            }
+                            val results = deferred.awaitAll()
+                            results.forEach { (artistId, count) ->
+                                val idxArtist = appState.artists.indexOfFirst { it.id == artistId }
+                                if (idxArtist >= 0) {
+                                    appState.artists[idxArtist] = appState.artists[idxArtist].copy(albumCount = count)
+                                }
+                            }
+                        } catch (e: Exception) { println("Artist enrichment failed: $e") }
+                    }
+                } else { // TAGS
+                    val response: SubsonicArtistsResponse = SubsonicApi().getArtistsKtor(context)
+                    val artists = response.sr.artists.index.flatMap { index ->
+                        index.artist.map { ae ->
+                            Artist(
+                                id = ae.id,
+                                name = ae.name,
+                                albumCount = ae.albumCount,
+                                coverArt = ae.coverArt
+                            )
+                        }
+                    }
+                    appState.artists.addAll(artists)
                 }
-                appState.artists.addAll(artists)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                println("Failed to load artists (indexes): $e")
+                println("Failed to load artists: $e")
             }
         }
     }
@@ -135,27 +175,57 @@ fun PlanckApp(
         if (appState.selectedArtistId != null && appState.currentScreen == AppScreen.ALBUMS) {
             appState.albums.clear()
             try {
-                val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedArtistId!!)
-                val albums: List<Album> = response.sr.directory.child
-                    .filter { it.isDir }
-                    .map { childDir ->
+                val mode = SettingsManager.getBrowsingMode(context)
+                if (mode == BrowsingMode.FILES) {
+                    val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedArtistId!!)
+                    val albums: List<Album> = response.sr.directory.child
+                        .filter { it.isDir }
+                        .map { childDir ->
+                            Album(
+                                id = childDir.id,
+                                name = childDir.title,
+                                artist = appState.selectedArtistName ?: "",
+                                artistId = appState.selectedArtistId!!,
+                                songCount = 0,
+                                duration = 0,
+                                coverArt = childDir.coverArt,
+                                year = null
+                            )
+                        }
+                    appState.albums.addAll(albums)
+                    if (SettingsManager.getFolderCountEnrichmentEnabled(context)) {
+                        try {
+                            val api = SubsonicApi()
+                            val deferred = albums.map { album ->
+                                async {
+                                    try { val dir = api.getMusicDirectoryKtor(context, album.id); album.id to dir.sr.directory.child.count { !it.isDir } } catch (e: Exception) { album.id to 0 }
+                                }
+                            }
+                            deferred.awaitAll().forEach { (albumId, count) ->
+                                val idxAlbum = appState.albums.indexOfFirst { it.id == albumId }
+                                if (idxAlbum >= 0) {
+                                    appState.albums[idxAlbum] = appState.albums[idxAlbum].copy(songCount = count)
+                                }
+                            }
+                        } catch (e: Exception) { println("Album enrichment failed: $e") }
+                    }
+                } else { // TAGS
+                    val response: SubsonicAlbumsResponse = SubsonicApi().getArtistKtor(context, appState.selectedArtistId!!)
+                    val albums: List<Album> = response.sr.artist.album.map { albumEntity ->
                         Album(
-                            id = childDir.id,
-                            name = childDir.title,
-                            artist = appState.selectedArtistName ?: "",
-                            artistId = appState.selectedArtistId!!,
-                            songCount = 0, // Unknown without deeper traversal
-                            duration = 0,
-                            coverArt = childDir.coverArt,
-                            year = null
+                            id = albumEntity.id,
+                            name = albumEntity.name,
+                            artist = albumEntity.artist,
+                            artistId = albumEntity.artistId,
+                            songCount = albumEntity.songCount,
+                            duration = albumEntity.duration,
+                            coverArt = albumEntity.coverArt,
+                            year = albumEntity.year
                         )
                     }
-                appState.albums.addAll(albums)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                println("Failed to load albums (musicDirectory): $e")
-            }
+                    appState.albums.addAll(albums)
+                }
+            } catch (e: CancellationException) { throw e } catch (e: Exception) { println("Failed to load albums: $e") }
         }
     }
 
@@ -164,10 +234,10 @@ fun PlanckApp(
         if (appState.selectedAlbumId != null && appState.currentScreen == AppScreen.ALBUM_SONGS) {
             appState.songs.clear()
             try {
-                val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedAlbumId!!)
-                val songs = response.sr.directory.child
-                    .filter { !it.isDir }
-                    .map { child ->
+                val mode = SettingsManager.getBrowsingMode(context)
+                if (mode == BrowsingMode.FILES) {
+                    val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedAlbumId!!)
+                    val songs = response.sr.directory.child.filter { !it.isDir }.map { child ->
                         Song(
                             id = child.id,
                             title = child.title,
@@ -177,12 +247,22 @@ fun PlanckApp(
                             coverArt = child.coverArt
                         )
                     }
-                appState.songs.addAll(songs)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                println("Failed to load album songs (musicDirectory): $e")
-            }
+                    appState.songs.addAll(songs)
+                } else { // TAGS
+                    val response = SubsonicApi().getAlbumKtor(context, appState.selectedAlbumId!!)
+                    val songs = response.sr.album.songs?.map { song ->
+                        Song(
+                            id = song.id,
+                            title = song.title,
+                            artist = song.artist,
+                            album = song.album,
+                            duration = song.duration,
+                            coverArt = song.coverArt
+                        )
+                    } ?: emptyList()
+                    appState.songs.addAll(songs)
+                }
+            } catch (e: CancellationException) { throw e } catch (e: Exception) { println("Failed to load album songs: $e") }
         }
     }
 

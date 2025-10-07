@@ -126,30 +126,32 @@ class AlbumsCarScreen(
                     albums.addAll(newAlbums)
                     invalidate() // initial list
 
-                    // Enrich song counts asynchronously
-                    try {
-                        val api = SubsonicApi()
-                        val deferred = newAlbums.map { album ->
-                            async {
-                                try {
-                                    val dir = api.getMusicDirectoryKtor(carContext, album.id)
-                                    val songCount = dir.sr.directory.child.count { !it.isDir }
-                                    album.id to songCount
-                                } catch (e: Exception) { album.id to 0 }
+                    if (SettingsManager.getFolderCountEnrichmentEnabled(carContext)) {
+                        // Enrich song counts asynchronously
+                        try {
+                            val api = SubsonicApi()
+                            val deferred = newAlbums.map { album ->
+                                async {
+                                    try {
+                                        val dir = api.getMusicDirectoryKtor(carContext, album.id)
+                                        val songCount = dir.sr.directory.child.count { !it.isDir }
+                                        album.id to songCount
+                                    } catch (e: Exception) { album.id to 0 }
+                                }
                             }
-                        }
-                        val results = deferred.awaitAll()
-                        var updated = false
-                        results.forEach { (id, count) ->
-                            val idx = albums.indexOfFirst { it.id == id }
-                            if (idx >= 0 && albums[idx].songCount != count) {
-                                albums[idx] = albums[idx].copy(songCount = count)
-                                updated = true
+                            val results = deferred.awaitAll()
+                            var updated = false
+                            results.forEach { (id, count) ->
+                                val idx = albums.indexOfFirst { it.id == id }
+                                if (idx >= 0 && albums[idx].songCount != count) {
+                                    albums[idx] = albums[idx].copy(songCount = count)
+                                    updated = true
+                                }
                             }
+                            if (updated) invalidate()
+                        } catch (e: Exception) {
+                            println("CarScreen: Album enrichment failed $e")
                         }
-                        if (updated) invalidate()
-                    } catch (e: Exception) {
-                        println("CarScreen: Album enrichment failed $e")
                     }
                 } else { // TAGS mode
                     val response: SubsonicAlbumsResponse = SubsonicApi().getArtistKtor(carContext, artistId)
