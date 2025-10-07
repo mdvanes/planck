@@ -198,7 +198,24 @@ fun PlanckApp(
                             val api = SubsonicApi()
                             val deferred = albums.map { album ->
                                 async {
-                                    try { val dir = api.getMusicDirectoryKtor(context, album.id); album.id to dir.sr.directory.child.count { !it.isDir } } catch (e: Exception) { album.id to 0 }
+                                    try {
+                                        val dir = api.getMusicDirectoryKtor(context, album.id)
+                                        val directSongs = dir.sr.directory.child.filter { !it.isDir }
+                                        var songCount = directSongs.size
+                                        if (songCount == 0) {
+                                            // Multi-disc: sum songs in each disc directory (one level deep)
+                                            val discDirs = dir.sr.directory.child.filter { it.isDir }
+                                            for (disc in discDirs) {
+                                                try {
+                                                    val discDir = api.getMusicDirectoryKtor(context, disc.id)
+                                                    songCount += discDir.sr.directory.child.count { !it.isDir }
+                                                } catch (e: Exception) {
+                                                    // Ignore individual disc failures to not break overall count
+                                                }
+                                            }
+                                        }
+                                        album.id to songCount
+                                    } catch (e: Exception) { album.id to 0 }
                                 }
                             }
                             deferred.awaitAll().forEach { (albumId, count) ->
@@ -236,18 +253,48 @@ fun PlanckApp(
             try {
                 val mode = SettingsManager.getBrowsingMode(context)
                 if (mode == BrowsingMode.FILES) {
-                    val response = SubsonicApi().getMusicDirectoryKtor(context, appState.selectedAlbumId!!)
-                    val songs = response.sr.directory.child.filter { !it.isDir }.map { child ->
-                        Song(
-                            id = child.id,
-                            title = child.title,
-                            artist = child.artist,
-                            album = child.album ?: appState.selectedAlbumName,
-                            duration = child.duration,
-                            coverArt = child.coverArt
-                        )
+                    val api = SubsonicApi()
+                    val root = api.getMusicDirectoryKtor(context, appState.selectedAlbumId!!)
+                    val children = root.sr.directory.child
+                    val directSongs = children.filter { !it.isDir }
+                    val songsList = mutableListOf<nl.mdworld.planck4.views.song.Song>()
+
+                    if (directSongs.isNotEmpty()) {
+                        // Standard case: songs directly under album directory
+                        songsList += directSongs.map { child ->
+                            Song(
+                                id = child.id,
+                                title = child.title,
+                                artist = child.artist,
+                                album = child.album ?: appState.selectedAlbumName,
+                                duration = child.duration,
+                                coverArt = child.coverArt
+                            )
+                        }
+                    } else {
+                        // Multi-disc case: fetch each disc (subdirectory) sequentially to preserve order
+                        val discDirs = children.filter { it.isDir }
+                        for (disc in discDirs) {
+                            try {
+                                val discDir = api.getMusicDirectoryKtor(context, disc.id)
+                                val discSongs = discDir.sr.directory.child.filter { !it.isDir }
+                                songsList += discSongs.map { child ->
+                                    Song(
+                                        id = child.id,
+                                        title = child.title,
+                                        artist = child.artist,
+                                        album = child.album ?: appState.selectedAlbumName,
+                                        duration = child.duration,
+                                        coverArt = child.coverArt
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                println("Failed to fetch disc directory ${disc.id}: $e")
+                            }
+                        }
                     }
-                    appState.songs.addAll(songs)
+
+                    appState.songs.addAll(songsList)
                 } else { // TAGS
                     val response = SubsonicApi().getAlbumKtor(context, appState.selectedAlbumId!!)
                     val songs = response.sr.album.songs?.map { song ->

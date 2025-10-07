@@ -105,10 +105,13 @@ class AlbumSongsCarScreen(
             try {
                 val mode = SettingsManager.getBrowsingMode(carContext)
                 if (mode == BrowsingMode.FILES) {
-                    val response = SubsonicApi().getMusicDirectoryKtor(carContext, albumId)
-                    val newSongs = response.sr.directory.child
-                        .filter { !it.isDir }
-                        .map { child ->
+                    val api = SubsonicApi()
+                    val root = api.getMusicDirectoryKtor(carContext, albumId)
+                    val children = root.sr.directory.child
+                    val directSongs = children.filter { !it.isDir }
+                    val songsAccum = mutableListOf<Song>()
+                    if (directSongs.isNotEmpty()) {
+                        songsAccum += directSongs.map { child ->
                             Song(
                                 id = child.id,
                                 title = child.title,
@@ -118,8 +121,28 @@ class AlbumSongsCarScreen(
                                 coverArt = child.coverArt
                             )
                         }
-                    songs.clear()
-                    songs.addAll(newSongs)
+                    } else {
+                        val discDirs = children.filter { it.isDir }
+                        for (disc in discDirs) {
+                            try {
+                                val discDir = api.getMusicDirectoryKtor(carContext, disc.id)
+                                val discSongs = discDir.sr.directory.child.filter { !it.isDir }
+                                songsAccum += discSongs.map { s ->
+                                    Song(
+                                        id = s.id,
+                                        title = s.title,
+                                        artist = s.artist,
+                                        album = s.album ?: albumName,
+                                        duration = s.duration,
+                                        coverArt = s.coverArt
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                println("CarScreen: Failed loading disc ${disc.id}: $e")
+                            }
+                        }
+                    }
+                    songs.clear(); songs.addAll(songsAccum)
                 } else { // TAGS mode
                     val response = SubsonicApi().getAlbumKtor(carContext, albumId)
                     val newSongs = response.sr.album.songs?.map { song ->
