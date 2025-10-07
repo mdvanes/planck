@@ -85,6 +85,7 @@ dependencies {
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.media:media:1.7.1")
     implementation("androidx.core:core-ktx:1.17.0")
+    // implementation("nl.mdworld:radio-metadata:0.2.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
