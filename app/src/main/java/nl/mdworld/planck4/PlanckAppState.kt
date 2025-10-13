@@ -448,6 +448,16 @@ class PlanckAppState(private val context: Context) {
         artists.clear()
         albums.clear()
     }
+
+    fun openLastPlaylistIfAvailable(): Boolean {
+        val lastId = SettingsManager.getLastPlaylistId(context)
+        if (!lastId.isNullOrBlank()) {
+            val name = playlists.firstOrNull { it.id == lastId }?.name ?: "Playlist"
+            navigateToSongs(lastId, name)
+            return true
+        }
+        return false
+    }
 }
 
 object PlanckAppStateHolder {

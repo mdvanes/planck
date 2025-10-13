@@ -382,7 +382,11 @@ fun PlanckApp(
 
                     AppScreen.SETTINGS -> {
                         SettingsScreen(
-                            onNavigateBack = { appState.navigateToPlaylists() },
+                            onNavigateBack = {
+                                if (!appState.openLastPlaylistIfAvailable()) {
+                                    appState.navigateToPlaylists()
+                                }
+                            },
                             appState = appState
                         )
                     }

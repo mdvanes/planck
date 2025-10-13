@@ -178,7 +178,17 @@ fun PlanckBottomAppBar(
                             icon = Icons.Filled.LibraryMusic,
                             contentDescription = "Playlists",
                             isSelected = currentScreen == AppScreen.PLAYLISTS || currentScreen == AppScreen.SONGS,
-                            onClick = { appState?.navigateToPlaylists() }
+                            onClick = {
+                                if (appState != null) {
+                                    val fromScreen = currentScreen
+                                    // If coming from SETTINGS or RADIO attempt to jump directly
+                                    if ((fromScreen == AppScreen.SETTINGS || fromScreen == AppScreen.RADIO) && appState.openLastPlaylistIfAvailable()) {
+                                        // navigated directly
+                                    } else {
+                                        appState.navigateToPlaylists()
+                                    }
+                                }
+                            }
                         )
                         NavigationButton(
                             icon = Icons.Filled.Folder,
