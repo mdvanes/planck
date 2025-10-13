@@ -114,14 +114,22 @@ fun RadioScreenContent(
                         .alpha(0.2f)
                 )
 
-                Icon(
-                    imageVector = Icons.Filled.SkipNext,
-                    contentDescription = "SkipNext (disabled)",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .alpha(0.2f),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                // Skip button now active when radio playing and skip context available
+                val hasSkipContext = remember(appState?.isRadioPlaying, appState?.radioMetadata) {
+                    if (appState == null) false else SettingsManager.getLastSongId(context) != null
+                }
+                IconButton(
+                    onClick = { if (appState != null) appState.skipRadioToLastContext() },
+                    enabled = appState?.isRadioPlaying == true && hasSkipContext,
+                    modifier = Modifier.size(100.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.SkipNext,
+                        contentDescription = "Skip temporarily to last context until new radio track",
+                        modifier = Modifier.size(100.dp),
+                        tint = if (appState?.isRadioPlaying == true && hasSkipContext) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                    )
+                }
             }
 
             if (firstTrack?.song?.title != null) {

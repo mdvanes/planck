@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.*
+import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 import nl.mdworld.planck4.util.radiometadata.RadioMetadata
 import nl.mdworld.planck4.views.library.Album
@@ -408,6 +409,7 @@ class PlanckAppState(private val context: Context) {
 
     fun stopRadio() {
         radioMetadataManager.stopMonitoring()
+        radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null; isRadioTemporarilyPausedForSkip = false
         radioPlayer?.let { if (it.isPlaying) it.stop(); it.reset(); it.release() }
         radioPlayer = null; isRadioPlaying = false; isPlaying = false; activeSong = null; currentRadioMetadata = emptyMap()
         updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
@@ -429,8 +431,13 @@ class PlanckAppState(private val context: Context) {
         progressUpdateJob = null
     }
 
+    // Skip-to-last-context state
+    private var radioSkipMonitorJob: Job? = null
+    private var isRadioTemporarilyPausedForSkip: Boolean = false
+
     fun cleanup() {
         stopPlayback(); stopRadio(); radioMetadataManager.cleanup(); progressUpdateScope.cancel()
+        radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null; isRadioTemporarilyPausedForSkip = false
     }
 
     fun triggerReload() {
@@ -457,6 +464,158 @@ class PlanckAppState(private val context: Context) {
             return true
         }
         return false
+    }
+
+    // Helper to resume radio stream updating activeSong metadata from current radioMetadata
+    private fun resumeRadioStreamWithCurrentMetadata() {
+        radioPlayer?.let { rp ->
+            try {
+                rp.start()
+                val firstTrack = radioMetadata.firstOrNull()
+                activeSong = Song(
+                    id = "radio-stream",
+                    title = firstTrack?.song?.title ?: firstTrack?.broadcast?.title ?: "Radio Stream",
+                    artist = firstTrack?.song?.artist ?: firstTrack?.broadcast?.presenters ?: "",
+                    album = "Radio Stream",
+                    duration = 0,
+                    coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
+                )
+                sendMetadataToService(activeSong)
+                isRadioPlaying = true
+                isPlaying = true
+                updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, 0L)
+            } catch (e: Exception) { e.printStackTrace() }
+        }
+    }
+
+    /**
+     * Implements the "skip" behavior from the Radio screen:
+     * 1. Pause radio stream (but keep metadata monitoring active).
+     * 2. Load last playlist or folder context and start playing lastSongId.
+     * 3. Monitor radio metadata; when a new first track (time.start) appears, stop song and resume radio.
+     */
+    fun skipRadioToLastContext() {
+        // Preconditions: need a lastSongId AND (playlist OR folder context)
+        val lastSongId = SettingsManager.getLastSongId(context)
+        val lastPlaylistId = SettingsManager.getLastPlaylistId(context)
+        val lastFolderId = SettingsManager.getLastFolderId(context)
+        if (lastSongId.isNullOrBlank() || (lastPlaylistId.isNullOrBlank() && lastFolderId.isNullOrBlank())) {
+            return // Nothing to do
+        }
+        if (!isRadioPlaying || radioPlayer == null) return // Skip only meaningful when radio currently playing
+
+        // Pause radio (do not stop monitoring)
+        radioPlayer?.let { rp -> if (rp.isPlaying) { rp.pause(); isRadioPlaying = false; isPlaying = false } }
+        isRadioTemporarilyPausedForSkip = true
+
+        val initialStart = radioMetadata.firstOrNull()?.time?.start
+
+        // Cancel any previous job
+        radioSkipMonitorJob?.cancel()
+
+        // Launch loading + monitoring
+        radioSkipMonitorJob = progressUpdateScope.launch {
+            // Step 2: load context & play song
+            val api = SubsonicApi()
+            try {
+                val songsList = mutableListOf<Song>()
+                if (!lastPlaylistId.isNullOrBlank()) {
+                    try {
+                        val response = api.getPlaylistKtor(context, lastPlaylistId)
+                        songsList += response.sr.playlist.songs?.map { s ->
+                            Song(
+                                id = s.id,
+                                title = s.title,
+                                artist = s.artist,
+                                album = s.album,
+                                duration = s.duration,
+                                coverArt = s.coverArt
+                            )
+                        }.orEmpty()
+                    } catch (e: Exception) { /* ignore */ }
+                } else if (!lastFolderId.isNullOrBlank()) {
+                    try {
+                        val mode = SettingsManager.getBrowsingMode(context)
+                        if (mode == SettingsManager.BrowsingMode.FILES) {
+                            val root = api.getMusicDirectoryKtor(context, lastFolderId)
+                            val children = root.sr.directory.child
+                            val directSongs = children.filter { !it.isDir }
+                            if (directSongs.isNotEmpty()) {
+                                songsList += directSongs.map { child ->
+                                    Song(
+                                        id = child.id,
+                                        title = child.title,
+                                        artist = child.artist,
+                                        album = child.album ?: "",
+                                        duration = child.duration,
+                                        coverArt = child.coverArt
+                                    )
+                                }
+                            } else {
+                                val discDirs = children.filter { it.isDir }
+                                for (disc in discDirs) {
+                                    try {
+                                        val discDir = api.getMusicDirectoryKtor(context, disc.id)
+                                        val discSongs = discDir.sr.directory.child.filter { !it.isDir }
+                                        songsList += discSongs.map { child ->
+                                            Song(
+                                                id = child.id,
+                                                title = child.title,
+                                                artist = child.artist,
+                                                album = child.album ?: "",
+                                                duration = child.duration,
+                                                coverArt = child.coverArt
+                                            )
+                                        }
+                                    } catch (_: Exception) {}
+                                }
+                            }
+                        } else { // TAGS
+                            val albumResp = api.getAlbumKtor(context, lastFolderId)
+                            songsList += albumResp.sr.album.songs?.map { s ->
+                                Song(
+                                    id = s.id,
+                                    title = s.title,
+                                    artist = s.artist,
+                                    album = s.album,
+                                    duration = s.duration,
+                                    coverArt = s.coverArt
+                                )
+                            }.orEmpty()
+                        }
+                    } catch (e: Exception) { /* ignore */ }
+                }
+
+                val songToPlay = songsList.firstOrNull { it.id == lastSongId }
+                if (songToPlay != null) {
+                    songs.clear(); songs.addAll(songsList)
+                    playStream(songToPlay)
+                } else {
+                    resumeRadioStreamWithCurrentMetadata(); isRadioTemporarilyPausedForSkip = false; return@launch
+                }
+            } catch (e: Exception) {
+                resumeRadioStreamWithCurrentMetadata(); isRadioTemporarilyPausedForSkip = false; return@launch
+            }
+
+            // Step 3 & 4: monitor radio metadata for change
+            try {
+                while (isActive && isRadioTemporarilyPausedForSkip) {
+                    val currentStart = radioMetadata.firstOrNull()?.time?.start
+                    val newMetadataDetected = when {
+                        initialStart == null && currentStart != null -> true // first timestamp arrived
+                        initialStart != null && currentStart != null && currentStart > initialStart -> true
+                        else -> false
+                    }
+                    if (newMetadataDetected) {
+                        stopPlayback()
+                        resumeRadioStreamWithCurrentMetadata()
+                        isRadioTemporarilyPausedForSkip = false
+                        break
+                    }
+                    delay(2000)
+                }
+            } catch (_: CancellationException) { /* ignore */ }
+        }
     }
 }
 
