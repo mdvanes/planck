@@ -214,6 +214,24 @@ class PlanckAppState(private val context: Context) {
 
     fun playStream(song: Song) {
         try {
+            if (song.id != "radio-stream") {
+                when (currentScreen) {
+                    AppScreen.SONGS -> {
+                        selectedPlaylistId?.let {
+                            SettingsManager.saveLastPlaylistId(context, it)
+                            SettingsManager.saveLastFolderId(context, "")
+                        }
+                    }
+                    AppScreen.ALBUM_SONGS -> {
+                        selectedAlbumId?.let {
+                            SettingsManager.saveLastFolderId(context, it)
+                            SettingsManager.saveLastPlaylistId(context, "")
+                        }
+                    }
+                    else -> { /* no-op for other screens */ }
+                }
+                SettingsManager.saveLastSongId(context, song.id)
+            }
             stopPlayback()
             activeSong = song
             currentSongIndex = songs.indexOfFirst { it.id == song.id }.takeIf { it >= 0 } ?: 0
@@ -328,7 +346,7 @@ class PlanckAppState(private val context: Context) {
             val firstTrack = radioMetadata.firstOrNull()
             val title = firstTrack?.song?.title ?: "NPO Radio 2"
             val artist = firstTrack?.song?.artist ?: ""
-            // Create a virtual radio song for display in bottom bar
+            // Create a virtual radio song for display in the bottom bar
             val dummySong = Song(
                 id = "radio-stream",
                 title = title,

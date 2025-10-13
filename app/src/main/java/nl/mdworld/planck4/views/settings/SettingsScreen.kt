@@ -232,5 +232,15 @@ fun SettingsScreen(
 
         // Debug Key Codes Section (extracted)
         DebugKeyCodesSection()
+
+        // Playback Context Section (display-only)
+        SettingsSection(title = "Last Played Context") {
+            val lastSongId = SettingsManager.getLastSongId(context) ?: "(none)"
+            val lastPlaylistId = SettingsManager.getLastPlaylistId(context).takeUnless { it.isNullOrBlank() } ?: "(none)"
+            val lastFolderId = SettingsManager.getLastFolderId(context).takeUnless { it.isNullOrBlank() } ?: "(none)"
+            Text("Last Song ID: $lastSongId")
+            Text("Last Playlist ID: $lastPlaylistId")
+            Text("Last Folder (Album) ID: $lastFolderId")
+        }
     }
 }

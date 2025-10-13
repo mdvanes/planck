@@ -12,6 +12,10 @@ object SettingsManager {
     private const val KEY_OVERLAY_OPACITY = "overlay_opacity"
     private const val KEY_BROWSING_MODE = "browsing_mode"
     private const val KEY_FOLDER_COUNT_ENRICH = "folder_count_enrich"
+    // Added: persistent playback context
+    private const val KEY_LAST_SONG_ID = "last_song_id"
+    private const val KEY_LAST_PLAYLIST_ID = "last_playlist_id"
+    private const val KEY_LAST_FOLDER_ID = "last_folder_id"
 
     enum class BrowsingMode { TAGS, FILES }
 
@@ -96,6 +100,37 @@ object SettingsManager {
     fun getFolderCountEnrichmentEnabled(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getBoolean(KEY_FOLDER_COUNT_ENRICH, false)
+    }
+
+    // Persistence for last played song and its context (playlist or folder)
+    fun saveLastSongId(context: Context, songId: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_LAST_SONG_ID, songId).apply()
+    }
+
+    fun getLastSongId(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_LAST_SONG_ID, null)
+    }
+
+    fun saveLastPlaylistId(context: Context, playlistId: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_LAST_PLAYLIST_ID, playlistId).apply()
+    }
+
+    fun getLastPlaylistId(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_LAST_PLAYLIST_ID, null)
+    }
+
+    fun saveLastFolderId(context: Context, folderId: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_LAST_FOLDER_ID, folderId).apply()
+    }
+
+    fun getLastFolderId(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_LAST_FOLDER_ID, null)
     }
 
     // Convenience method for getting the Jukebox base URL (same as server URL)
