@@ -16,6 +16,13 @@ import android.support.v4.media.session.PlaybackStateCompat
 import nl.mdworld.planck4.views.song.Song
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import coil.ImageLoader
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import kotlinx.coroutines.*
+import nl.mdworld.planck4.networking.subsonic.SubsonicUrlBuilder
 
 class MediaPlaybackService : MediaBrowserServiceCompat() {
 
@@ -23,11 +30,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         private const val MY_MEDIA_ROOT_ID = "media_root_id"
         private const val MEDIA_ID_PLAYLISTS = "playlists"
         private const val MEDIA_ID_SONGS = "songs"
-        // Notification constants
         private const val NOTIFICATION_CHANNEL_ID = "planck_playback"
         private const val NOTIFICATION_ID = 1001
 
-        // Intent actions / extras for external updates
         const val ACTION_UPDATE_METADATA = "nl.mdworld.planck4.action.UPDATE_METADATA"
         const val ACTION_UPDATE_PLAYBACK_STATE = "nl.mdworld.planck4.action.UPDATE_PLAYBACK_STATE"
         const val EXTRA_SONG_ID = "extra_song_id"
@@ -35,47 +40,39 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         const val EXTRA_SONG_ARTIST = "extra_song_artist"
         const val EXTRA_SONG_ALBUM = "extra_song_album"
         const val EXTRA_SONG_DURATION = "extra_song_duration"
+        const val EXTRA_SONG_COVER_ART_ID = "extra_song_cover_art_id"
+        const val EXTRA_SONG_COVER_ART_URL = "extra_song_cover_art_url"
         const val EXTRA_PLAYBACK_STATE = "extra_playback_state"
+        const val EXTRA_PLAYBACK_POSITION = "extra_playback_position"
     }
 
     private var mediaSession: MediaSessionCompat? = null
     private lateinit var stateBuilder: PlaybackStateCompat.Builder
-    // Track current song & playback state so we can build a dynamic notification
     private var currentSong: Song? = null
     private var currentPlaybackState: Int = PlaybackStateCompat.STATE_NONE
     private var isInForeground: Boolean = false
+    private var currentLargeIcon: Bitmap? = null
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
-
-        // Create a MediaSessionCompat
         mediaSession = MediaSessionCompat(baseContext, "MediaPlaybackService").apply {
-
-            // Set the session's token so that client activities can communicate with it.
             setSessionToken(sessionToken)
-
-            // Enable callbacks from MediaButtons and TransportControls
             setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
             )
-
-            // Set an initial PlaybackState with ACTION_PLAY, so media buttons can start the player
             stateBuilder = PlaybackStateCompat.Builder()
                 .setActions(
                     PlaybackStateCompat.ACTION_PLAY or
-                    PlaybackStateCompat.ACTION_PLAY_PAUSE or
-                    PlaybackStateCompat.ACTION_PAUSE or
-                    PlaybackStateCompat.ACTION_STOP or
-                    PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
-                    PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                            PlaybackStateCompat.ACTION_PLAY_PAUSE or
+                            PlaybackStateCompat.ACTION_PAUSE or
+                            PlaybackStateCompat.ACTION_STOP or
+                            PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                            PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
                 )
             setPlaybackState(stateBuilder.build())
-
-            // MySessionCallback has methods that handle callbacks from a media controller
             setCallback(MySessionCallback())
-
-            // Set the session activity
             val activityIntent = Intent(applicationContext, MainActivity::class.java)
             setSessionActivity(
                 PendingIntent.getActivity(
@@ -84,46 +81,48 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 )
             )
         }
-
-        // Ensure a persistent foreground notification with the word "Planck"
         ensureNotificationChannel()
         try {
-            // Initial placeholder notification before a song is set
             startForeground(NOTIFICATION_ID, buildNotification())
             isInForeground = true
-        } catch (e: SecurityException) {
-            // If POST_NOTIFICATIONS not yet granted (API 33+), we'll remain without foreground until granted.
-            // You may request permission earlier in the activity; once granted you can restart service.
-        }
+        } catch (_: SecurityException) { }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_UPDATE_METADATA -> {
-                val title = intent.getStringExtra(EXTRA_SONG_TITLE)
-                val id = intent.getStringExtra(EXTRA_SONG_ID) ?: title ?: "" // fallback
-                val artist = intent.getStringExtra(EXTRA_SONG_ARTIST)
-                val album = intent.getStringExtra(EXTRA_SONG_ALBUM)
-                val duration = if (intent.hasExtra(EXTRA_SONG_DURATION)) intent.getIntExtra(EXTRA_SONG_DURATION, 0) else null
-                if (title != null) {
-                    updateMetadata(
-                        Song(
-                            id = id,
-                            title = title,
-                            artist = artist,
-                            album = album,
-                            duration = duration,
-                            coverArt = null // Not yet wired
-                        )
-                    )
-                }
-            }
-            ACTION_UPDATE_PLAYBACK_STATE -> {
-                val state = intent.getIntExtra(EXTRA_PLAYBACK_STATE, PlaybackStateCompat.STATE_NONE)
-                updatePlaybackState(state)
-            }
+            ACTION_UPDATE_METADATA -> handleMetadataIntent(intent)
+            ACTION_UPDATE_PLAYBACK_STATE -> handlePlaybackStateIntent(intent)
         }
         return START_STICKY
+    }
+
+    private fun handleMetadataIntent(intent: Intent) {
+        val title = intent.getStringExtra(EXTRA_SONG_TITLE)
+        if (title == null) return
+        val id = intent.getStringExtra(EXTRA_SONG_ID) ?: title
+        val artist = intent.getStringExtra(EXTRA_SONG_ARTIST)
+        val album = intent.getStringExtra(EXTRA_SONG_ALBUM)
+        val duration = if (intent.hasExtra(EXTRA_SONG_DURATION)) intent.getIntExtra(EXTRA_SONG_DURATION, 0) else null
+        val coverArtId = intent.getStringExtra(EXTRA_SONG_COVER_ART_ID)
+        val coverArtUrl = intent.getStringExtra(EXTRA_SONG_COVER_ART_URL)
+        updateMetadata(
+            Song(
+                id = id,
+                title = title,
+                artist = artist,
+                album = album,
+                duration = duration,
+                coverArt = coverArtId ?: coverArtUrl
+            ),
+            coverArtId = coverArtId,
+            coverArtUrl = coverArtUrl
+        )
+    }
+
+    private fun handlePlaybackStateIntent(intent: Intent) {
+        val state = intent.getIntExtra(EXTRA_PLAYBACK_STATE, PlaybackStateCompat.STATE_NONE)
+        val position = intent.getLongExtra(EXTRA_PLAYBACK_POSITION, 0L)
+        updatePlaybackState(state, position)
     }
 
     private fun ensureNotificationChannel() {
@@ -140,7 +139,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
     }
 
-    // Build a dynamic notification using current song & state
     private fun buildNotification(): Notification {
         val intent = Intent(this, MainActivity::class.java)
         val contentPendingIntent = PendingIntent.getActivity(
@@ -160,88 +158,49 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             .setContentTitle(title)
             .setContentText(subtitle)
             .setContentIntent(contentPendingIntent)
-            .setOngoing(isPlaying) // Ongoing when playing
+            .setOngoing(isPlaying)
             .setOnlyAlertOnce(true)
-            // Could add media style & actions later
+            .apply { currentLargeIcon?.let { setLargeIcon(it) } }
             .build()
     }
 
-    override fun onGetRoot(
-        clientPackageName: String,
-        clientUid: Int,
-        rootHints: Bundle?
-    ): BrowserRoot? {
-        // Return a tree of media items that can be browsed
-        return BrowserRoot(MY_MEDIA_ROOT_ID, null)
-    }
+    override fun onGetRoot(clientPackageName: String, clientUid: Int, rootHints: Bundle?): BrowserRoot? =
+        BrowserRoot(MY_MEDIA_ROOT_ID, null)
 
-    override fun onLoadChildren(
-        parentMediaId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
-    ) {
+    override fun onLoadChildren(parentMediaId: String, result: Result<MutableList<MediaBrowserCompat.MediaItem>>) {
         val mediaItems = mutableListOf<MediaBrowserCompat.MediaItem>()
-
-        when (parentMediaId) {
-            MY_MEDIA_ROOT_ID -> {
-                // Add browseable categories
-                mediaItems.add(
-                    MediaBrowserCompat.MediaItem(
-                        MediaDescriptionCompat.Builder()
-                            .setMediaId(MEDIA_ID_PLAYLISTS)
-                            .setTitle("Playlists")
-                            .setSubtitle("Browse playlists")
-                            .build(),
-                        MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
-                    )
+        if (parentMediaId == MY_MEDIA_ROOT_ID) {
+            mediaItems.add(
+                MediaBrowserCompat.MediaItem(
+                    MediaDescriptionCompat.Builder()
+                        .setMediaId(MEDIA_ID_PLAYLISTS)
+                        .setTitle("Playlists")
+                        .setSubtitle("Browse playlists")
+                        .build(),
+                    MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
                 )
-            }
-            MEDIA_ID_PLAYLISTS -> {
-                // Add playlist items here - you can integrate with your PlanckAppState
-            }
-            MEDIA_ID_SONGS -> {
-                // Add song items here - you can integrate with your PlanckAppState
-            }
+            )
         }
-
         result.sendResult(mediaItems)
     }
 
     inner class MySessionCallback : MediaSessionCompat.Callback() {
-        override fun onPlay() {
-            updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
-        }
-
-        override fun onPause() {
-            updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
-        }
-
-        override fun onStop() {
-            updatePlaybackState(PlaybackStateCompat.STATE_STOPPED)
-        }
-
-        override fun onSkipToNext() {
-            updatePlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT)
-        }
-
-        override fun onSkipToPrevious() {
-            updatePlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS)
-        }
-
-        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
-            updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
-        }
+        override fun onPlay() { updatePlaybackState(PlaybackStateCompat.STATE_PLAYING) }
+        override fun onPause() { updatePlaybackState(PlaybackStateCompat.STATE_PAUSED) }
+        override fun onStop() { updatePlaybackState(PlaybackStateCompat.STATE_STOPPED) }
+        override fun onSkipToNext() { updatePlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT) }
+        override fun onSkipToPrevious() { updatePlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS) }
+        override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) { updatePlaybackState(PlaybackStateCompat.STATE_PLAYING) }
     }
 
-    private fun updatePlaybackState(state: Int) {
+    private fun updatePlaybackState(state: Int, position: Long = 0L) {
         currentPlaybackState = state
-        val playbackState = stateBuilder
-            .setState(state, 0, 1.0f)
-            .build()
+        val playbackState = stateBuilder.setState(state, position, 1.0f).build()
         mediaSession?.setPlaybackState(playbackState)
         refreshNotification()
     }
 
-    fun updateMetadata(song: Song) {
+    fun updateMetadata(song: Song, coverArtId: String? = null, coverArtUrl: String? = null) {
         currentSong = song
         val metadata = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
@@ -249,9 +208,36 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album)
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration?.toLong() ?: 0)
             .build()
-
         mediaSession?.setMetadata(metadata)
+        loadCoverArtAsync(coverArtId, coverArtUrl)
         refreshNotification()
+    }
+
+    private fun loadCoverArtAsync(coverArtId: String?, coverArtUrl: String?) {
+        val targetData = when {
+            coverArtUrl != null -> coverArtUrl
+            coverArtId != null -> SubsonicUrlBuilder.buildCoverArtUrl(this, coverArtId)
+            currentSong?.coverArt != null && currentSong?.coverArt!!.startsWith("http") -> currentSong?.coverArt
+            currentSong?.coverArt != null -> SubsonicUrlBuilder.buildCoverArtUrl(this, currentSong!!.coverArt!!)
+            else -> null
+        }
+        if (targetData == null) { currentLargeIcon = null; return }
+        serviceScope.launch {
+            try {
+                val loader = ImageLoader(this@MediaPlaybackService)
+                val req = ImageRequest.Builder(this@MediaPlaybackService)
+                    .data(targetData)
+                    .allowHardware(false)
+                    .size(512)
+                    .build()
+                val result = loader.execute(req)
+                val bmp = (result as? SuccessResult)?.drawable.let { dr -> (dr as? BitmapDrawable)?.bitmap }
+                if (bmp != null) {
+                    currentLargeIcon = bmp
+                    withContext(Dispatchers.Main) { refreshNotification() }
+                }
+            } catch (_: Exception) { }
+        }
     }
 
     private fun refreshNotification() {
@@ -264,16 +250,12 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     startForeground(NOTIFICATION_ID, notification)
                     isInForeground = true
                 } else {
-                    // Update ongoing foreground notification
                     mgr.notify(NOTIFICATION_ID, notification)
                 }
-            } catch (e: SecurityException) {
-                // Notification permission missing (API 33+). We silently ignore; user must grant.
-            }
+            } catch (_: SecurityException) { }
         } else {
-            // Not actively playing: keep a non-foreground notification (unless stopped)
             if (isInForeground) {
-                stopForeground(false) // Keep shown
+                stopForeground(false)
                 isInForeground = false
             }
             mgr.notify(NOTIFICATION_ID, notification)
@@ -282,6 +264,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     override fun onDestroy() {
         mediaSession?.release()
+        serviceScope.cancel()
         super.onDestroy()
     }
 }
