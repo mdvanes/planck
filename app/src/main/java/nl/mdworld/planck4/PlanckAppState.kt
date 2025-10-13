@@ -22,6 +22,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import android.content.Intent
 
 @Composable
 fun rememberPlanckAppState(context: Context = LocalContext.current) = remember(context) {
@@ -170,13 +171,36 @@ class PlanckAppState(private val context: Context) {
         }
     }
 
+    private fun sendMetadataToService(song: Song?) {
+        val intent = Intent(context, MediaPlaybackService::class.java).apply {
+            action = MediaPlaybackService.ACTION_UPDATE_METADATA
+            if (song != null) {
+                putExtra(MediaPlaybackService.EXTRA_SONG_ID, song.id)
+                putExtra(MediaPlaybackService.EXTRA_SONG_TITLE, song.title)
+                song.artist?.let { putExtra(MediaPlaybackService.EXTRA_SONG_ARTIST, it) }
+                song.album?.let { putExtra(MediaPlaybackService.EXTRA_SONG_ALBUM, it) }
+                song.duration?.let { putExtra(MediaPlaybackService.EXTRA_SONG_DURATION, it) }
+            }
+        }
+        try { context.startService(intent) } catch (_: Exception) {}
+    }
+
+    private fun sendPlaybackStateToService(state: Int) {
+        val intent = Intent(context, MediaPlaybackService::class.java).apply {
+            action = MediaPlaybackService.ACTION_UPDATE_PLAYBACK_STATE
+            putExtra(MediaPlaybackService.EXTRA_PLAYBACK_STATE, state)
+        }
+        try { context.startService(intent) } catch (_: Exception) {}
+    }
+
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     private fun updateMediaSessionMetadata(title: String = "Planck") {
         val metadata = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
             .build()
         mediaSession.setMetadata(metadata)
-        // No notification update here anymore.
+        // Forward to service as well
+        activeSong?.let { sendMetadataToService(it.copy(title = title)) }
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -192,7 +216,7 @@ class PlanckAppState(private val context: Context) {
             .setState(state, position, 1.0f)
             .build()
         mediaSession.setPlaybackState(playbackState)
-        // No notification update here anymore.
+        sendPlaybackStateToService(state)
     }
 
     fun navigateToSongs(playlistId: String, playlistName: String) {
@@ -247,8 +271,10 @@ class PlanckAppState(private val context: Context) {
 
             // Set the active song and find its index in the current playlist
             activeSong = song
-            updateMediaSessionMetadata("Planck")
+            // Update session + service with real song title
+            updateMediaSessionMetadata(song.title)
             currentSongIndex = songs.indexOfFirst { it.id == song.id }.takeIf { it >= 0 } ?: 0
+            sendMetadataToService(song)
 
             // Reset progress for new song
             currentPosition = 0
@@ -416,7 +442,8 @@ class PlanckAppState(private val context: Context) {
             )
 
             activeSong = dummySong
-            updateMediaSessionMetadata("Planck")
+            updateMediaSessionMetadata(dummySong.title)
+            sendMetadataToService(dummySong)
 
             radioPlayer = MediaPlayer().apply {
                 setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
@@ -440,7 +467,6 @@ class PlanckAppState(private val context: Context) {
                         val newStartTime = firstTrack?.time?.start
                         // Prevent stale metadata from updating the display
                         if(prevStartTime == null || (newStartTime != null && newStartTime > prevStartTime)) {
-                            // only update activeSong if isRadioPlaying
                             if(isRadioPlaying) {
                                 activeSong = Song(
                                     id = "radio-stream",
@@ -449,6 +475,8 @@ class PlanckAppState(private val context: Context) {
                                     album = "Radio Stream",
                                     duration = 0,
                                     coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl)
+                                sendMetadataToService(activeSong)
+                                updateMediaSessionMetadata(activeSong?.title ?: "Radio Stream")
                             }
                             radioMetadata = metadata
                         }
