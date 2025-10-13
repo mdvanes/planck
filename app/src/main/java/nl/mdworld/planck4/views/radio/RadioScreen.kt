@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -115,19 +116,25 @@ fun RadioScreenContent(
                 )
 
                 // Skip button now active when radio playing and skip context available
-                val hasSkipContext = remember(appState?.isRadioPlaying, appState?.radioMetadata) {
+                val hasSkipContext = remember(appState?.isRadioPlaying, appState?.radioMetadata, appState?.isRadioSkipping) {
                     if (appState == null) false else SettingsManager.getLastSongId(context) != null
                 }
+                val skipping = appState?.isRadioSkipping == true
                 IconButton(
                     onClick = { if (appState != null) appState.skipRadioToLastContext() },
-                    enabled = appState?.isRadioPlaying == true && hasSkipContext,
+                    enabled = (appState?.isRadioPlaying == true || skipping) && hasSkipContext,
                     modifier = Modifier.size(100.dp)
                 ) {
+                    val iconVector = if (skipping) Icons.Filled.Close else Icons.Filled.SkipNext
                     Icon(
-                        imageVector = Icons.Filled.SkipNext,
-                        contentDescription = "Skip temporarily to last context until new radio track",
+                        imageVector = iconVector,
+                        contentDescription = if (skipping) "Cancel skip and resume radio" else "Skip temporarily to last context until new radio track",
                         modifier = Modifier.size(100.dp),
-                        tint = if (appState?.isRadioPlaying == true && hasSkipContext) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                        tint = when {
+                            skipping -> MaterialTheme.colorScheme.error
+                            appState?.isRadioPlaying == true && hasSkipContext -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                        }
                     )
                 }
             }

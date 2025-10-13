@@ -409,7 +409,7 @@ class PlanckAppState(private val context: Context) {
 
     fun stopRadio() {
         radioMetadataManager.stopMonitoring()
-        radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null; isRadioTemporarilyPausedForSkip = false
+        radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null; isRadioTemporarilyPausedForSkip = false; isRadioSkipping = false
         radioPlayer?.let { if (it.isPlaying) it.stop(); it.reset(); it.release() }
         radioPlayer = null; isRadioPlaying = false; isPlaying = false; activeSong = null; currentRadioMetadata = emptyMap()
         updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_STOPPED, 0L)
@@ -435,9 +435,12 @@ class PlanckAppState(private val context: Context) {
     private var radioSkipMonitorJob: Job? = null
     private var isRadioTemporarilyPausedForSkip: Boolean = false
 
+    // Public state to reflect skipping (radio temporarily paused and monitoring)
+    var isRadioSkipping by mutableStateOf(false)
+
     fun cleanup() {
         stopPlayback(); stopRadio(); radioMetadataManager.cleanup(); progressUpdateScope.cancel()
-        radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null; isRadioTemporarilyPausedForSkip = false
+        radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null; isRadioTemporarilyPausedForSkip = false; isRadioSkipping = false
     }
 
     fun triggerReload() {
@@ -483,6 +486,8 @@ class PlanckAppState(private val context: Context) {
                 sendMetadataToService(activeSong)
                 isRadioPlaying = true
                 isPlaying = true
+                isRadioSkipping = false
+                isRadioTemporarilyPausedForSkip = false
                 updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, 0L)
             } catch (e: Exception) { e.printStackTrace() }
         }
@@ -495,25 +500,25 @@ class PlanckAppState(private val context: Context) {
      * 3. Monitor radio metadata; when a new first track (time.start) appears, stop song and resume radio.
      */
     fun skipRadioToLastContext() {
+        // If already skipping, treat as cancel: stop song & resume radio
+        if (isRadioTemporarilyPausedForSkip) {
+            radioSkipMonitorJob?.cancel(); radioSkipMonitorJob = null
+            stopPlayback()
+            resumeRadioStreamWithCurrentMetadata()
+            return
+        }
         // Preconditions: need a lastSongId AND (playlist OR folder context)
         val lastSongId = SettingsManager.getLastSongId(context)
         val lastPlaylistId = SettingsManager.getLastPlaylistId(context)
         val lastFolderId = SettingsManager.getLastFolderId(context)
-        if (lastSongId.isNullOrBlank() || (lastPlaylistId.isNullOrBlank() && lastFolderId.isNullOrBlank())) {
-            return // Nothing to do
-        }
-        if (!isRadioPlaying || radioPlayer == null) return // Skip only meaningful when radio currently playing
-
-        // Pause radio (do not stop monitoring)
+        if (lastSongId.isNullOrBlank() || (lastPlaylistId.isNullOrBlank() && lastFolderId.isNullOrBlank())) { return }
+        if (!isRadioPlaying || radioPlayer == null) return
+        // Pause radio
         radioPlayer?.let { rp -> if (rp.isPlaying) { rp.pause(); isRadioPlaying = false; isPlaying = false } }
         isRadioTemporarilyPausedForSkip = true
-
+        isRadioSkipping = true
         val initialStart = radioMetadata.firstOrNull()?.time?.start
-
-        // Cancel any previous job
         radioSkipMonitorJob?.cancel()
-
-        // Launch loading + monitoring
         radioSkipMonitorJob = progressUpdateScope.launch {
             // Step 2: load context & play song
             val api = SubsonicApi()
