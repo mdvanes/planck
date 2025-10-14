@@ -107,13 +107,13 @@ fun RadioScreenContent(
             ) {
                 startRadioButton()
 
-                Image(
-                    painter = painterResource(id = R.drawable.sky_radio),
-                    contentDescription = "Dummy Radio",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .alpha(0.2f)
-                )
+                //Image(
+                //    painter = painterResource(id = R.drawable.sky_radio),
+                //    contentDescription = "Dummy Radio",
+                //    modifier = Modifier
+                //        .size(100.dp)
+                //        .alpha(0.2f)
+                //)
 
                 // Skip button now active when radio playing and skip context available
                 val hasSkipContext = remember(appState?.isRadioPlaying, appState?.radioMetadata, appState?.isRadioSkipping) {
