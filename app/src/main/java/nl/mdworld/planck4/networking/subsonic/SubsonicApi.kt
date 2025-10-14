@@ -73,12 +73,8 @@ class SubsonicApi {
             return SubsonicDummyResponses.createDummyInternetRadioStationsResponse()
         }
         val url = SubsonicUrlBuilder.buildInternetRadioStationsUrl(context)
-        // Avoid logging sensitive token & salt by trimming query after first '?'
-        val base = url.substringBefore('?')
-        Log.d(tag, "InternetRadio: Fetching stations from $url")
         return try {
             val httpResponse: HttpResponse = ktorHttpClient.get(url)
-            Log.d(tag, "InternetRadio: HTTP status=${httpResponse.status.value}")
             val response: SubsonicInternetRadioStationsResponse = httpResponse.body()
             val count = response.sr.internetRadioStations?.station?.size ?: 0
             Log.d(tag, "InternetRadio: Received $count stations")
