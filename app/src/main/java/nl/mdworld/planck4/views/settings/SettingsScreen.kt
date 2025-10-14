@@ -42,6 +42,8 @@ import nl.mdworld.planck4.PlanckAppState
 import nl.mdworld.planck4.SettingsManager
 import nl.mdworld.planck4.SettingsManager.BrowsingMode
 import nl.mdworld.planck4.imageloading.CoverArtCacheManager
+import nl.mdworld.planck4.networking.subsonic.SubsonicApi
+import nl.mdworld.planck4.networking.subsonic.SubsonicRadioStation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +63,29 @@ fun SettingsScreen(
     var browsingMode by remember { mutableStateOf(SettingsManager.getBrowsingMode(context)) }
     var folderCountEnrich by remember { mutableStateOf(SettingsManager.getFolderCountEnrichmentEnabled(context)) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
+
+    // New: internet radio stations state
+    var radioStations by remember { mutableStateOf<List<SubsonicRadioStation>>(emptyList()) }
+    var radioStationsLoading by remember { mutableStateOf(false) }
+    var radioStationsError by remember { mutableStateOf<String?>(null) }
+
+    fun loadRadioStations() {
+        scope.launch {
+            radioStationsLoading = true
+            radioStationsError = null
+            try {
+                val response = SubsonicApi().getInternetRadioStationsKtor(context)
+                radioStations = response.sr.internetRadioStations?.station ?: emptyList()
+            } catch (e: Exception) {
+                radioStationsError = e.message ?: "Unknown error"
+            } finally {
+                radioStationsLoading = false
+            }
+        }
+    }
+
+    // Load on first composition
+    LaunchedEffect(Unit) { loadRadioStations() }
 
     // Album art cache state
     var cacheSizeText by remember { mutableStateOf("Calculating…") }
@@ -212,6 +237,31 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Save Settings")
+            }
+        }
+
+        // Internet Radio Stations Section
+        SettingsSection(title = "Internet Radio Stations") {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Stations (${radioStations.size})")
+                TextButton(onClick = { loadRadioStations() }, enabled = !radioStationsLoading) { Text(if (radioStationsLoading) "Loading…" else "Refresh") }
+            }
+            when {
+                radioStationsLoading -> Text("Loading stations…")
+                radioStationsError != null -> Text("Error: ${radioStationsError}", color = MaterialTheme.colorScheme.error)
+                radioStations.isEmpty() -> Text("No stations found")
+                else -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        radioStations.forEach { st ->
+                            Column(modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+                                Text(st.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                                st.streamUrl?.let { Text("Stream: $it", style = MaterialTheme.typography.bodySmall) }
+                                st.homepageUrl?.let { Text("Home: $it", style = MaterialTheme.typography.bodySmall) }
+                                st.bitrate?.let { Text("Bitrate: ${it} kbps", style = MaterialTheme.typography.bodySmall) }
+                            }
+                        }
+                    }
+                }
             }
         }
 

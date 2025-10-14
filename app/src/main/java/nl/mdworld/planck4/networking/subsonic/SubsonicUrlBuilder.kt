@@ -93,4 +93,11 @@ object SubsonicUrlBuilder {
     fun buildMusicDirectoryUrl(context: Context, directoryId: String): String {
         return buildApiUrl(context, "getMusicDirectory", "&id=$directoryId")
     }
+
+    /**
+     * Builds a internet radio stations URL
+     */
+    fun buildInternetRadioStationsUrl(context: Context): String {
+        return buildApiUrl(context, "getInternetRadioStations")
+    }
 }

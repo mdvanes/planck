@@ -283,4 +283,18 @@ object SubsonicDummyResponses {
             )
         )
     }
+
+    // New dummy internet radio stations response
+    fun createDummyInternetRadioStationsResponse(): SubsonicInternetRadioStationsResponse {
+        val stations = listOf(
+            SubsonicRadioStation(id = "dummy-station-1", name = "\uD83D\uDCE2 Demo News Radio", streamUrl = "https://example.com/news.mp3", homepageUrl = "https://example.com", bitrate = 128),
+            SubsonicRadioStation(id = "dummy-station-2", name = "\uD83C\uDFB5 Demo Music FM", streamUrl = "https://example.com/music.mp3", homepageUrl = "https://music.example.com", bitrate = 192),
+            SubsonicRadioStation(id = "dummy-station-3", name = "\uD83D\uDD34 Live Talk Station", streamUrl = "https://example.com/talk.mp3", homepageUrl = null, bitrate = 64)
+        )
+        return SubsonicInternetRadioStationsResponse(
+            sr = SubsonicInternetRadioStationsResponse2(
+                internetRadioStations = SubsonicInternetRadioStationsContainer(station = stations)
+            )
+        )
+    }
 }
