@@ -5,7 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -66,7 +66,7 @@ fun SongListItem(
     ) {
         if (isCurrentlyPlaying) {
             Icon(
-                imageVector = Icons.Default.PlayArrow,
+                imageVector = Icons.Filled.PlayArrow,
                 contentDescription = "Currently Playing",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(20.dp)
@@ -109,11 +109,11 @@ fun SongListItem(
             }
         }
 
-        // Cached badge
+        // Cached icon (cloud download to indicate available offline)
         if (isCached) {
             Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Cached",
+                imageVector = Icons.Filled.CloudDownload,
+                contentDescription = "Cached (downloaded)",
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(end = 12.dp).size(18.dp)
             )
