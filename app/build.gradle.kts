@@ -53,7 +53,7 @@ dependencies {
 
     val navVersion = "2.9.5"
     val composeBom = platform("androidx.compose:compose-bom:2024.09.01")
-    val ktorVersion = "3.3.0"
+    val ktorVersion = "3.3.1"
 
     // Kotlin
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
@@ -86,6 +86,7 @@ dependencies {
     implementation("androidx.media:media:1.7.1")
     implementation("androidx.core:core-ktx:1.17.0")
     // implementation("nl.mdworld:radio-metadata:0.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")

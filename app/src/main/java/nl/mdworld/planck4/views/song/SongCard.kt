@@ -34,9 +34,11 @@ import androidx.compose.ui.unit.sp
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import kotlinx.serialization.Serializable
 import nl.mdworld.planck4.ui.theme.PlanckTheme
 import nl.mdworld.planck4.views.components.CoverArt
 
+@Serializable
 data class Song(
     val id: String,
     val title: String,
@@ -89,7 +91,6 @@ fun SongCard(song: Song) {
     }
 }
 
-
 @Preview(name = "Light Mode")
 @Preview(
     uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, name = "Dark Mode"
@@ -111,5 +112,3 @@ fun PreviewSongCard() {
         }
     }
 }
-
-

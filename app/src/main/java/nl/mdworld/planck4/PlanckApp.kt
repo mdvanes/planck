@@ -34,6 +34,7 @@ import nl.mdworld.planck4.views.radio.RadioScreen
 import nl.mdworld.planck4.views.settings.SettingsScreen
 import nl.mdworld.planck4.views.song.Song
 import nl.mdworld.planck4.views.song.SongCardList
+import nl.mdworld.planck4.songcache.SongListCacheManager
 
 @Composable
 fun PlanckApp(
@@ -66,27 +67,30 @@ fun PlanckApp(
     }
 
     // Load songs when navigating to song view
-    LaunchedEffect(appState.selectedPlaylistId, appState.currentScreen) {
+    LaunchedEffect(appState.selectedPlaylistId, appState.currentScreen, appState.isNetworkAvailable) {
         if (appState.selectedPlaylistId != null && appState.currentScreen == AppScreen.SONGS) {
-            appState.songs.clear()
-            try {
-                val response = SubsonicApi().getPlaylistKtor(context, appState.selectedPlaylistId!!)
-                val songs = response.sr.playlist.songs?.map { song ->
-                    Song(
-                        id = song.id,
-                        title = song.title,
-                        artist = song.artist,
-                        album = song.album,
-                        duration = song.duration,
-                        coverArt = song.coverArt
-                    )
-                } ?: emptyList()
-
-                appState.songs.addAll(songs)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                println("Failed to load playlist songs: $e")
+            val playlistId = appState.selectedPlaylistId!!
+            if (appState.songs.isEmpty()) {
+                val cached: List<Song>? = SongListCacheManager.loadPlaylistSongs(context, playlistId)
+                if (cached != null && cached.isNotEmpty()) {
+                    appState.songs.clear(); appState.songs.addAll(cached)
+                }
+            }
+            if (appState.isNetworkAvailable) {
+                try {
+                    val response = SubsonicApi().getPlaylistKtor(context, playlistId)
+                    val songsFetched: List<Song> = response.sr.playlist.songs?.map { song ->
+                        Song(song.id, song.title, song.artist, song.album, song.duration, song.coverArt)
+                    } ?: emptyList()
+                    appState.songs.clear(); appState.songs.addAll(songsFetched)
+                    SongListCacheManager.savePlaylistSongs(context, playlistId, songsFetched)
+                } catch (e: CancellationException) { throw e } catch (e: Exception) {
+                    println("Failed to load playlist songs (network): $e")
+                    if (appState.songs.isEmpty()) {
+                        val cached: List<Song>? = SongListCacheManager.loadPlaylistSongs(context, playlistId)
+                        if (cached != null) appState.songs.addAll(cached)
+                    }
+                }
             }
         }
     }
@@ -247,69 +251,58 @@ fun PlanckApp(
     }
 
     // Load album songs when navigating to album songs view (using file browsing: getMusicDirectory on album folder)
-    LaunchedEffect(appState.selectedAlbumId, appState.currentScreen) {
+    LaunchedEffect(appState.selectedAlbumId, appState.currentScreen, appState.isNetworkAvailable) {
         if (appState.selectedAlbumId != null && appState.currentScreen == AppScreen.ALBUM_SONGS) {
-            appState.songs.clear()
+            val albumId = appState.selectedAlbumId!!
+            if (appState.songs.isEmpty()) {
+                val cached: List<Song>? = SongListCacheManager.loadAlbumSongs(context, albumId)
+                if (cached != null && cached.isNotEmpty()) { appState.songs.clear(); appState.songs.addAll(cached) }
+            }
             try {
                 val mode = SettingsManager.getBrowsingMode(context)
                 if (mode == BrowsingMode.FILES) {
-                    val api = SubsonicApi()
-                    val root = api.getMusicDirectoryKtor(context, appState.selectedAlbumId!!)
-                    val children = root.sr.directory.child
-                    val directSongs = children.filter { !it.isDir }
-                    val songsList = mutableListOf<nl.mdworld.planck4.views.song.Song>()
-
-                    if (directSongs.isNotEmpty()) {
-                        // Standard case: songs directly under album directory
-                        songsList += directSongs.map { child ->
-                            Song(
-                                id = child.id,
-                                title = child.title,
-                                artist = child.artist,
-                                album = child.album ?: appState.selectedAlbumName,
-                                duration = child.duration,
-                                coverArt = child.coverArt
-                            )
-                        }
-                    } else {
-                        // Multi-disc case: fetch each disc (subdirectory) sequentially to preserve order
-                        val discDirs = children.filter { it.isDir }
-                        for (disc in discDirs) {
-                            try {
-                                val discDir = api.getMusicDirectoryKtor(context, disc.id)
-                                val discSongs = discDir.sr.directory.child.filter { !it.isDir }
-                                songsList += discSongs.map { child ->
-                                    Song(
-                                        id = child.id,
-                                        title = child.title,
-                                        artist = child.artist,
-                                        album = child.album ?: appState.selectedAlbumName,
-                                        duration = child.duration,
-                                        coverArt = child.coverArt
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                println("Failed to fetch disc directory ${disc.id}: $e")
+                    if (appState.isNetworkAvailable) {
+                        val api = SubsonicApi()
+                        val root = api.getMusicDirectoryKtor(context, albumId)
+                        val children = root.sr.directory.child
+                        val directSongs = children.filter { !it.isDir }
+                        val songsList = mutableListOf<Song>()
+                        if (directSongs.isNotEmpty()) {
+                            songsList += directSongs.map { child ->
+                                Song(child.id, child.title, child.artist, child.album ?: appState.selectedAlbumName, child.duration, child.coverArt)
+                            }
+                        } else {
+                            val discDirs = children.filter { it.isDir }
+                            for (disc in discDirs) {
+                                try {
+                                    val discDir = api.getMusicDirectoryKtor(context, disc.id)
+                                    val discSongs = discDir.sr.directory.child.filter { !it.isDir }
+                                    songsList += discSongs.map { child ->
+                                        Song(child.id, child.title, child.artist, child.album ?: appState.selectedAlbumName, child.duration, child.coverArt)
+                                    }
+                                } catch (e: Exception) { println("Failed to fetch disc directory ${disc.id}: $e") }
                             }
                         }
+                        appState.songs.clear(); appState.songs.addAll(songsList)
+                        SongListCacheManager.saveAlbumSongs(context, albumId, songsList)
                     }
-
-                    appState.songs.addAll(songsList)
-                } else { // TAGS
-                    val response = SubsonicApi().getAlbumKtor(context, appState.selectedAlbumId!!)
-                    val songs = response.sr.album.songs?.map { song ->
-                        Song(
-                            id = song.id,
-                            title = song.title,
-                            artist = song.artist,
-                            album = song.album,
-                            duration = song.duration,
-                            coverArt = song.coverArt
-                        )
-                    } ?: emptyList()
-                    appState.songs.addAll(songs)
+                } else {
+                    if (appState.isNetworkAvailable) {
+                        val response = SubsonicApi().getAlbumKtor(context, albumId)
+                        val songsFetched: List<Song> = response.sr.album.songs?.map { song ->
+                            Song(song.id, song.title, song.artist, song.album, song.duration, song.coverArt)
+                        } ?: emptyList()
+                        appState.songs.clear(); appState.songs.addAll(songsFetched)
+                        SongListCacheManager.saveAlbumSongs(context, albumId, songsFetched)
+                    }
                 }
-            } catch (e: CancellationException) { throw e } catch (e: Exception) { println("Failed to load album songs: $e") }
+            } catch (e: CancellationException) { throw e } catch (e: Exception) {
+                println("Failed to load album songs: $e")
+                if (appState.songs.isEmpty()) {
+                    val cached: List<Song>? = SongListCacheManager.loadAlbumSongs(context, albumId)
+                    if (cached != null) appState.songs.addAll(cached)
+                }
+            }
         }
     }
 
