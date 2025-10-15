@@ -44,6 +44,7 @@ import nl.mdworld.planck4.SettingsManager.BrowsingMode
 import nl.mdworld.planck4.imageloading.CoverArtCacheManager
 import nl.mdworld.planck4.networking.subsonic.SubsonicApi
 import nl.mdworld.planck4.networking.subsonic.SubsonicRadioStation
+import nl.mdworld.planck4.songcache.SongCacheManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,6 +97,16 @@ fun SettingsScreen(
         }
     }
     LaunchedEffect(true) { refreshCacheSize() }
+
+    // Song cache state (new)
+    var songCacheSizeText by remember { mutableStateOf("Calculating…") }
+    fun refreshSongCacheSize() {
+        scope.launch {
+            val size = SongCacheManager.sizeBytesAsync(context)
+            songCacheSizeText = SongCacheManager.formatSize(size)
+        }
+    }
+    LaunchedEffect(Unit) { refreshSongCacheSize() }
 
     // Track changes to enable save button (overlayOpacity auto-saves, so exclude)
     LaunchedEffect(serverUrl, username, password, radioUrl, browsingMode, folderCountEnrich) {
@@ -273,6 +284,18 @@ fun SettingsScreen(
                 scope.launch {
                     CoverArtCacheManager.clearAsync(context)
                     refreshCacheSize()
+                }
+            }
+        )
+
+        // Song Cache Section (new)
+        SongCacheSection(
+            cacheSizeText = songCacheSizeText,
+            onRefresh = { refreshSongCacheSize() },
+            onClear = {
+                scope.launch {
+                    SongCacheManager.clearAsync(context)
+                    refreshSongCacheSize()
                 }
             }
         )
