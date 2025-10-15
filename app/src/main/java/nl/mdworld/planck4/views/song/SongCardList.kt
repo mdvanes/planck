@@ -1,13 +1,14 @@
 package nl.mdworld.planck4.views.song
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,7 +16,10 @@ import androidx.compose.ui.unit.dp
 import eu.bambooapps.material3.pullrefresh.PullRefreshIndicator
 import eu.bambooapps.material3.pullrefresh.pullRefresh
 import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
+import kotlinx.coroutines.launch
+import nl.mdworld.planck4.songcache.SongCacheManager
 import nl.mdworld.planck4.ui.theme.PlanckTheme
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,22 +47,41 @@ fun SongCardList(
         Box(
             modifier = Modifier.pullRefresh(pullRefreshState)
         ) {
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+            var cachedCount by remember(songs) { mutableStateOf(0) }
+            var cacheSizeText by remember { mutableStateOf("") }
+            fun refreshCacheStats() {
+                cachedCount = songs.count { SongCacheManager.isCached(context, it.id) }
+                scope.launch { val sz = SongCacheManager.sizeBytesAsync(context); cacheSizeText = SongCacheManager.formatSize(sz) }
+            }
+            LaunchedEffect(songs) { refreshCacheStats() }
+
             LazyColumn {
-                // First item: Playlist header with cover art
+                // First item: Playlist header with cover art + cache stats
                 item {
                     SongsHeaderCard(
                         playlistTitle = playlistTitle,
-                        coverArt = coverArt
+                        coverArt = coverArt,
+                        cachedCount = cachedCount,
+                        totalCount = songs.size,
+                        cacheSizeText = cacheSizeText,
+                        onRefreshCache = { refreshCacheStats() }
                     )
                 }
 
-                // Remaining items: Song list items with index, title, artist, and duration
+                // Remaining items: Song list items
                 itemsIndexed(songs) { index, song ->
+                    val isCached = SongCacheManager.isCached(context, song.id)
                     SongListItem(
                         song = song,
                         index = index,
                         isCurrentlyPlaying = currentlyPlayingSong?.id == song.id,
-                        onClick = onSongClick
+                        isCached = isCached,
+                        onClick = {
+                            onSongClick(it)
+                            scope.launch { refreshCacheStats() }
+                        }
                     )
                 }
             }

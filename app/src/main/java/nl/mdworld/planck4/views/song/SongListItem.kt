@@ -2,15 +2,10 @@ package nl.mdworld.planck4.views.song
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +24,7 @@ fun SongListItem(
     song: Song,
     index: Int,
     isCurrentlyPlaying: Boolean = false,
+    isCached: Boolean = false,
     onClick: (Song) -> Unit = {}
 ) {
     val durationText = if (song.duration != null) {
@@ -113,6 +109,15 @@ fun SongListItem(
             }
         }
 
+        // Cached badge
+        if (isCached) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Cached",
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.padding(end = 12.dp).size(18.dp)
+            )
+        }
         if (durationText.isNotEmpty()) {
             Text(
                 text = durationText,
