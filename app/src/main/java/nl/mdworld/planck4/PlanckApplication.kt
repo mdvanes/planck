@@ -7,6 +7,7 @@ import coil.ImageLoader
 import coil.disk.DiskCache
 import nl.mdworld.planck4.imageloading.CoverArtCacheManager
 import java.io.File
+import nl.mdworld.planck4.networking.NetworkMonitor
 
 class PlanckApplication : Application() {
     private var previousHandler: Thread.UncaughtExceptionHandler? = null
@@ -38,5 +39,8 @@ class PlanckApplication : Application() {
             .respectCacheHeaders(false)
             .build()
         Coil.setImageLoader(imageLoader)
+
+        // Start network monitoring for offline behavior
+        try { NetworkMonitor.start(this) } catch (_: Exception) {}
     }
 }
