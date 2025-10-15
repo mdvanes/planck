@@ -67,28 +67,28 @@ fun PlanckApp(
     }
 
     // Load songs when navigating to song view
-    LaunchedEffect(appState.selectedPlaylistId, appState.currentScreen, appState.isNetworkAvailable) {
+    LaunchedEffect(appState.selectedPlaylistId, appState.currentScreen, appState.isNetworkAvailable, appState.playlistRefreshKey()) {
         if (appState.selectedPlaylistId != null && appState.currentScreen == AppScreen.SONGS) {
             val playlistId = appState.selectedPlaylistId!!
-            appState.songs.clear() // Clear previous playlist songs immediately
+            val isManual = appState.isSongsRefreshing
+            if (!isManual) appState.songs.clear()
             if (appState.isNetworkAvailable) {
                 try {
                     val response = SubsonicApi().getPlaylistKtor(context, playlistId)
                     val songsFetched: List<Song> = response.sr.playlist.songs?.map { song ->
                         Song(song.id, song.title, song.artist, song.album, song.duration, song.coverArt)
                     } ?: emptyList()
-                    appState.songs.addAll(songsFetched)
+                    if (!isManual) appState.songs.addAll(songsFetched) else { appState.songs.clear(); appState.songs.addAll(songsFetched) }
                     SongListCacheManager.savePlaylistSongs(context, playlistId, songsFetched)
-                } catch (e: CancellationException) { throw e } catch (e: Exception) {
+                } catch (e: CancellationException) { appState.markSongsRefreshComplete(); throw e } catch (e: Exception) {
                     println("Failed to load playlist songs (network): $e")
                     val cached = SongListCacheManager.loadPlaylistSongs(context, playlistId)
-                    if (cached != null) appState.songs.addAll(cached)
-                }
-            } else { // offline: fallback to cache only
+                    if (appState.songs.isEmpty() && cached != null) appState.songs.addAll(cached)
+                } finally { appState.markSongsRefreshComplete() }
+            } else {
                 val cached = SongListCacheManager.loadPlaylistSongs(context, playlistId)
-                if (cached != null && cached.isNotEmpty()) {
-                    appState.songs.addAll(cached)
-                }
+                if (cached != null) { appState.songs.clear(); appState.songs.addAll(cached) }
+                appState.markSongsRefreshComplete()
             }
         }
     }
@@ -249,10 +249,11 @@ fun PlanckApp(
     }
 
     // Load album songs when navigating to album songs view (using file browsing: getMusicDirectory on album folder)
-    LaunchedEffect(appState.selectedAlbumId, appState.currentScreen, appState.isNetworkAvailable) {
+    LaunchedEffect(appState.selectedAlbumId, appState.currentScreen, appState.isNetworkAvailable, appState.albumRefreshKey()) {
         if (appState.selectedAlbumId != null && appState.currentScreen == AppScreen.ALBUM_SONGS) {
             val albumId = appState.selectedAlbumId!!
-            appState.songs.clear() // Clear previous album songs immediately
+            val isManual = appState.isSongsRefreshing
+            if (!isManual) appState.songs.clear()
             if (appState.isNetworkAvailable) {
                 try {
                     val mode = SettingsManager.getBrowsingMode(context)
@@ -278,26 +279,25 @@ fun PlanckApp(
                                 } catch (e: Exception) { println("Failed to fetch disc directory ${disc.id}: $e") }
                             }
                         }
-                        appState.songs.addAll(songsList)
+                        if (!isManual) appState.songs.addAll(songsList) else { appState.songs.clear(); appState.songs.addAll(songsList) }
                         SongListCacheManager.saveAlbumSongs(context, albumId, songsList)
                     } else { // TAGS
                         val response = SubsonicApi().getAlbumKtor(context, albumId)
                         val songsFetched: List<Song> = response.sr.album.songs?.map { song ->
                             Song(song.id, song.title, song.artist, song.album, song.duration, song.coverArt)
                         } ?: emptyList()
-                        appState.songs.addAll(songsFetched)
+                        if (!isManual) appState.songs.addAll(songsFetched) else { appState.songs.clear(); appState.songs.addAll(songsFetched) }
                         SongListCacheManager.saveAlbumSongs(context, albumId, songsFetched)
                     }
-                } catch (e: CancellationException) { throw e } catch (e: Exception) {
+                } catch (e: CancellationException) { appState.markSongsRefreshComplete(); throw e } catch (e: Exception) {
                     println("Failed to load album songs (network): $e")
                     val cached = SongListCacheManager.loadAlbumSongs(context, albumId)
-                    if (cached != null) appState.songs.addAll(cached)
-                }
-            } else { // offline: fallback to cache only
+                    if (appState.songs.isEmpty() && cached != null) appState.songs.addAll(cached)
+                } finally { appState.markSongsRefreshComplete() }
+            } else {
                 val cached = SongListCacheManager.loadAlbumSongs(context, albumId)
-                if (cached != null && cached.isNotEmpty()) {
-                    appState.songs.addAll(cached)
-                }
+                if (cached != null) { appState.songs.clear(); appState.songs.addAll(cached) }
+                appState.markSongsRefreshComplete()
             }
         }
     }
@@ -348,7 +348,9 @@ fun PlanckApp(
                             songs = appState.songs.toList(),
                             playlistTitle = appState.selectedPlaylistName ?: "Playlist",
                             currentlyPlayingSong = appState.activeSong,
-                            onSongClick = { song -> appState.playStream(song) }
+                            onSongClick = { song -> appState.playStream(song) },
+                            isRefreshing = appState.isSongsRefreshing,
+                            onRefresh = { appState.refreshCurrentPlaylistSongs() }
                         )
                     }
 
@@ -365,7 +367,9 @@ fun PlanckApp(
                             songs = appState.songs.toList(),
                             playlistTitle = appState.selectedAlbumName ?: "Album",
                             currentlyPlayingSong = appState.activeSong,
-                            onSongClick = { song -> appState.playStream(song) }
+                            onSongClick = { song -> appState.playStream(song) },
+                            isRefreshing = appState.isSongsRefreshing,
+                            onRefresh = { appState.refreshCurrentAlbumSongs() }
                         )
                     }
 

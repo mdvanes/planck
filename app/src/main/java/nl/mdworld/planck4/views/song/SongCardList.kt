@@ -28,11 +28,13 @@ fun SongCardList(
     songs: List<Song>,
     playlistTitle: String = "Playlist",
     currentlyPlayingSong: Song? = null,
-    onSongClick: (Song) -> Unit = {}
+    onSongClick: (Song) -> Unit = {},
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {}
 ) {
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = false,
-        onRefresh = { /* TODO: Implement refresh */ }
+        refreshing = isRefreshing,
+        onRefresh = onRefresh
     )
 
     val coverArt = songs.firstOrNull()?.coverArt
@@ -86,7 +88,7 @@ fun SongCardList(
                 }
             }
             PullRefreshIndicator(
-                refreshing = false,
+                refreshing = isRefreshing,
                 state = pullRefreshState,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
@@ -103,21 +105,11 @@ fun PreviewSongCardList() {
                 songs = listOf(
                     Song("1", "Example Song 1", "Artist 1", "Album 1", 180, "cover1"),
                     Song("2", "Example Song 2", "Artist 2", "Album 2", 240, "cover2"),
-                    Song("3", "Example Song 3", "Artist 3", "Album 3", 210, "cover3"),
-                    Song("4", "Example Song 4", "Artist 1", "Album 1", 180, "cover1"),
-                    Song("5", "Example Song 5", "Artist 2", "Album 2", 240, "cover2"),
-                    Song("6", "Example Song 6", "Artist 3", "Album 3", 210, "cover3"),
-                    Song("7", "Example Song 7", "Artist 1", "Album 1", 180, "cover1"),
-                    Song("8", "Example Song 8", "Artist 2", "Album 2", 240, "cover2"),
-                    Song("9", "Example Song 9", "Artist 3", "Album 3", 210, "cover3"),
-                    Song("10", "Example Song 10", "Artist 1", "Album 1", 180, "cover1"),
-                    Song("11", "Example Song 11", "Artist 2", "Album 2", 240, "cover2"),
-                    Song("12", "Example Song 12", "Artist 3", "Album 3", 210, "cover3"),
-                    Song("13", "Example Song 13", "Artist 1", "Album 1", 180, "cover1"),
-                    Song("14", "Example Song 14", "Artist 2", "Album 2", 240, "cover2"),
-                    Song("15", "Example Song 15", "Artist 3", "Album 3", 210, "cover3")
+                    Song("3", "Example Song 3", "Artist 3", "Album 3", 210, "cover3")
                 ),
-                playlistTitle = "My Playlist"
+                playlistTitle = "My Playlist",
+                isRefreshing = false,
+                onRefresh = {}
             )
         }
     }

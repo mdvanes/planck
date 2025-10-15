@@ -78,6 +78,11 @@ class PlanckAppState(private val context: Context) {
     private var progressUpdateJob: Job? = null
     private val progressUpdateScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    // Refresh triggers
+    var isSongsRefreshing by mutableStateOf(false); private set
+    private var playlistSongsRefreshTrigger by mutableStateOf(0)
+    private var albumSongsRefreshTrigger by mutableStateOf(0)
+
     init {
         PlanckAppStateHolder.set(this)
         observeNetwork()
@@ -584,6 +589,17 @@ class PlanckAppState(private val context: Context) {
         }
         runCatching { context.startService(intent) }
     }
+
+    // --- Refresh helpers ---
+    fun refreshCurrentPlaylistSongs() {
+        if (selectedPlaylistId != null) { isSongsRefreshing = true; playlistSongsRefreshTrigger++ }
+    }
+    fun refreshCurrentAlbumSongs() {
+        if (selectedAlbumId != null) { isSongsRefreshing = true; albumSongsRefreshTrigger++ }
+    }
+    internal fun markSongsRefreshComplete() { isSongsRefreshing = false }
+    internal fun playlistRefreshKey() = playlistSongsRefreshTrigger
+    internal fun albumRefreshKey() = albumSongsRefreshTrigger
 
     // --- Cleanup ---
     fun cleanup() {
