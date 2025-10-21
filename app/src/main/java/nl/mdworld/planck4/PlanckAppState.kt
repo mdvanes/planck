@@ -406,23 +406,51 @@ class PlanckAppState(private val context: Context) {
     }
 
     private fun resumeRadioStreamWithCurrentMetadata() {
-        radioPlayer?.let { rp ->
-            try {
-                rp.start();
-                val firstTrack = radioMetadata.firstOrNull(); activeSong = Song(
-                    id = "radio-stream",
-                    title = firstTrack?.song?.title ?: firstTrack?.broadcast?.title
-                    ?: "Radio Stream",
-                    artist = firstTrack?.song?.artist ?: firstTrack?.broadcast?.presenters ?: "",
-                    album = "Radio Stream",
-                    duration = 0,
-                    coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
-                ); sendMetadataToService(activeSong); isRadioPlaying = true; isPlaying =
-                    true; isRadioSkipping = false; isRadioTemporarilyPausedForSkip =
-                    false; updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, 0L)
-            } catch (e: Exception) {
-                e.printStackTrace()
+        try {
+            // Reset and re-prepare the radio player to get the current live stream position
+            radioPlayer?.let { rp ->
+                if (rp.isPlaying) rp.stop()
+                rp.reset()
+                rp.setAudioAttributes(
+                    AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build()
+                )
+                val audioUrl = SettingsManager.getRadioUrl(context)
+                rp.setDataSource(audioUrl)
+                rp.prepareAsync()
+                rp.setOnPreparedListener { prepared ->
+                    prepared.start()
+                    val firstTrack = radioMetadata.firstOrNull()
+                    activeSong = Song(
+                        id = "radio-stream",
+                        title = firstTrack?.song?.title ?: firstTrack?.broadcast?.title
+                        ?: "Radio Stream",
+                        artist = firstTrack?.song?.artist ?: firstTrack?.broadcast?.presenters ?: "",
+                        album = "Radio Stream",
+                        duration = 0,
+                        coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
+                    )
+                    sendMetadataToService(activeSong)
+                    isRadioPlaying = true
+                    isPlaying = true
+                    isRadioSkipping = false
+                    isRadioTemporarilyPausedForSkip = false
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_PLAYING, 0L)
+                }
+                rp.setOnErrorListener { _, _, _ ->
+                    this@PlanckAppState.isRadioPlaying = false
+                    this@PlanckAppState.isPlaying = false
+                    activeSong = null
+                    updateMediaSessionPlaybackState(PlaybackStateCompat.STATE_ERROR, 0L)
+                    false
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            isRadioPlaying = false
+            isPlaying = false
+            isRadioSkipping = false
+            isRadioTemporarilyPausedForSkip = false
         }
     }
 
