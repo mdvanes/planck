@@ -16,8 +16,8 @@ android {
         applicationId = "nl.mdworld.planck4"
         minSdk = 30
         targetSdk = 36
-        versionCode = 32
-        versionName = "1.0.32"
+        versionCode = 33
+        versionName = "1.0.33"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

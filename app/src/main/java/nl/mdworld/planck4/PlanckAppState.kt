@@ -284,25 +284,41 @@ class PlanckAppState(private val context: Context) {
     }
 
     fun pausePlayback() {
-        mediaPlayer?.let {
-            if (it.isPlaying) {
-                it.pause(); isPlaying =
-                    false; stopProgressUpdates(); updateMediaSessionPlaybackState(
-                    PlaybackStateCompat.STATE_PAUSED,
-                    currentPosition.toLong()
-                )
+        if (isRadioPlaying) {
+            stopRadio()
+        } else {
+            mediaPlayer?.let {
+                if (it.isPlaying) {
+                    it.pause(); isPlaying =
+                        false; stopProgressUpdates(); updateMediaSessionPlaybackState(
+                        PlaybackStateCompat.STATE_PAUSED,
+                        currentPosition.toLong()
+                    )
+                }
             }
         }
     }
 
     fun resumePlayback() {
-        mediaPlayer?.let {
-            if (!it.isPlaying) {
-                it.start(); isPlaying =
-                    true; startProgressUpdates(); updateMediaSessionPlaybackState(
-                    PlaybackStateCompat.STATE_PLAYING,
-                    currentPosition.toLong()
-                )
+        if (isRadioPlaying) {
+            radioPlayer?.let {
+                if (!it.isPlaying) {
+                    it.start(); isPlaying =
+                        true; updateMediaSessionPlaybackState(
+                        PlaybackStateCompat.STATE_PLAYING,
+                        0L
+                    )
+                }
+            }
+        } else {
+            mediaPlayer?.let {
+                if (!it.isPlaying) {
+                    it.start(); isPlaying =
+                        true; startProgressUpdates(); updateMediaSessionPlaybackState(
+                        PlaybackStateCompat.STATE_PLAYING,
+                        currentPosition.toLong()
+                    )
+                }
             }
         }
     }
