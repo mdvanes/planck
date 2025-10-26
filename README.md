@@ -50,6 +50,12 @@ In the "Device Manager", create a new virtual device with the following settings
 - Keep an eye on the "Build Output" tab at the bottom of the IDE for any errors
 - After a change, click "Sync Project with Gradle Files" (elephant icon) to ensure everything is up to date and "Run app" again
 
+## Running tests
+
+```bash
+./gradlew :app:testDebugUnitTest
+```
+
 ## Debug on a Android phone
 
 - Go to Build > Generate App Bundle(s) / APK(s) > Generate APK
