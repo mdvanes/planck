@@ -171,6 +171,19 @@ class PlanckAppState(private val context: Context) {
         return false
     }
 
+    fun openLastAlbumIfAvailable(): Boolean {
+        val lastFolderId = SettingsManager.getLastFolderId(context)
+        val lastArtistId = SettingsManager.getLastArtistId(context)
+
+        if (!lastFolderId.isNullOrBlank() && !lastArtistId.isNullOrBlank()) {
+            // Restore the full navigation context: Artist -> Albums -> Album Songs
+            selectedArtistId = lastArtistId
+            navigateToAlbumSongs(lastFolderId, "Album")
+            return true
+        }
+        return false
+    }
+
     // --- Playback control (songs) ---
     fun playStream(song: Song) {
         try {
@@ -181,6 +194,8 @@ class PlanckAppState(private val context: Context) {
                             context,
                             it
                         ); SettingsManager.saveLastFolderId(context, "")
+                        SettingsManager.saveLastArtistId(context, "")
+
                     }
 
                     AppScreen.ALBUM_SONGS -> selectedAlbumId?.let {
@@ -188,6 +203,10 @@ class PlanckAppState(private val context: Context) {
                             context,
                             it
                         ); SettingsManager.saveLastPlaylistId(context, "")
+                        selectedArtistId?.let { artistId ->
+                            SettingsManager.saveLastArtistId(context, artistId)
+                        }
+
                     }
 
                     else -> {}
@@ -441,7 +460,8 @@ class PlanckAppState(private val context: Context) {
                         id = "radio-stream",
                         title = firstTrack?.song?.title ?: firstTrack?.broadcast?.title
                         ?: "Radio Stream",
-                        artist = firstTrack?.song?.artist ?: firstTrack?.broadcast?.presenters ?: "",
+                        artist = firstTrack?.song?.artist ?: firstTrack?.broadcast?.presenters
+                        ?: "",
                         album = "Radio Stream",
                         duration = 0,
                         coverArt = firstTrack?.song?.imageUrl ?: firstTrack?.broadcast?.imageUrl
@@ -636,12 +656,21 @@ class PlanckAppState(private val context: Context) {
 
     // --- Refresh helpers ---
     fun refreshCurrentPlaylistSongs() {
-        if (selectedPlaylistId != null) { isSongsRefreshing = true; playlistSongsRefreshTrigger++ }
+        if (selectedPlaylistId != null) {
+            isSongsRefreshing = true; playlistSongsRefreshTrigger++
+        }
     }
+
     fun refreshCurrentAlbumSongs() {
-        if (selectedAlbumId != null) { isSongsRefreshing = true; albumSongsRefreshTrigger++ }
+        if (selectedAlbumId != null) {
+            isSongsRefreshing = true; albumSongsRefreshTrigger++
+        }
     }
-    internal fun markSongsRefreshComplete() { isSongsRefreshing = false }
+
+    internal fun markSongsRefreshComplete() {
+        isSongsRefreshing = false
+    }
+
     internal fun playlistRefreshKey() = playlistSongsRefreshTrigger
     internal fun albumRefreshKey() = albumSongsRefreshTrigger
 

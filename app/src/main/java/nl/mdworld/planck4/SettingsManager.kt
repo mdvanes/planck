@@ -8,14 +8,17 @@ object SettingsManager {
     private const val KEY_USERNAME = "username"
     private const val KEY_PASSWORD = "password"
     private const val KEY_RADIO_URL = "radio_url"
+
     // New: overlay opacity for background cover art
     private const val KEY_OVERLAY_OPACITY = "overlay_opacity"
     private const val KEY_BROWSING_MODE = "browsing_mode"
     private const val KEY_FOLDER_COUNT_ENRICH = "folder_count_enrich"
+
     // Added: persistent playback context
     private const val KEY_LAST_SONG_ID = "last_song_id"
     private const val KEY_LAST_PLAYLIST_ID = "last_playlist_id"
     private const val KEY_LAST_FOLDER_ID = "last_folder_id"
+    private const val KEY_LAST_ARTIST_ID = "last_artist_id"
 
     enum class BrowsingMode { TAGS, FILES }
 
@@ -23,6 +26,7 @@ object SettingsManager {
     const val DEFAULT_USERNAME = "demo_user"
     const val DEFAULT_PASSWORD = "demo_password"
     const val DEFAULT_RADIO_URL = "https://icecast.omroep.nl/radio2-bb-mp3"
+
     // New default overlay opacity (matches old hardcoded 0.8f)
     const val DEFAULT_OVERLAY_OPACITY = 0.8f
     private val DEFAULT_BROWSING_MODE = BrowsingMode.FILES
@@ -88,7 +92,11 @@ object SettingsManager {
     fun getBrowsingMode(context: Context): BrowsingMode {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val value = prefs.getString(KEY_BROWSING_MODE, DEFAULT_BROWSING_MODE.name)
-        return try { BrowsingMode.valueOf(value!!) } catch (e: Exception) { DEFAULT_BROWSING_MODE }
+        return try {
+            BrowsingMode.valueOf(value!!)
+        } catch (e: Exception) {
+            DEFAULT_BROWSING_MODE
+        }
     }
 
     // New folder count enrichment preference helpers
@@ -131,6 +139,16 @@ object SettingsManager {
     fun getLastFolderId(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getString(KEY_LAST_FOLDER_ID, null)
+    }
+
+    fun saveLastArtistId(context: Context, artistId: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_LAST_ARTIST_ID, artistId).apply()
+    }
+
+    fun getLastArtistId(context: Context): String? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_LAST_ARTIST_ID, null)
     }
 
     // Convenience method for getting the Jukebox base URL (same as server URL)

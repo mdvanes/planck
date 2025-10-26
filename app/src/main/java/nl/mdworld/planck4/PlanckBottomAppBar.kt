@@ -125,7 +125,7 @@ fun PlanckBottomAppBar(
                         .padding(horizontal = 4.dp, vertical = 2.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    if(activeSong?.artist != null) {
+                    if (activeSong?.artist != null) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -194,7 +194,17 @@ fun PlanckBottomAppBar(
                             icon = Icons.Filled.Folder,
                             contentDescription = "Library",
                             isSelected = currentScreen == AppScreen.ARTISTS || currentScreen == AppScreen.ALBUMS || currentScreen == AppScreen.ALBUM_SONGS,
-                            onClick = { appState?.navigateToArtists() }
+                            onClick = {
+                                if (appState != null) {
+                                    val fromScreen = currentScreen
+                                    // If coming from SETTINGS or RADIO attempt to jump directly to last album
+                                    if ((fromScreen == AppScreen.SETTINGS || fromScreen == AppScreen.RADIO) && appState.openLastAlbumIfAvailable()) {
+                                        // navigated directly to album
+                                    } else {
+                                        appState.navigateToArtists()
+                                    }
+                                }
+                            }
                         )
                         NavigationButton(
                             icon = Icons.Filled.Radio,
