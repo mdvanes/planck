@@ -2,6 +2,45 @@
 
 Android Automotive (AAOS) client for Radio Streams and Subsonic
 
+Planck brings your complete music library to your car's dashboard with an interface designed specifically for Android Automotive OS.
+
+### 🎵 Stream Your Music Library
+- **Subsonic/Navidrome Support** - Connect to your personal music server
+- **Browse by Playlists, Artists, or Albums** - Multiple ways to explore your collection
+- **Two Browsing Modes** - Tag-based (metadata) or folder-based navigation
+
+### 📻 Internet Radio
+- **Live Radio Streaming** - Listen to your favorite stations
+- **Real-Time Metadata** - See current song titles, artists, and album art
+- **Track History** - View previously played songs with timestamps
+- **Smart Skip Feature** - Temporarily skip commercials by resuming your last song until the next track starts
+
+### 📱 Offline Playback
+- **Smart Caching** - Automatically downloads upcoming songs (500MB cache)
+- **Offline Mode** - Keep listening when you lose connection
+- **Album Art Cache** - Beautiful cover art available offline (100MB cache)
+
+### 🎛️ Powerful Features
+- **Media Button Support** - Control with steering wheel buttons
+- **Persistent Notifications** - Show playing song in notification
+- **Multi-Disc Album Support** - Flattens multi-disc albums for seamless playback
+- **Customizable Overlay** - Adjust background darkness for readability
+
+### 🔧 Flexible Configuration
+- **Custom Server URLs** - Connect to any Subsonic-compatible server
+- **Radio Station Management** - Load stations from your server or use custom URLs
+- **Cache Control** - Manage storage usage for songs and artwork
+- **Two Library Modes** - Choose between metadata tags or folder structure browsing
+
+Perfect for long drives, commutes, and road trips. Planck transforms your Android Automotive system into a powerful music streaming platform with both online and offline capabilities.
+
+**Requirements:**
+- Android Automotive OS
+- Subsonic, Navidrome, Airsonic, or compatible music server
+- Internet connection (for streaming; offline playback available for cached content)
+
+---
+
 ## Local Development in Android Studio
 
 In the "Device Manager", create a new virtual device with the following settings:
