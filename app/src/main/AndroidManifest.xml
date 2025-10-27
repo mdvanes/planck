@@ -32,6 +32,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Planck.SplashScreen"
+        android:appCategory="audio"
         tools:targetApi="31">
 
         <!-- Main Activity for phone/tablet use -->
