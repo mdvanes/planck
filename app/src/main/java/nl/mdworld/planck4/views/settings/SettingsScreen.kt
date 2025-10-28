@@ -1,5 +1,6 @@
 package nl.mdworld.planck4.views.settings
 
+import android.R.attr.enabled
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,13 +63,21 @@ fun SettingsScreen(
     var radioUrl by remember { mutableStateOf(SettingsManager.getRadioUrl(context)) }
     var overlayOpacity by remember { mutableStateOf(SettingsManager.getOverlayOpacity(context)) }
     var browsingMode by remember { mutableStateOf(SettingsManager.getBrowsingMode(context)) }
-    var folderCountEnrich by remember { mutableStateOf(SettingsManager.getFolderCountEnrichmentEnabled(context)) }
+    var folderCountEnrich by remember {
+        mutableStateOf(
+            SettingsManager.getFolderCountEnrichmentEnabled(
+                context
+            )
+        )
+    }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
 
     // New: internet radio stations state
     var radioStations by remember { mutableStateOf<List<SubsonicRadioStation>>(emptyList()) }
     var radioStationsLoading by remember { mutableStateOf(false) }
     var radioStationsError by remember { mutableStateOf<String?>(null) }
+
+    var isDebugEnabled by remember { mutableStateOf(false) }
 
     fun loadRadioStations() {
         scope.launch {
@@ -207,18 +216,28 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = browsingMode == BrowsingMode.FILES, onClick = { browsingMode = BrowsingMode.FILES })
+                    RadioButton(
+                        selected = browsingMode == BrowsingMode.FILES,
+                        onClick = { browsingMode = BrowsingMode.FILES })
                     Text("Folders", modifier = Modifier.padding(start = 4.dp))
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = browsingMode == BrowsingMode.TAGS, onClick = { browsingMode = BrowsingMode.TAGS })
+                    RadioButton(
+                        selected = browsingMode == BrowsingMode.TAGS,
+                        onClick = { browsingMode = BrowsingMode.TAGS })
                     Text("Tags", modifier = Modifier.padding(start = 4.dp))
                 }
             }
             // Folder count enrichment toggle (only meaningful in Folders mode)
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Compute album & song counts in folder mode")
                     Text(
@@ -226,7 +245,10 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                Switch(checked = folderCountEnrich, enabled = browsingMode == BrowsingMode.FILES, onCheckedChange = { folderCountEnrich = it })
+                Switch(
+                    checked = folderCountEnrich,
+                    enabled = browsingMode == BrowsingMode.FILES,
+                    onCheckedChange = { folderCountEnrich = it })
             }
 
             // Save button with reload functionality
@@ -252,29 +274,12 @@ fun SettingsScreen(
         }
 
         // Internet Radio Stations Section
-        SettingsSection(title = "Internet Radio Stations") {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Stations (${radioStations.size})")
-                TextButton(onClick = { loadRadioStations() }, enabled = !radioStationsLoading) { Text(if (radioStationsLoading) "Loading…" else "Refresh") }
-            }
-            when {
-                radioStationsLoading -> Text("Loading stations…")
-                radioStationsError != null -> Text("Error: ${radioStationsError}", color = MaterialTheme.colorScheme.error)
-                radioStations.isEmpty() -> Text("No stations found")
-                else -> {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        radioStations.forEach { st ->
-                            Column(modifier = Modifier.fillMaxWidth().padding(4.dp)) {
-                                Text(st.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-                                st.streamUrl?.let { Text("Stream: $it", style = MaterialTheme.typography.bodySmall) }
-                                st.homepageUrl?.let { Text("Home: $it", style = MaterialTheme.typography.bodySmall) }
-                                st.bitrate?.let { Text("Bitrate: ${it} kbps", style = MaterialTheme.typography.bodySmall) }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        InternetRadioSection(
+            radioStations = radioStations,
+            radioStationsLoading = radioStationsLoading,
+            radioStationsError = radioStationsError,
+            loadRadioStations = { loadRadioStations() }
+        )
 
         // Album Art Cache Section
         AlbumArtCacheSection(
@@ -288,7 +293,7 @@ fun SettingsScreen(
             }
         )
 
-        // Song Cache Section (new)
+        // Song Cache Section
         SongCacheSection(
             cacheSizeText = songCacheSizeText,
             onRefresh = { refreshSongCacheSize() },
@@ -300,20 +305,18 @@ fun SettingsScreen(
             }
         )
 
-        // About Section (extracted)
-        AboutSection()
+        // About Section
+        AboutSection(
+            isDebugEnabled,
+            onDebugEnabledChange = { newValue -> isDebugEnabled = newValue })
 
-        // Debug Key Codes Section (extracted)
-        DebugKeyCodesSection()
+        if (isDebugEnabled) {
+            // Debug Key Codes Section
+            DebugKeyCodesSection()
 
-        // Playback Context Section (display-only)
-        SettingsSection(title = "Last Played Context") {
-            val lastSongId = SettingsManager.getLastSongId(context) ?: "(none)"
-            val lastPlaylistId = SettingsManager.getLastPlaylistId(context).takeUnless { it.isNullOrBlank() } ?: "(none)"
-            val lastFolderId = SettingsManager.getLastFolderId(context).takeUnless { it.isNullOrBlank() } ?: "(none)"
-            Text("Last Song ID: $lastSongId")
-            Text("Last Playlist ID: $lastPlaylistId")
-            Text("Last Folder (Album) ID: $lastFolderId")
+            // Playback Context Section
+            PlaybackContextSection()
         }
+
     }
 }
