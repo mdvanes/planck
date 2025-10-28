@@ -1,0 +1,62 @@
+name: Production
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 36
+          build-tools: 36.0.0
+          target: google_apis
+          profile: false
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Archive Unit Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: |
+            app/build/test-results/testDebugUnitTest
+            app/build/reports/tests/testDebugUnitTest
+
+      - name: Gradle Build Cache Cleanup (optional)
+        if: always()
+        run: |
+          echo "Gradle cache size after build:" && du -sh ~/.gradle/caches || true
+
+# Notes:
+# - This workflow runs JVM unit tests (src/test) only; instrumentation tests (src/androidTest) would require an emulator.
+# - The Android SDK is installed because the Android Gradle Plugin needs platform jars to compile even for local unit tests.
+# - Adjust api-level/build-tools if compileSdk changes.
+
