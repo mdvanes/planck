@@ -1,4 +1,8 @@
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/mdvanes/planck/production.yml)](https://github.com/mdvanes/planck/actions/workflows/production.yml)
+![GitHub Release](https://img.shields.io/github/v/release/mdvanes/planck)
+
 # Planck
+
 
 Android Automotive (AAOS) client for Radio Streams and Subsonic
 
@@ -68,6 +72,20 @@ In the "Device Manager", create a new virtual device with the following settings
 - Go to Build > Generate Signed App Bundle(s) / APK(s) > Generate Bundles
 - Go to https://play.google.com/console/
 - Create a new Closed test release for the Android Automotive track. Internal tests releases will *not* be shown in the car.
+
+## Automated Releases
+
+A GitHub Actions workflow automatically creates a release when `versionName` in `app/build.gradle.kts` changes on pushes to `main`.
+
+Details:
+- Uses the `versionName` value as both the tag and release title.
+- Skips creation if a release with the same tag already exists.
+- Collects commit messages since the previous release as release notes.
+
+To trigger:
+1. Update `versionName` (and typically `versionCode`) in `app/build.gradle.kts`.
+2. Commit and push to `main`.
+3. The workflow `.github/workflows/auto-release.yml` will run and create the release.
 
 ## Marking Activities as Distraction-Optimized
 
