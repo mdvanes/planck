@@ -693,7 +693,7 @@ object PlanckAppStateHolder {
 fun setSelectedPlaylist(context: Context, playlistName: String) {
     val prefs = context.getSharedPreferences("planck_prefs", Context.MODE_PRIVATE)
     prefs.edit().putString("selected_playlist", playlistName).apply()
-    runCatching { ClusterScreen.refreshClusterDisplay() }.onFailure { println("Cluster display not available for refresh: ${it.message}") }
+    //runCatching { ClusterScreen.refreshClusterDisplay() }.onFailure { println("Cluster display not available for refresh: ${it.message}") }
 }
 
 fun getSelectedPlaylist(context: Context): String =
