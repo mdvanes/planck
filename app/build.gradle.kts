@@ -1,4 +1,3 @@
-import java.lang.module.ModuleFinder.compose
 
 plugins {
     id("com.android.application")
@@ -18,7 +17,6 @@ android {
         targetSdk = 36
         versionCode = 36
         versionName = "1.0.36"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
