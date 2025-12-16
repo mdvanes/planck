@@ -2,7 +2,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
     kotlin("plugin.serialization") version "1.9.21"
     //id("androidx.navigation.safeargs")
 }
@@ -49,9 +49,9 @@ android {
 
 dependencies {
 
-    val navVersion = "2.9.5"
+    val navVersion = "2.9.6"
     val composeBom = platform("androidx.compose:compose-bom:2024.09.01")
-    val ktorVersion = "3.3.1"
+    val ktorVersion = "3.3.3"
 
     // Kotlin
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
@@ -78,8 +78,8 @@ dependencies {
     implementation("io.ktor:ktor-client-logging:${ktorVersion}")
     implementation("androidx.car.app:app:1.7.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.activity:activity-compose:1.11.0")
+    implementation("androidx.core:core-splashscreen:1.2.0")
+    implementation("androidx.activity:activity-compose:1.12.1")
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.media:media:1.7.1")
     implementation("androidx.core:core-ktx:1.17.0")
@@ -87,18 +87,18 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("io.mockk:mockk:1.14.6")
+    testImplementation("io.mockk:mockk:1.14.7")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("io.mockk:mockk-android:1.14.6")
+    androidTestImplementation("io.mockk:mockk-android:1.14.7")
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     implementation("androidx.media2:media2-session:1.3.0")
     implementation("androidx.media2:media2-player:1.3.0")
 
     // Lifecycle for process-wide lifecycle (needed for cleanup on background)
-    implementation("androidx.lifecycle:lifecycle-process:2.9.4")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
+    implementation("androidx.lifecycle:lifecycle-process:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
 
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
