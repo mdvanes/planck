@@ -13,10 +13,11 @@ android {
 
     defaultConfig {
         applicationId = "nl.mdworld.planck4"
-        minSdk = 30
+        // OpenR needs Android 10 as minimum, which is SDK 29
+        minSdk = 29
         targetSdk = 36
-        versionCode = 37
-        versionName = "1.0.37"
+        versionCode = 39
+        versionName = "1.0.39"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
