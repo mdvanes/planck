@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-09-17T11:25:37.304714Z">
+        <DropdownSelection timestamp="2025-12-16T17:05:12.352290Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/mes21971/.android/avd/Automotive_1080p_landscape_API_33.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/mes21971/.android/avd/Renault_R5_E-Tech_10.1_inch.avd" />
             </handle>
           </Target>
         </DropdownSelection>
